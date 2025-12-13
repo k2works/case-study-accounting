@@ -1,0 +1,764 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Site Description">
+      
+      
+        <meta name="author" content="Project Team">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>TypeScript アプリケーション環境構築ガイド - Site Name</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../docs/mkdocs/assets/css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#typescript" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Site Name" class="md-header__button md-logo" aria-label="Site Name" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Site Name
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              TypeScript アプリケーション環境構築ガイド
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/k2works/claude-code-booster" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    claude-code-booster
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Site Name" class="md-nav__button md-logo" aria-label="Site Name" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Site Name
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/k2works/claude-code-booster" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    claude-code-booster
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="typescript">TypeScript アプリケーション環境構築ガイド<a class="headerlink" href="#typescript" title="Permanent link">&para;</a></h1>
+<h2 id="_1">概要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本ガイドは、TypeScript アプリケーション開発環境をゼロから構築し、ソフトウェア開発の三種の神器（バージョン管理、テスティング、自動化）を実践するための手順書です。テスト駆動開発（TDD）により「動作するきれいなコード」を継続的に作成できる開発環境を整備します。</p>
+<h2 id="_2">前提条件<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Node.js 18 以降がインストールされていること</li>
+<li>npm または yarn がインストールされていること</li>
+<li>Git がインストールされていること</li>
+<li>VS Code または WebStorm がインストールされていること（推奨）</li>
+</ul>
+<h2 id="_3">ソフトウェア開発の三種の神器<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h3 id="1">1. バージョン管理<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<h4 id="git">Git の基本設定<a class="headerlink" href="#git" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># ユーザー設定</span>
+git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.name<span class="w"> </span><span class="s2">&quot;Your Name&quot;</span>
+git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.email<span class="w"> </span><span class="s2">&quot;your.email@example.com&quot;</span>
+
+<span class="c1"># リポジトリの初期化</span>
+git<span class="w"> </span>init
+
+<span class="c1"># .gitignore の作成</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;node_modules/&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;dist/&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;coverage/&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;.env&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;.DS_Store&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+</code></pre></div>
+<h4 id="conventional-commits">コミットメッセージ規約（Conventional Commits）<a class="headerlink" href="#conventional-commits" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>&lt;タイプ&gt;(&lt;スコープ&gt;): &lt;タイトル&gt;
+&lt;空行&gt;
+&lt;ボディ&gt;
+&lt;空行&gt;
+&lt;フッタ&gt;
+</code></pre></div>
+<p><strong>タイプの種類：</strong>
+- <code>feat</code>: 新機能の追加
+- <code>fix</code>: バグ修正
+- <code>docs</code>: ドキュメント変更のみ
+- <code>style</code>: コードに影響を与えない変更（フォーマット等）
+- <code>refactor</code>: 機能追加でもバグ修正でもないコード変更
+- <code>perf</code>: パフォーマンスを改善するコード変更
+- <code>test</code>: テストの追加や修正
+- <code>chore</code>: ビルドプロセスやツール、ライブラリの変更</p>
+<p><strong>例：</strong>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s1">&#39;feat: ユーザー認証機能を追加&#39;</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s1">&#39;fix: ログイン時のバリデーションエラーを修正&#39;</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s1">&#39;refactor: FizzBuzz クラスのメソッド抽出&#39;</span>
+</code></pre></div></p>
+<h3 id="2">2. テスティング<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<h4 id="_4">プロジェクトの初期化<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># プロジェクトの初期化</span>
+npm<span class="w"> </span>init<span class="w"> </span>-y
+
+<span class="c1"># TypeScript の設定</span>
+npm<span class="w"> </span>install<span class="w"> </span>-D<span class="w"> </span>typescript<span class="w"> </span>@types/node
+npx<span class="w"> </span>tsc<span class="w"> </span>--init
+</code></pre></div>
+<h4 id="_5">テストフレームワークのセットアップ<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Vitest とテスト関連パッケージのインストール</span>
+npm<span class="w"> </span>install<span class="w"> </span>-D<span class="w"> </span>vitest<span class="w"> </span>@vitest/coverage-v8<span class="w"> </span>@types/node
+</code></pre></div>
+<h4 id="packagejson">package.json の設定<a class="headerlink" href="#packagejson" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typescript-app&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;private&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0.0&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;module&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;scripts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;dev&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vite&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;build&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tsc &amp;&amp; vite build&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;preview&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vite preview&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;test&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vitest run&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;test:watch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vitest&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;test:coverage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vitest run --coverage&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;lint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eslint . --ext .ts,.tsx&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;lint:fix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eslint . --ext .ts,.tsx --fix&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prettier --write .&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;format:check&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prettier --check .&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;gulp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gulp&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;watch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gulp watch&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;guard&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gulp guard&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;check&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gulp checkAndFix&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;commit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;git add . &amp;&amp; git commit&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;setup&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;npm install &amp;&amp; npm run check&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="_6">テストの基本構造<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/fizz-buzz.ts</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">FizzBuzz</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">private</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">readonly</span><span class="w"> </span><span class="nx">MAX_NUMBER</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">100</span>
+
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="nx">generate</span><span class="p">(</span><span class="kt">number</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">isFizz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">isBuzz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">isFizz</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">isBuzz</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s1">&#39;FizzBuzz&#39;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">isFizz</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s1">&#39;Fizz&#39;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">isBuzz</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s1">&#39;Buzz&#39;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kt">number</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="nx">generateList</span><span class="p">()</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">Array</span><span class="p">.</span><span class="kr">from</span><span class="p">({</span><span class="w"> </span><span class="nx">length</span><span class="o">:</span><span class="w"> </span><span class="kt">this.MAX_NUMBER</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">(</span><span class="nx">_</span><span class="p">,</span><span class="w"> </span><span class="nx">i</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">generate</span><span class="p">(</span><span class="nx">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1</span><span class="p">))</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/fizz-buzz.test.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">describe</span><span class="p">,</span><span class="w"> </span><span class="nx">it</span><span class="p">,</span><span class="w"> </span><span class="nx">expect</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;vitest&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">FizzBuzz</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./fizz-buzz&#39;</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;FizzBuzz&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;三の倍数の場合&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;3を渡したら文字列Fizzを返す&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">expect</span><span class="p">(</span><span class="nx">FizzBuzz</span><span class="p">.</span><span class="nx">generate</span><span class="p">(</span><span class="mf">3</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;Fizz&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">})</span>
+<span class="w">  </span><span class="p">})</span>
+
+<span class="w">  </span><span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;五の倍数の場合&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;5を渡したら文字列Buzzを返す&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">expect</span><span class="p">(</span><span class="nx">FizzBuzz</span><span class="p">.</span><span class="nx">generate</span><span class="p">(</span><span class="mf">5</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;Buzz&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">})</span>
+<span class="w">  </span><span class="p">})</span>
+
+<span class="w">  </span><span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;三と五の倍数の場合&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;15を渡したら文字列FizzBuzzを返す&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">expect</span><span class="p">(</span><span class="nx">FizzBuzz</span><span class="p">.</span><span class="nx">generate</span><span class="p">(</span><span class="mf">15</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;FizzBuzz&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">})</span>
+<span class="w">  </span><span class="p">})</span>
+<span class="p">})</span>
+</code></pre></div>
+<h4 id="tdd">TDD のサイクル<a class="headerlink" href="#tdd" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Red: 失敗するテストを書く</span>
+npm<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
+
+<span class="c1"># Green: テストを通す最小限の実装</span>
+<span class="c1"># コードを修正</span>
+
+<span class="c1"># Refactor: リファクタリング</span>
+npm<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
+
+<span class="c1"># コミット</span>
+git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s1">&#39;feat: FizzBuzz 基本機能を実装&#39;</span>
+</code></pre></div>
+<h3 id="3">3. 自動化<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<h4 id="eslint">静的コード解析（ESLint）<a class="headerlink" href="#eslint" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># ESLint のインストール</span>
+npm<span class="w"> </span>install<span class="w"> </span>-D<span class="w"> </span>eslint<span class="w"> </span>@typescript-eslint/parser<span class="w"> </span>@typescript-eslint/eslint-plugin<span class="w"> </span>eslint-config-prettier<span class="w"> </span>eslint-plugin-prettier
+</code></pre></div>
+<h4 id="eslintconfigjs">eslint.config.js の設定<a class="headerlink" href="#eslintconfigjs" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">files</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;**/*.ts&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;**/*.tsx&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">languageOptions</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">parser</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;@typescript-eslint/parser&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">parserOptions</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">ecmaVersion</span><span class="o">:</span><span class="w"> </span><span class="mf">2020</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">sourceType</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;module&#39;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">plugins</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;@typescript-eslint&#39;</span><span class="o">:</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;@typescript-eslint/eslint-plugin&#39;</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;prettier&#39;</span><span class="o">:</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;eslint-plugin-prettier&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">rules</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// 基本的なルール</span>
+<span class="w">      </span><span class="s1">&#39;@typescript-eslint/no-unused-vars&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;error&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="s1">&#39;@typescript-eslint/no-explicit-any&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;warn&#39;</span><span class="p">,</span>
+
+<span class="w">      </span><span class="c1">// 循環的複雑度の制限（7以下を推奨）</span>
+<span class="w">      </span><span class="s1">&#39;complexity&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">max</span><span class="o">:</span><span class="w"> </span><span class="mf">7</span><span class="w"> </span><span class="p">}],</span>
+
+<span class="w">      </span><span class="c1">// Prettier 統合</span>
+<span class="w">      </span><span class="s1">&#39;prettier/prettier&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;error&#39;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">files</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;**/*.test.{ts,tsx}&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">rules</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;@typescript-eslint/no-unused-expressions&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;off&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="s1">&#39;@typescript-eslint/no-unused-vars&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;warn&#39;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+<h4 id="prettier">コードフォーマッタ（Prettier）<a class="headerlink" href="#prettier" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Prettier のインストール</span>
+npm<span class="w"> </span>install<span class="w"> </span>-D<span class="w"> </span>prettier<span class="w"> </span>eslint-config-prettier<span class="w"> </span>eslint-plugin-prettier
+</code></pre></div>
+<h4 id="prettierrc">.prettierrc の設定<a class="headerlink" href="#prettierrc" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;semi&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;singleQuote&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tabWidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;trailingComma&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;es5&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;printWidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;endOfLine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;lf&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="_7">コードカバレッジ<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h4>
+<p>Vitest に組み込まれたカバレッジ機能を使用：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># カバレッジの実行</span>
+npm<span class="w"> </span>run<span class="w"> </span>test:coverage
+</code></pre></div>
+<h4 id="vitestconfigts">vitest.config.ts の設定<a class="headerlink" href="#vitestconfigts" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">defineConfig</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;vitest/config&#39;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">defineConfig</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">test</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">coverage</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">reporter</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;html&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;json&#39;</span><span class="p">],</span>
+<span class="w">      </span><span class="nx">reportsDirectory</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;coverage&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">exclude</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s1">&#39;node_modules/**&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;dist/**&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;**/*.test.ts&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;**/*.config.js&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;**/*.config.ts&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;src/main.ts&#39;</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nx">all</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">thresholds</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nb">global</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">branches</span><span class="o">:</span><span class="w"> </span><span class="kt">80</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">functions</span><span class="o">:</span><span class="w"> </span><span class="kt">80</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">lines</span><span class="o">:</span><span class="w"> </span><span class="kt">80</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">statements</span><span class="o">:</span><span class="w"> </span><span class="kt">80</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div>
+<h4 id="gulp">タスクランナー（Gulp）<a class="headerlink" href="#gulp" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Gulp のインストール</span>
+npm<span class="w"> </span>install<span class="w"> </span>-D<span class="w"> </span>gulp<span class="w"> </span>gulp-shell
+</code></pre></div>
+<h4 id="gulpfilejs">gulpfile.js の設定<a class="headerlink" href="#gulpfilejs" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">watch</span><span class="p">,</span><span class="w"> </span><span class="nx">series</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;gulp&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">shell</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;gulp-shell&#39;</span>
+
+<span class="c1">// 基本タスク</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run test&#39;</span><span class="p">])</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">coverage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run test:coverage&#39;</span><span class="p">])</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">lint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run lint&#39;</span><span class="p">])</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">lintFix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run lint:fix&#39;</span><span class="p">])</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run format&#39;</span><span class="p">])</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">formatCheck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run format:check&#39;</span><span class="p">])</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">build</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run build&#39;</span><span class="p">])</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">shell</span><span class="p">.</span><span class="nx">task</span><span class="p">([</span><span class="s1">&#39;npm run dev&#39;</span><span class="p">])</span>
+
+<span class="c1">// 複合タスク</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">checkAndFix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">series</span><span class="p">(</span><span class="nx">lintFix</span><span class="p">,</span><span class="w"> </span><span class="nx">format</span><span class="p">,</span><span class="w"> </span><span class="nx">test</span><span class="p">)</span>
+
+<span class="c1">// ファイル監視タスク（Guard機能）</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">guard</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;🔍 Guard is watching for file changes...&#39;</span><span class="p">)</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Files will be automatically linted, formatted, and tested on change.&#39;</span><span class="p">)</span>
+<span class="w">  </span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;src/**/*.ts&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">series</span><span class="p">(</span><span class="nx">lintFix</span><span class="p">,</span><span class="w"> </span><span class="nx">format</span><span class="p">,</span><span class="w"> </span><span class="nx">test</span><span class="p">))</span>
+<span class="w">  </span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;**/*.test.ts&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">series</span><span class="p">(</span><span class="nx">test</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">// ファイル監視タスク</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">watchFiles</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;src/**/*.ts&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">series</span><span class="p">(</span><span class="nx">formatCheck</span><span class="p">,</span><span class="w"> </span><span class="nx">lint</span><span class="p">,</span><span class="w"> </span><span class="nx">test</span><span class="p">))</span>
+<span class="w">  </span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;**/*.test.ts&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">series</span><span class="p">(</span><span class="nx">test</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">// デフォルトタスク</span>
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">series</span><span class="p">(</span><span class="nx">checkAndFix</span><span class="p">,</span><span class="w"> </span><span class="nx">guard</span><span class="p">)</span>
+
+<span class="c1">// ウォッチタスクのエイリアス</span>
+<span class="k">export</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">watchFiles</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">watch</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h2 id="_8">開発ワークフロー<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<h3 id="1_1">1. 環境のセットアップ<a class="headerlink" href="#1_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># プロジェクトの初期化</span>
+npm<span class="w"> </span>init<span class="w"> </span>-y
+
+<span class="c1"># 依存関係のインストール</span>
+npm<span class="w"> </span>install
+
+<span class="c1"># 初期チェック実行</span>
+npm<span class="w"> </span>run<span class="w"> </span>setup
+</code></pre></div>
+<h3 id="2_1">2. 開発の開始<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Guard を起動（自動テスト・リント・フォーマット）</span>
+npm<span class="w"> </span>run<span class="w"> </span>guard
+
+<span class="c1"># 別ターミナルで開発サーバーを起動</span>
+npm<span class="w"> </span>run<span class="w"> </span>dev
+</code></pre></div>
+<h3 id="3-tdd">3. TDD サイクルの実践<a class="headerlink" href="#3-tdd" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Red</strong>: 失敗するテストを作成
+   <div class="highlight"><pre><span></span><code><span class="c1"># テストファイル作成・編集</span>
+<span class="c1"># Guard が自動でテスト実行し、失敗を確認</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Green</strong>: テストを通す最小限の実装
+   <div class="highlight"><pre><span></span><code><span class="c1"># 実装コードを作成</span>
+<span class="c1"># Guard が自動でテスト実行し、成功を確認</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Refactor</strong>: コードをリファクタリング
+   <div class="highlight"><pre><span></span><code><span class="c1"># コードを改善</span>
+<span class="c1"># Guard が自動でリント・フォーマット・テスト実行</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Commit</strong>: 作業をコミット
+   <div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s1">&#39;feat: 新機能を実装&#39;</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="4">4. 品質チェック<a class="headerlink" href="#4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 全体的な品質チェック</span>
+npm<span class="w"> </span>run<span class="w"> </span>check
+
+<span class="c1"># カバレッジ確認</span>
+npm<span class="w"> </span>run<span class="w"> </span>test:coverage
+
+<span class="c1"># 静的解析</span>
+npm<span class="w"> </span>run<span class="w"> </span>lint
+
+<span class="c1"># フォーマットチェック</span>
+npm<span class="w"> </span>run<span class="w"> </span>format:check
+</code></pre></div>
+<h2 id="_9">ベストプラクティス<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<h3 id="1_2">1. テスト戦略<a class="headerlink" href="#1_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>単体テスト</strong>: 各機能の動作を検証</li>
+<li><strong>統合テスト</strong>: 複数のコンポーネント間の協調を検証</li>
+<li><strong>E2E テスト</strong>: ユーザーの視点から全体的な動作を検証</li>
+</ul>
+<h3 id="2_2">2. コード品質<a class="headerlink" href="#2_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>循環的複雑度</strong>: 7以下を維持</li>
+<li><strong>テストカバレッジ</strong>: 80%以上を目標</li>
+<li><strong>ESLint ルール</strong>: プロジェクトに応じてカスタマイズ</li>
+</ul>
+<h3 id="3_1">3. 継続的改善<a class="headerlink" href="#3_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>定期的なリファクタリング</strong>: 技術的負債の蓄積を防ぐ</li>
+<li><strong>コードレビュー</strong>: チーム全体のコード品質向上</li>
+<li><strong>ツールのアップデート</strong>: セキュリティと性能の維持</li>
+</ul>
+<h2 id="_10">トラブルシューティング<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<h3 id="_11">よくある問題と解決法<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<h4 id="1_3">1. テストが実行されない<a class="headerlink" href="#1_3" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># node_modules を再インストール</span>
+rm<span class="w"> </span>-rf<span class="w"> </span>node_modules<span class="w"> </span>package-lock.json
+npm<span class="w"> </span>install
+
+<span class="c1"># キャッシュをクリア</span>
+npm<span class="w"> </span>cache<span class="w"> </span>clean<span class="w"> </span>--force
+</code></pre></div>
+<h4 id="2-eslint">2. ESLint エラーが発生<a class="headerlink" href="#2-eslint" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># 自動修正を試行</span>
+npm<span class="w"> </span>run<span class="w"> </span>lint:fix
+
+<span class="c1"># 設定ファイルを確認</span>
+cat<span class="w"> </span>eslint.config.js
+</code></pre></div>
+<h4 id="3-typescript">3. TypeScript コンパイルエラー<a class="headerlink" href="#3-typescript" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># TypeScript 設定を確認</span>
+cat<span class="w"> </span>tsconfig.json
+
+<span class="c1"># 型定義を再インストール</span>
+npm<span class="w"> </span>install<span class="w"> </span>-D<span class="w"> </span>@types/node
+</code></pre></div>
+<h2 id="_12">参考資料<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.conventionalcommits.org/ja/">Conventional Commits</a></li>
+<li><a href="https://vitest.dev/">Vitest 公式ドキュメント</a></li>
+<li><a href="https://eslint.org/">ESLint 公式ドキュメント</a></li>
+<li><a href="https://prettier.io/">Prettier 公式ドキュメント</a></li>
+<li><a href="https://www.typescriptlang.org/">TypeScript 公式ドキュメント</a></li>
+</ul>
+<p>このガイドに従って環境を構築することで、効率的で品質の高い TypeScript アプリケーション開発が可能になります。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/k2works" target="_blank" rel="noopener" title="GitHub Repository/claude-code-booster" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+      
+        <script src="../../docs/assets/js/extra.js"></script>
+      
+    
+  </body>
+</html>
