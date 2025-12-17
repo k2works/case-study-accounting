@@ -1,0 +1,96 @@
+## Analysis Tech Stack Command
+
+技術スタックの選定を支援するコマンド。表形式の技術スタック一覧を作成します。
+
+### 使い方
+
+```bash
+/analysis-tech-stack
+```
+
+### 基本例
+
+```bash
+# 技術スタック選定の支援
+/analysis-tech-stack
+「アーキテクチャに基づく技術スタックの選定と一覧作成」
+
+# 既存の技術スタックがある場合
+cat package.json
+cat pom.xml
+/analysis-tech-stack
+「既存技術スタックの整理と最新化提案」
+```
+
+### 詳細機能
+
+#### 技術スタックサポート
+
+表形式の技術スタック一覧作成をサポートします。
+
+**入力:**
+- @docs/design/architecture_backend.md - バックエンドアーキテクチャ
+- @docs/design/architecture_frontend.md - フロントエンドアーキテクチャ
+- @docs/design/architecture_infrastructure.md - インフラストラクチャアーキテクチャ
+
+**成果物:**
+- @docs/design/tech_stack.md - 技術スタック一覧
+
+#### 作業内容
+
+1. **バックエンド技術スタック**
+   - 言語・フレームワーク
+   - ORM・データベースドライバ
+   - テストフレームワーク
+   - ビルドツール
+
+2. **フロントエンド技術スタック**
+   - フレームワーク
+   - 状態管理ライブラリ
+   - UI コンポーネントライブラリ
+   - テストフレームワーク
+   - ビルドツール
+
+3. **インフラ技術スタック**
+   - クラウドサービス
+   - コンテナ技術
+   - CI/CD ツール
+   - 監視ツール
+
+4. **バージョン管理**
+   - 各技術のバージョン
+   - サポート期限
+   - アップグレード計画
+
+### 出力例
+
+```markdown
+| カテゴリ | 技術 | バージョン | 用途 |
+|---------|------|-----------|------|
+| 言語 | Java | 25 | バックエンド開発 |
+| フレームワーク | Spring Boot | 4.x | Web アプリケーション |
+| ORM | MyBatis | 3.x | データアクセス |
+| DB | PostgreSQL | 16 | データストア |
+| テスト | JUnit 5 | 5.11+ | ユニットテスト |
+```
+
+### Claude との連携
+
+```bash
+# アーキテクチャを読み込んで技術スタック選定
+cat docs/design/architecture_backend.md
+cat docs/design/architecture_frontend.md
+/analysis-tech-stack
+「アーキテクチャに最適な技術スタックの選定」
+```
+
+### 注意事項
+
+- **前提条件**: アーキテクチャ設計が完了していること
+- **制限事項**: LTS バージョンを優先して選定すること
+- **推奨事項**: セキュリティパッチの適用計画を含める
+
+### 関連コマンド
+
+- `/analysis` : 分析フェーズ全体の支援
+- `/analysis-architecture` : アーキテクチャ設計支援
