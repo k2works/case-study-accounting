@@ -33,3 +33,7 @@ cypress/screenshots
 
 # MSW
 public/mockServiceWorker.js
+
+# SonarQube
+.scannerwork
+eslint-report.json
