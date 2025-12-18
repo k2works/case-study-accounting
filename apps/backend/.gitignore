@@ -11,3 +11,6 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+/jig-erd-detail.svg
+/jig-erd-overview.svg
+/jig-erd-summary.svg

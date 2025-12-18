@@ -6,6 +6,7 @@ plugins {
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.spotbugs") version "6.0.26"
+    id("org.dddjava.jig-gradle-plugin") version "2025.11.1"
 }
 
 group = "com.example"
@@ -56,6 +57,9 @@ dependencies {
 
     // ArchUnit
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+
+    // JIG-ERD (ER図生成)
+    testImplementation("com.github.irof:jig-erd:0.2.1")
 }
 
 tasks.withType<Test> {
@@ -115,6 +119,17 @@ pmd {
     ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml")
     ruleSets = listOf() // ruleSetFilesを使用するため空に
     isIgnoreFailures = true // 初期は警告のみ
+}
+
+// JIG (ドキュメント生成)
+// デフォルト設定を使用、カスタマイズは jig.properties で行う
+
+// JIG タスク依存関係
+tasks.named("classes") {
+    mustRunAfter("clean")
+}
+tasks.named("jigReports") {
+    dependsOn("classes")
 }
 
 // カスタムタスク: TDD用の継続的テスト実行
