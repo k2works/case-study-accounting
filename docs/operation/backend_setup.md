@@ -13,11 +13,19 @@
 | ビルドツール | Gradle | 9.2.1 |
 | O/R マッパー | MyBatis | 3.0.4 |
 | データベース | PostgreSQL | 16 |
-| マイグレーション | Flyway | 11.x |
+| マイグレーション | Flyway | 10.x |
 | 認証 | JJWT | 0.12.6 |
-| テスト | JUnit 5, Testcontainers, ArchUnit | - |
-| 静的解析 | Checkstyle, PMD, SpotBugs, JaCoCo | - |
-| ドキュメント生成 | JIG, JIG-ERD | 2025.11.1, 0.2.1 |
+| 関数型 | Vavr | 0.10.4 |
+| ユーティリティ | Lombok | - |
+| テスト | JUnit 5 | 5.11.x |
+| テスト | Testcontainers | 1.20.4 |
+| テスト | ArchUnit | 1.3.0 |
+| 静的解析 | Checkstyle | 10.20.2 |
+| 静的解析 | PMD | 7.16.0 |
+| 静的解析 | SpotBugs | 4.9.8 |
+| カバレッジ | JaCoCo | 0.8.14 |
+| ドキュメント生成 | JIG | 2025.11.1 |
+| ドキュメント生成 | JIG-ERD | 0.2.1 |
 
 ## 前提条件
 
@@ -60,6 +68,25 @@ apps/backend/
 ```
 
 ## セットアップ手順
+
+### 0. Java 25 環境の設定
+
+Gradle 実行時に Java 25 が使用されるよう、`JAVA_HOME` を設定します。
+
+**Windows (PowerShell):**
+```powershell
+$env:JAVA_HOME = "C:\path\to\jdk-25"
+```
+
+**Windows (CMD):**
+```cmd
+set JAVA_HOME=C:\path\to\jdk-25
+```
+
+**Linux / macOS:**
+```bash
+export JAVA_HOME=/path/to/jdk-25
+```
 
 ### 1. データベースの起動
 
@@ -179,7 +206,8 @@ plugins {
     pmd
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.github.spotbugs") version "6.0.26"
+    id("com.github.spotbugs") version "6.0.27"
+    id("org.dddjava.jig-gradle-plugin") version "2025.11.1"
 }
 
 java {
@@ -207,6 +235,9 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
+    // Vavr (関数型プログラミング)
+    implementation("io.vavr:vavr:0.10.4")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -214,29 +245,46 @@ dependencies {
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    testImplementation("com.github.irof:jig-erd:0.2.1")
 }
+
+// 静的解析ツールのバージョン (Java 25 対応)
+jacoco { toolVersion = "0.8.14" }
+checkstyle { toolVersion = "10.20.2" }
+pmd { toolVersion = "7.16.0" }
+spotbugs { toolVersion = "4.9.8" }
 ```
 
 ## 静的解析設定
 
-### Checkstyle
+> **Note**: 全ての静的解析ツールは Java 25（class file version 69）に対応したバージョンを使用しています。
+
+### Checkstyle (10.20.2)
 
 主要ルール:
 - 循環複雑度: 最大 7
 - メソッド長: 最大 50 行
 - パラメータ数: 最大 7
 - ファイル長: 最大 500 行
+- `@SuppressWarnings` による抑制対応
 
-### PMD
+設定ファイル: `config/checkstyle/checkstyle.xml`
+
+### PMD (7.16.0)
 
 主要ルール:
 - 循環複雑度: メソッドレベル 7
 - 認知複雑度: 7
 - ベストプラクティス、コードスタイル、設計、セキュリティルール
 
-### SpotBugs
+設定ファイル: `config/pmd/ruleset.xml`
+
+> **Note**: PMD 7.x ではルールカテゴリが再編成されています。
+
+### SpotBugs (4.9.8)
 
 除外設定:
 - テストコード
@@ -244,9 +292,11 @@ dependencies {
 - Record クラス
 - Lombok 生成コード
 
-### JaCoCo
+設定ファイル: `config/spotbugs/exclude.xml`
 
-- バージョン: 0.8.14（Java 25 対応）
+### JaCoCo (0.8.14)
+
+- Java 25 対応バージョン
 - レポート形式: HTML, XML
 
 ## ドキュメント生成
@@ -353,6 +403,28 @@ GitHub Actions による自動化:
 ワークフローファイル: `.github/workflows/backend-ci.yml`
 
 ## トラブルシューティング
+
+### Java バージョンエラー
+
+**エラー例:**
+```
+NoSuchMethodError: 'void Settings_gradle.<init>'
+```
+または
+```
+Unsupported class file major version 69
+```
+
+**解決方法:**
+
+Java 25 が使用されていることを確認してください。
+
+```bash
+java -version
+# openjdk version "25" 以上であること
+```
+
+`JAVA_HOME` が正しく設定されていない場合は、セットアップ手順の「0. Java 25 環境の設定」を参照してください。
 
 ### Gradle Wrapper が動作しない
 
