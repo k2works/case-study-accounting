@@ -86,6 +86,7 @@ nav:
           - イテレーション1: development/iteration_plan-1.md
   - 運用:
       - バックエンド構築手順書: operation/backend_setup.md
+      - フロントエンド構築手順書: operation/frontend_setup.md
       - SonarQube セットアップガイド: operation/sonarqube_setup.md
   - リファレンス:
       - 開発ガイド: reference/開発ガイド.md
