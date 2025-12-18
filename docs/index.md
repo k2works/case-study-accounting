@@ -30,6 +30,11 @@
 - [運用要件](./design/operation.md) - 運用・保守要件
 - [技術スタック選定](./design/tech_stack.md) - 技術選定と理由
 
+## 開発
+
+- [リリース計画](./development/release_plan.md) - リリース計画とスケジュール
+- [イテレーション計画 1](./development/iteration_plan-1.md) - イテレーション1の詳細計画
+
 ## リファレンス
 
 - [開発ガイド](./reference/開発ガイド.md) - 開発の進め方
@@ -41,10 +46,10 @@
 - [ADR テンプレート](./template/ADR.md) - アーキテクチャ決定記録
 - [イテレーション完了報告書](./template/イテレーション完了報告書.md) - 振り返りテンプレート
 
-## 参照記事
+## 実践ガイド
 
 財務会計システム開発の実践ガイドです。
 
-- [参照記事 概要](./article/index.md) - シリーズ全体の概要
+- [実践ガイド 概要](./article/index.md) - シリーズ全体の概要
 - [バックエンド編（Java版）](./article/backend/chapter00.md) - Java + Spring Boot による開発（全32章）
 - [フロントエンド編（React版）](./article/frontend/chapter00.md) - React + TypeScript による開発（全24章）

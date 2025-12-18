@@ -80,6 +80,10 @@ nav:
       - 非機能要件: design/non_functional.md
       - 運用要件: design/operation.md
       - 技術スタック選定: design/tech_stack.md
+  - 開発:
+      - リリース計画: development/release_plan.md
+      - イテレーション計画:
+          - イテレーション1: development/iteration_plan-1.md
   - リファレンス:
       - 開発ガイド: reference/開発ガイド.md
       - よいソフトウェアとは: reference/よいソフトウェアとは.md
@@ -106,7 +110,7 @@ nav:
       - 完全形式のユースケース: template/完全形式のユースケース.md
       - 要件定義: template/要件定義.md
       - 設計: template/設計.md
-  - 参照記事:
+  - 実践ガイド:
       - 概要: article/index.md
       - バックエンド編（Java版）:
           - はじめに: article/backend/chapter00.md
