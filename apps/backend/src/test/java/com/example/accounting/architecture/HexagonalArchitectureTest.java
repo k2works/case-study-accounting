@@ -12,6 +12,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 @DisplayName("ヘキサゴナルアーキテクチャテスト")
+@SuppressWarnings("checkstyle:HideUtilityClassConstructor")
 class HexagonalArchitectureTest {
 
     private static final String BASE_PACKAGE = "com.example.accounting";

@@ -7,6 +7,9 @@
     <property name="charset" value="UTF-8"/>
     <property name="severity" value="warning"/>
 
+    <!-- @SuppressWarnings による抑制を有効化 -->
+    <module name="SuppressWarningsFilter"/>
+
     <!-- ファイル長 -->
     <module name="FileLength">
         <property name="max" value="500"/>
@@ -73,8 +76,14 @@
 
         <!-- クラス設計 -->
         <module name="FinalClass"/>
-        <module name="HideUtilityClassConstructor"/>
+        <module name="HideUtilityClassConstructor">
+            <!-- Spring Boot Application クラスは対象外 -->
+            <property name="ignoreAnnotatedBy" value="SpringBootApplication"/>
+        </module>
         <module name="InterfaceIsType"/>
+
+        <!-- @SuppressWarnings アノテーションによる抑制 -->
+        <module name="SuppressWarningsHolder"/>
 
         <!-- その他 -->
         <module name="ArrayTypeStyle"/>

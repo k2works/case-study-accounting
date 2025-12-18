@@ -20,13 +20,13 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex,
             HttpServletRequest request) {
-        log.warn("Resource not found: {}", ex.getMessage());
+        LOG.warn("Resource not found: {}", ex.getMessage());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex,
             HttpServletRequest request) {
-        log.warn("Business error [{}]: {}", ex.getErrorCode(), ex.getMessage());
+        LOG.warn("Business error [{}]: {}", ex.getErrorCode(), ex.getMessage());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex,
             HttpServletRequest request) {
-        log.warn("Validation error: {}", ex.getMessage());
+        LOG.warn("Validation error: {}", ex.getMessage());
 
         List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMissingParameterException(
             MissingServletRequestParameterException ex,
             HttpServletRequest request) {
-        log.warn("Missing parameter: {}", ex.getParameterName());
+        LOG.warn("Missing parameter: {}", ex.getParameterName());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTypeMismatchException(
             MethodArgumentTypeMismatchException ex,
             HttpServletRequest request) {
-        log.warn("Type mismatch for parameter '{}': {}", ex.getName(), ex.getValue());
+        LOG.warn("Type mismatch for parameter '{}': {}", ex.getName(), ex.getValue());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -112,7 +112,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
             HttpMessageNotReadableException ex,
             HttpServletRequest request) {
-        log.warn("Malformed JSON request: {}", ex.getMessage());
+        LOG.warn("Malformed JSON request: {}", ex.getMessage());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -127,7 +127,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodNotSupportedException(
             HttpRequestMethodNotSupportedException ex,
             HttpServletRequest request) {
-        log.warn("Method not supported: {} for {}", ex.getMethod(), request.getRequestURI());
+        LOG.warn("Method not supported: {} for {}", ex.getMethod(), request.getRequestURI());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.METHOD_NOT_ALLOWED.value(),
@@ -142,7 +142,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMediaTypeNotSupportedException(
             HttpMediaTypeNotSupportedException ex,
             HttpServletRequest request) {
-        log.warn("Media type not supported: {}", ex.getContentType());
+        LOG.warn("Media type not supported: {}", ex.getContentType());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
@@ -157,7 +157,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNoResourceFoundException(
             NoResourceFoundException ex,
             HttpServletRequest request) {
-        log.warn("No resource found: {}", request.getRequestURI());
+        LOG.warn("No resource found: {}", request.getRequestURI());
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
@@ -172,7 +172,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAllUncaughtException(
             Exception ex,
             HttpServletRequest request) {
-        log.error("Unexpected error occurred", ex);
+        LOG.error("Unexpected error occurred", ex);
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
