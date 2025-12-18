@@ -28,6 +28,7 @@
 | カバレッジ | @vitest/coverage-v8 | ^2.0.0 |
 | タスクランナー | Gulp | ^5.0.1 |
 | API 生成 | Orval | ^7.0.0 |
+| コード品質 | SonarQube Scanner | ^4.3.2 |
 
 ## 前提条件
 
@@ -520,6 +521,62 @@ npm install
 npm run test:run
 ```
 
+## SonarQube 連携
+
+### 概要
+
+SonarQube を使用してコード品質を継続的に監視します。
+
+### 設定ファイル
+
+`sonar-project.properties`:
+
+```properties
+sonar.projectKey=accounting-frontend
+sonar.projectName=Accounting Frontend
+sonar.sources=src
+sonar.tests=src
+sonar.test.inclusions=**/*.test.ts,**/*.test.tsx
+sonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**
+sonar.typescript.lcov.reportPaths=coverage/lcov.info
+sonar.eslint.reportPaths=eslint-report.json
+```
+
+### 環境変数の設定
+
+`.env.local.example` をコピーして `.env.local` を作成し、SonarQube の設定を行います。
+
+```bash
+cp .env.local.example .env.local
+```
+
+`.env.local`:
+```properties
+SONAR_HOST_URL=http://localhost:9000
+SONAR_TOKEN=your-token-here
+```
+
+### 解析の実行
+
+```bash
+# SonarQube サーバーが起動していること
+
+# 解析実行（カバレッジ + ESLint レポート生成 + SonarQube 送信）
+npm run sonar
+```
+
+### npm スクリプト
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run sonar` | カバレッジ + ESLint レポート生成 + SonarQube 解析 |
+| `npm run sonar:ci` | CI 用（レポート生成済みの場合） |
+| `npm run lint:report` | ESLint レポートを JSON 形式で出力 |
+
+### 結果の確認
+
+http://localhost:9000/dashboard?id=accounting-frontend
+
 ## 参考資料
 
 - [Vite 公式ドキュメント](https://vitejs.dev/)
@@ -533,3 +590,4 @@ npm run test:run
 - [eslint-plugin-sonarjs](https://github.com/SonarSource/eslint-plugin-sonarjs)
 - [dependency-cruiser](https://github.com/sverweij/dependency-cruiser)
 - [Gulp ドキュメント](https://gulpjs.com/)
+- [SonarScanner ドキュメント](https://docs.sonarsource.com/sonarqube-server/analyzing-source-code/scanners/sonarscanner/)

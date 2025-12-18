@@ -202,7 +202,75 @@ volumes:
   sonarqube_db_data:
 ```
 
-## Gradle タスク
+## フロントエンド解析
+
+フロントエンド（TypeScript/React）プロジェクトは SonarScanner for npm を使用します。
+
+### トークンの生成（フロントエンド用）
+
+1. SonarQube にログイン
+2. 右上のユーザーアイコン > **My Account** > **Security**
+3. **Generate Tokens** で:
+   - Name: `accounting-frontend`
+   - Type: `Project Analysis Token`
+   - Project: `accounting-frontend`（初回は Global を選択）
+4. 生成されたトークンを保管
+
+### 環境変数の設定
+
+`.env.local.example` をコピーして `.env.local` を作成します。
+
+```bash
+cd apps/frontend
+cp .env.local.example .env.local
+```
+
+`.env.local` を編集して SonarQube の設定を行います:
+
+```properties
+SONAR_HOST_URL=http://localhost:9000
+SONAR_TOKEN=<生成したトークン>
+```
+
+### 解析の実行
+
+```bash
+cd apps/frontend
+
+# 解析実行（カバレッジ + ESLint レポート + SonarQube）
+npm run sonar
+```
+
+### 設定ファイル
+
+`apps/frontend/sonar-project.properties`:
+
+```properties
+sonar.projectKey=accounting-frontend
+sonar.projectName=Accounting Frontend
+sonar.sources=src
+sonar.tests=src
+sonar.test.inclusions=**/*.test.ts,**/*.test.tsx
+sonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**
+sonar.typescript.lcov.reportPaths=coverage/lcov.info
+sonar.eslint.reportPaths=eslint-report.json
+```
+
+### npm スクリプト
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run sonar` | カバレッジ + ESLint レポート + SonarQube 解析 |
+| `npm run sonar:ci` | CI 用（レポート生成済みの場合） |
+| `npm run lint:report` | ESLint レポートを JSON 出力 |
+
+### 結果の確認
+
+http://localhost:9000/dashboard?id=accounting-frontend
+
+## バックエンド解析（Gradle）
+
+### Gradle タスク
 
 | コマンド | 説明 |
 |---------|------|
