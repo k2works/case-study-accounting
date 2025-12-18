@@ -5,7 +5,7 @@ plugins {
     pmd
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.github.spotbugs") version "6.0.26"
+    id("com.github.spotbugs") version "6.0.27"
     id("org.dddjava.jig-gradle-plugin") version "2025.11.1"
 }
 
@@ -97,10 +97,11 @@ checkstyle {
     isIgnoreFailures = true // 初期は警告のみ
 }
 
-// SpotBugs
+// SpotBugs (Java 25 対応: 4.9.7+)
 spotbugs {
     ignoreFailures = true // 初期は警告のみ
     excludeFilter = file("${rootDir}/config/spotbugs/exclude.xml")
+    toolVersion = "4.9.8"
 }
 
 tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
@@ -112,9 +113,9 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
     }
 }
 
-// PMD
+// PMD (Java 25 対応: 7.16.0+)
 pmd {
-    toolVersion = "7.8.0"
+    toolVersion = "7.16.0"
     isConsoleOutput = true
     ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml")
     ruleSets = listOf() // ruleSetFilesを使用するため空に

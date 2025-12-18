@@ -9,10 +9,17 @@
 
     <!-- ベストプラクティス -->
     <rule ref="category/java/bestpractices.xml">
-        <exclude name="JUnitTestContainsTooManyAsserts"/>
-        <exclude name="JUnitAssertionsShouldIncludeMessage"/>
+        <!-- PMD 7.x では以下のルールを除外 -->
         <exclude name="UnitTestContainsTooManyAsserts"/>
         <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
+        <!-- ArchUnit などフレームワーク固有の検証を使用するテストでは不要 -->
+        <exclude name="UnitTestShouldIncludeAssert"/>
+        <!-- ログガードは常に必要ではない -->
+        <exclude name="GuardLogStatement"/>
+        <!-- ArchUnit では実装型の使用が必要 -->
+        <exclude name="LooseCoupling"/>
+        <!-- ドキュメント生成ツール等では System.out が必要 -->
+        <exclude name="SystemPrintln"/>
     </rule>
 
     <!-- コードスタイル -->
@@ -24,6 +31,16 @@
         <exclude name="MethodArgumentCouldBeFinal"/>
         <exclude name="ShortVariable"/>
         <exclude name="LongVariable"/>
+        <!-- ArchUnit テストでは多数の static import が一般的 -->
+        <exclude name="TooManyStaticImports"/>
+        <!-- var の使用を許可 -->
+        <exclude name="UseExplicitTypes"/>
+        <!-- 数値リテラルのアンダースコアは任意 -->
+        <exclude name="UseUnderscoresInNumericLiterals"/>
+        <!-- 未使用インポートは Checkstyle で検出 -->
+        <exclude name="UnnecessaryImport"/>
+        <!-- フィールド命名は Checkstyle で検出 -->
+        <exclude name="FieldNamingConventions"/>
     </rule>
 
     <!-- 設計 -->
@@ -33,6 +50,10 @@
         <exclude name="LawOfDemeter"/>
         <exclude name="LoosePackageCoupling"/>
         <exclude name="TooManyMethods"/>
+        <!-- Spring Boot Application クラスは誤検知される -->
+        <exclude name="UseUtilityClass"/>
+        <!-- 例外ハンドラでは汎用例外のキャッチが必要な場合がある（Design → ErrorProne に移動済み） -->
+        <exclude name="AvoidCatchingGenericException"/>
     </rule>
 
     <!-- 循環複雑度のカスタム設定 -->
@@ -52,9 +73,14 @@
 
     <!-- エラー発生しやすいコード -->
     <rule ref="category/java/errorprone.xml">
-        <exclude name="BeanMembersShouldSerialize"/>
-        <exclude name="DataflowAnomalyAnalysis"/>
+        <!-- PMD 7.x では以下のルールを除外 -->
         <exclude name="MissingSerialVersionUID"/>
+        <!-- テスト設定クラスは誤検知される -->
+        <exclude name="TestClassWithoutTestCases"/>
+        <!-- テストでリテラル重複は許容 -->
+        <exclude name="AvoidDuplicateLiterals"/>
+        <!-- 外部ライブラリ（JJWT）が java.util.Date を要求する場合がある -->
+        <exclude name="ReplaceJavaUtilDate"/>
     </rule>
 
     <!-- パフォーマンス -->
