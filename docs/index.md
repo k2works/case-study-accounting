@@ -35,6 +35,11 @@
 - [リリース計画](./development/release_plan.md) - リリース計画とスケジュール
 - [イテレーション計画 1](./development/iteration_plan-1.md) - イテレーション1の詳細計画
 
+## 運用
+
+- [バックエンド構築手順書](./operation/backend_setup.md) - バックエンド環境のセットアップ手順
+- [SonarQube セットアップガイド](./operation/sonarqube_setup.md) - コード品質分析環境の構築
+
 ## リファレンス
 
 - [開発ガイド](./reference/開発ガイド.md) - 開発の進め方
