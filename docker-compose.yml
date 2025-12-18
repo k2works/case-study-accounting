@@ -1,4 +1,16 @@
 services:
+  postgres:
+    image: postgres:16
+    container_name: accounting-postgres
+    environment:
+      POSTGRES_DB: accounting
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   mkdocs:
     build:
       context: .
@@ -20,3 +32,6 @@ services:
     image: plantuml/plantuml-server:jetty
     environment:
       BASE_URL: plantuml
+
+volumes:
+  postgres_data:
