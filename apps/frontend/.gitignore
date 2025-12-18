@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+
+# Production
+dist
+build
+
+# Misc
+.DS_Store
+*.local
+*.log
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Environment files
+.env*.local
+
+# Type definitions
+*.tsbuildinfo
+
+# Cypress
+cypress/videos
+cypress/screenshots
+
+# MSW
+public/mockServiceWorker.js
