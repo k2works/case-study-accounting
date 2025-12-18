@@ -42,6 +42,7 @@ markdown_extensions:
       format: svg
   - pymdownx.tasklist:
       custom_checkbox: true
+  - attr_list
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js

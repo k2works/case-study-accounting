@@ -1,6 +1,10 @@
-# まずこれを読もうリスト
+# プロジェクトポータル
 
-プロジェクトのドキュメント一覧です。開発を始める前に、以下のドキュメントを順番に確認してください。
+## 開発ツール
+
+- [Adminer](http://localhost:8888){:target="_blank"} - データベース管理ツール
+- [SonarQube](http://localhost:9000){:target="_blank"} - コード品質分析ツール
+- [SchemaSpy ER 図](./assets/schemaspy-output/index.html){:target="_blank"} - データベース ER 図
 
 ## 要件定義
 
