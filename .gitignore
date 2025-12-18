@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 .idea
 docs/wiki
 !/apps/backend/src/main/java/com/example/accounting/application/port/out/
+/docs/assets/schemaspy-output/

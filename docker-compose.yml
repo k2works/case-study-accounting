@@ -1,15 +1,68 @@
 services:
+  # PostgreSQL データベース
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: accounting-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: accounting
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-accounting}
+      TZ: 'Asia/Tokyo'
     ports:
-      - "5432:5432"
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - db_network
+
+  # Adminer - データベース管理ツール
+  adminer:
+    image: adminer:latest
+    container_name: accounting-system-adminer
+    restart: unless-stopped
+    ports:
+      - '${ADMINER_PORT:-8888}:8080'
+    environment:
+      ADMINER_DEFAULT_SERVER: ${DB_TYPE:-postgres}
+      ADMINER_DESIGN: 'nette'
+    networks:
+      - db_network
+    depends_on:
+      - postgres
+
+  # SchemaSpy - データベーススキーマ可視化ツール
+  schemaspy:
+    build:
+      context: ./docker/schemaspy
+      dockerfile: Dockerfile
+    container_name: accounting-system-schemaspy
+    volumes:
+      - ./docs/assets/schemaspy-output:/output
+    environment:
+      - LANG=ja_JP.UTF-8
+      - LC_ALL=ja_JP.UTF-8
+    command: >
+      -t pgsql
+      -host postgres
+      -port 5432
+      -db ${POSTGRES_DB:-accounting}
+      -u ${POSTGRES_USER:-postgres}
+      -p ${POSTGRES_PASSWORD:-postgres}
+      -s public
+      -charset UTF-8
+      -connprops useUnicode\\=true;characterEncoding\\=UTF-8
+    networks:
+      - db_network
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   mkdocs:
     build:
@@ -66,3 +119,7 @@ volumes:
   sonarqube_extensions:
   sonarqube_logs:
   sonarqube_db_data:
+
+networks:
+  db_network:
+    driver: bridge
