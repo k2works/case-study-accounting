@@ -577,6 +577,59 @@ npm run sonar
 
 http://localhost:9000/dashboard?id=accounting-frontend
 
+## CI/CD
+
+### GitHub Actions
+
+`.github/workflows/frontend-ci.yml` でフロントエンドの CI を実行します。
+
+**トリガー:**
+- `main` / `develop` ブランチへの push
+- `main` / `develop` ブランチへの pull request
+- `apps/frontend/**` のファイル変更時
+
+**実行内容:**
+1. 依存関係のインストール
+2. ESLint 実行
+3. フォーマットチェック
+4. 循環参照チェック
+5. テスト + カバレッジ
+6. ビルド
+
+**アーティファクト:**
+- `coverage-report`: カバレッジレポート
+- `build-artifacts`: ビルド成果物
+
+### ワークフロー例
+
+```yaml
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/frontend
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: apps/frontend/package-lock.json
+    - run: npm ci
+    - run: npm run lint
+    - run: npm run test:coverage
+    - run: npm run build
+```
+
 ## 参考資料
 
 - [Vite 公式ドキュメント](https://vitejs.dev/)
