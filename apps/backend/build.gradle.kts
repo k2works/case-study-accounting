@@ -7,6 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.spotbugs") version "6.0.27"
     id("org.dddjava.jig-gradle-plugin") version "2025.11.1"
+    id("org.sonarqube") version "7.2.1.6560"
 }
 
 group = "com.example"
@@ -39,6 +40,9 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
+    // Vavr (関数型プログラミング)
+    implementation("io.vavr:vavr:0.10.4")
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
@@ -109,7 +113,7 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
         required = true
     }
     reports.create("xml") {
-        required = false
+        required = true // SonarQube 連携用
     }
 }
 
@@ -157,4 +161,27 @@ tasks.register("fullCheck") {
     description = "Run all tests and quality checks"
     group = "verification"
     dependsOn("test", "qualityCheck", "jacocoTestReport")
+}
+
+// SonarQube (Self-hosted Server - not SonarCloud)
+sonar {
+    properties {
+        // SonarCloud ではなく SonarQube Server を使用するため organization は不要
+        property("sonar.projectKey", "accounting-backend")
+        property("sonar.projectName", "Accounting Backend")
+        property("sonar.sourceEncoding", "UTF-8")
+        property("sonar.sources", "src/main/java")
+        property("sonar.tests", "src/test/java")
+        property("sonar.java.binaries", "build/classes/java/main")
+        property("sonar.java.test.binaries", "build/classes/java/test")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.java.checkstyle.reportPaths", "build/reports/checkstyle/main.xml,build/reports/checkstyle/test.xml")
+        property("sonar.java.pmd.reportPaths", "build/reports/pmd/main.xml,build/reports/pmd/test.xml")
+        property("sonar.java.spotbugs.reportPaths", "build/reports/spotbugs/main.xml,build/reports/spotbugs/test.xml")
+    }
+}
+
+// SonarQube タスク依存関係
+tasks.named("sonar") {
+    dependsOn("test", "jacocoTestReport")
 }
