@@ -16,6 +16,7 @@
 | HTTP クライアント | Axios | ^1.7.0 |
 | 日付処理 | Day.js | ^1.11.0 |
 | 数値処理 | Decimal.js | ^10.4.0 |
+| バリデーション | Zod | ^4.2.1 |
 | 静的解析 | ESLint | ^9.0.0 |
 | 静的解析 | eslint-plugin-sonarjs | ^3.0.5 |
 | 循環参照検知 | dependency-cruiser | ^17.3.4 |
