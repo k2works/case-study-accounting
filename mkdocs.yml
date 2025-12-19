@@ -92,6 +92,7 @@ nav:
       - フロントエンド構築手順書: operation/frontend_setup.md
       - フロントエンドデモ環境: operation/frontend_demo_env.md
       - デモ環境デプロイ: operation/deploy_demo.md
+      - 外部サービス連携: operation/third_party_service.md
       - SonarQube セットアップガイド: operation/sonarqube_setup.md
   - リファレンス:
       - 開発ガイド: reference/開発ガイド.md
