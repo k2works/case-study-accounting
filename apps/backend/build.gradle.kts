@@ -166,6 +166,13 @@ tasks.register("fullCheck") {
     dependsOn("test", "qualityCheck", "jacocoTestReport")
 }
 
-// SonarCloud (最小構成 - 設定はワークフローで渡す)
+// SonarQube (ローカル: Community Edition, CI: SonarCloud)
+// ローカルでは ./gradlew sonar で localhost:9000 に接続
+// CI ではワークフローで -Dsonar.host.url=https://sonarcloud.io 等を渡して上書き
 sonar {
+    properties {
+        property("sonar.projectKey", "accounting-backend")
+        property("sonar.projectName", "Accounting Backend")
+        property("sonar.host.url", "http://localhost:9000")
+    }
 }
