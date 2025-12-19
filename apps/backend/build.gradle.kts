@@ -166,11 +166,12 @@ tasks.register("fullCheck") {
     dependsOn("test", "qualityCheck", "jacocoTestReport")
 }
 
-// SonarQube (Self-hosted Server - not SonarCloud)
+// SonarCloud
 sonar {
     properties {
-        // SonarCloud ではなく SonarQube Server を使用するため organization は不要
-        property("sonar.projectKey", "accounting-backend")
+        property("sonar.projectKey", "k2works_case-study-accounting-backend")
+        property("sonar.organization", "k2works")
+        property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.projectName", "Accounting Backend")
         property("sonar.sourceEncoding", "UTF-8")
         property("sonar.sources", "src/main/java")
