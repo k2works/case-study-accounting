@@ -2,7 +2,7 @@ name: Frontend SonarQube
 on:
   push:
     branches:
-      - main
+      - test
     paths:
       - 'apps/frontend/**'
       - '.github/workflows/frontend-sonar-qube.yml'
@@ -49,4 +49,4 @@ jobs:
           projectBaseDir: apps/frontend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FRONTEND }}
