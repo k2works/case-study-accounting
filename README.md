@@ -164,6 +164,72 @@ npm start
 
 生成された作業履歴は `docs/journal/` ディレクトリに保存され、各ファイルには指定された日付のコミット情報が含まれます。
 
+##### SonarQube タスク
+
+- SonarQube サービスの起動:
+  ```
+  npx gulp sonar:start
+  ```
+
+- SonarQube サービスの停止:
+  ```
+  npx gulp sonar:stop
+  ```
+
+- SonarQube ダッシュボードを開く:
+  ```
+  npx gulp sonar:open
+  ```
+
+- バックエンドの解析実行:
+  ```
+  npx gulp sonar:analyze:backend
+  ```
+
+- フロントエンドの解析実行:
+  ```
+  npx gulp sonar:analyze:frontend
+  ```
+
+- 全プロジェクトの解析実行:
+  ```
+  npx gulp sonar:analyze
+  ```
+
+- サービス状態確認:
+  ```
+  npx gulp sonar:status
+  ```
+
+##### SchemaSpy タスク
+
+- ER 図の生成:
+  ```
+  npx gulp schemaspy:generate
+  ```
+
+- 生成した ER 図をブラウザで開く:
+  ```
+  npx gulp schemaspy:open
+  ```
+
+- ER 図の生成と表示（一連の流れ）:
+  ```
+  npx gulp schemaspy
+  ```
+
+- 出力ディレクトリのクリーンアップ:
+  ```
+  npx gulp schemaspy:clean
+  ```
+
+- ER 図の再生成（クリーン後に生成）:
+  ```
+  npx gulp schemaspy:regenerate
+  ```
+
+生成された ER 図は `docs/assets/schemaspy-output/` ディレクトリに保存されます。
+
 #### GitHub Container Registry
 
 このプロジェクトでは、GitHub Container Registry（GHCR）を使用して開発コンテナイメージを管理しています。
