@@ -5,6 +5,8 @@
 [![Backend Deploy to Heroku](https://github.com/k2works/case-study-accounting/actions/workflows/backend-deploy.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/backend-deploy.yml)
 [![Frontend Deploy to Heroku](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-deploy.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-deploy.yml)
 [![Deploy MkDocs](https://github.com/k2works/case-study-accounting/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/mkdocs.yml)
+[![Backend SonarQube](https://github.com/k2works/case-study-accounting/actions/workflows/backend-sonar-qube.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/backend-sonar-qube.yml)
+[![Frontend SonarQube](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-sonar-qube.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-sonar-qube.yml)
 [![Maintainability](https://qlty.sh/gh/k2works/projects/case-study-accounting/maintainability.svg)](https://qlty.sh/gh/k2works/projects/case-study-accounting)
 [![Code Coverage](https://qlty.sh/gh/k2works/projects/case-study-accounting/coverage.svg)](https://qlty.sh/gh/k2works/projects/case-study-accounting)
 
