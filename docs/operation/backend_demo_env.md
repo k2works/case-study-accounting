@@ -166,6 +166,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 
 - Heroku CLI インストール済み
 - Heroku アカウント作成済み
+- Docker Desktop インストール済み
 
 ### デプロイ手順
 
@@ -182,51 +183,118 @@ heroku config:set SPRING_PROFILES_ACTIVE=demo
 heroku config:set JWT_SECRET=$(openssl rand -base64 32)
 ```
 
+**注意:** `JWT_SECRET` は必須です。設定しないと起動時にエラーになります。
+
 #### 3. Dockerfile 作成
 
 プロジェクトルートに以下の Dockerfile を作成:
 
 ```dockerfile
 # ビルドステージ
-FROM gradle:8-jdk25 AS builder
+FROM gradle:8-jdk21 AS builder
 WORKDIR /app
 COPY apps/backend/ ./
 RUN gradle build -x test --no-daemon
 
 # 実行ステージ
-FROM eclipse-temurin:25-jre-alpine
+# OpenJDK 公式は Docker Hub での更新を停止しているため eclipse-temurin を使用
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
+
+# Heroku では EXPOSE は無視されるが、ドキュメントとして残す
 EXPOSE 8080
-CMD ["java", "-Dserver.port=${PORT:-8080}", "-jar", "app.jar"]
+
+# $PORT 変数をシェル形式で渡す
+CMD java -Dserver.port=$PORT -jar app.jar
 ```
 
-#### 4. heroku.yml 作成
+**Docker イメージのバージョン番号について:**
+
+Docker Hub のタグ名に含まれる数字は複数の意味を持つ場合があります:
+- `openjdk:25` → Java 25
+- `nanoserver-ltsc2025` → Windows Server 2025（Java バージョンではない）
+
+混同しやすいため、イメージ選択時は注意してください。
+
+#### 4. heroku.yml 作成（オプション）
+
+`heroku.yml` を使用すると、カスタム Dockerfile 名を指定できます:
 
 ```yaml
 build:
   docker:
-    web: Dockerfile
+    web: Docker-demo  # カスタム Dockerfile 名
 
 run:
   web: java -Dserver.port=$PORT -Dspring.profiles.active=demo -jar app.jar
 ```
 
-#### 5. デプロイ実行
+`heroku.yml` を使用する場合は、Git push でデプロイします:
 
 ```bash
-heroku container:push web
-heroku container:release web
+heroku stack:set container
+git add heroku.yml
+git commit -m "Add heroku.yml"
+git push heroku main
 ```
 
-#### 6. 動作確認
+#### 5. Heroku Container Registry にログイン
+
+**重要:** デプロイ前に必ず認証が必要です。
+
+```bash
+heroku container:login
+```
+
+`Login Succeeded` と表示されれば成功です。
+
+#### 6. デプロイ実行
+
+**方法 A: heroku container:push を使用（Dockerfile が標準名の場合）**
+
+```bash
+heroku container:push web -a アプリ名
+heroku container:release web -a アプリ名
+```
+
+**方法 B: カスタム Dockerfile 名を使用する場合**
+
+`heroku container:push` は `--dockerfile` オプションをサポートしていません。
+以下のいずれかの方法を使用してください:
+
+1. **一時的にファイル名を変更:**
+   ```bash
+   # Windows (PowerShell)
+   mv Docker-demo Dockerfile; heroku container:push web; mv Dockerfile Docker-demo
+
+   # Mac / Linux
+   mv Docker-demo Dockerfile && heroku container:push web && mv Dockerfile Docker-demo
+   ```
+
+2. **Docker コマンドで直接ビルド・プッシュ:**
+   ```bash
+   # ビルド（Docker-demo を指定）
+   docker build -t registry.heroku.com/アプリ名/web -f Docker-demo .
+
+   # プッシュ
+   docker push registry.heroku.com/アプリ名/web
+
+   # リリース
+   heroku container:release web -a アプリ名
+   ```
+
+#### 7. 動作確認
 
 ```bash
 # ログ確認
-heroku logs --tail
+heroku logs --tail -a アプリ名
 
 # アプリを開く
-heroku open
+heroku open -a アプリ名
+
+# ヘルスチェック
+curl https://アプリ名.herokuapp.com/api/health
 ```
 
 ### データリセット
@@ -234,7 +302,7 @@ heroku open
 Dyno を再起動するとデータがリセットされ、初期データが再投入されます。
 
 ```bash
-heroku restart
+heroku restart -a アプリ名
 ```
 
 ## プロファイル比較
@@ -266,6 +334,62 @@ heroku restart
 
 1. `spring-boot-starter-actuator` 依存関係が含まれているか確認
 2. `management.endpoints.web.exposure.include` が設定されているか確認
+
+### Heroku: no basic auth credentials エラー
+
+Docker が Heroku Container Registry にログインできていません。
+
+```bash
+# Heroku CLI 経由で認証
+heroku container:login
+```
+
+それでも解決しない場合は、手動で認証:
+
+```bash
+# API キーを使用して手動ログイン
+docker login registry.heroku.com -u _ -p $(heroku auth:token)
+```
+
+### Heroku: WeakKeyException (JWT_SECRET)
+
+```
+io.jsonwebtoken.security.WeakKeyException: The specified key byte array is 0 bits
+```
+
+`JWT_SECRET` 環境変数が設定されていないか、空です。
+
+```bash
+# JWT_SECRET を設定（最低 32 文字必要）
+heroku config:set JWT_SECRET=$(openssl rand -base64 32) -a アプリ名
+
+# 設定確認
+heroku config -a アプリ名
+```
+
+### Heroku: カスタム Dockerfile 名を指定できない
+
+`heroku container:push` は `--dockerfile` オプションをサポートしていません。
+
+**解決策:**
+1. ファイル名を一時的に `Dockerfile` に変更
+2. `heroku.yml` を使用して Git push でデプロイ
+3. `docker build -f` で直接ビルドしてプッシュ
+
+詳細は「デプロイ実行」セクションを参照してください。
+
+### Heroku: App crashed (H10 エラー)
+
+起動に失敗しています。ログを確認:
+
+```bash
+heroku logs --tail -a アプリ名
+```
+
+よくある原因:
+1. `JWT_SECRET` が未設定
+2. `SPRING_PROFILES_ACTIVE=demo` が未設定
+3. Dockerfile の CMD が正しくない（`$PORT` を使用しているか確認）
 
 ## 制約事項
 
