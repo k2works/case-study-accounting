@@ -63,6 +63,49 @@ npm install
 npm start
 ```
 
+### Docker Compose でアプリケーション起動
+
+バックエンドとフロントエンドを Docker Compose で起動できます。
+
+```bash
+# バックエンド・フロントエンドを起動（PostgreSQL も自動起動）
+docker compose up -d backend frontend
+
+# ログ確認
+docker compose logs -f backend frontend
+
+# 停止
+docker compose down
+```
+
+#### サービス一覧
+
+| サービス | ポート | 説明 |
+|----------|--------|------|
+| frontend | 3001 | React SPA (nginx) |
+| backend | 8081 | Spring Boot API |
+| postgres | 5432 | PostgreSQL データベース |
+| adminer | 8888 | データベース管理ツール |
+| mkdocs | 8000 | ドキュメントサーバー |
+| sonarqube | 9000 | コード品質分析 |
+
+#### アクセス URL
+
+- フロントエンド: http://localhost:3001
+- バックエンド API: http://localhost:8081
+- Adminer: http://localhost:8888
+- MkDocs: http://localhost:8000
+- SonarQube: http://localhost:9000
+
+#### 環境変数
+
+| 変数 | デフォルト | 説明 |
+|------|----------|------|
+| `BACKEND_PORT` | 8081 | バックエンドの公開ポート |
+| `FRONTEND_PORT` | 3001 | フロントエンドの公開ポート |
+| `POSTGRES_PORT` | 5432 | PostgreSQL の公開ポート |
+| `SPRING_PROFILES_ACTIVE` | dev | Spring プロファイル |
+
 ### 構築
 
 **[⬆ back to top](#目次)**

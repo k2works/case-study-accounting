@@ -1,4 +1,44 @@
 services:
+  # バックエンド API サーバー
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: accounting-backend
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-for-development-only}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-accounting}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - '${BACKEND_PORT:-8081}:8080'
+    networks:
+      - db_network
+      - app_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # フロントエンド Web サーバー
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    container_name: accounting-frontend
+    restart: unless-stopped
+    environment:
+      PORT: 80
+      API_URL: http://backend:8080/api
+    ports:
+      - '${FRONTEND_PORT:-3001}:80'
+    networks:
+      - app_network
+    depends_on:
+      - backend
+
   # PostgreSQL データベース
   postgres:
     image: postgres:16-alpine
@@ -122,4 +162,6 @@ volumes:
 
 networks:
   db_network:
+    driver: bridge
+  app_network:
     driver: bridge
