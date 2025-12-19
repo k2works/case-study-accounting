@@ -42,9 +42,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          ./gradlew build sonar --info \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=k2works \
-            -Dsonar.projectKey=k2works_case-study-accounting-backend
+        run: ./gradlew build sonar --info
         working-directory: apps/backend
