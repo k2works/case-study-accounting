@@ -88,6 +88,7 @@ nav:
   - 運用:
       - 開発コンテナ構築手順書: operation/dev_container.md
       - バックエンド構築手順書: operation/backend_setup.md
+      - バックエンドデモ環境: operation/backend_demo_env.md
       - フロントエンド構築手順書: operation/frontend_setup.md
       - SonarQube セットアップガイド: operation/sonarqube_setup.md
   - リファレンス:

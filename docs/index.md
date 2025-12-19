@@ -43,6 +43,7 @@
 
 - [開発コンテナ構築手順書](./operation/dev_container.md) - Docker コンテナ環境のセットアップ手順
 - [バックエンド構築手順書](./operation/backend_setup.md) - バックエンド環境のセットアップ手順
+- [バックエンドデモ環境](./operation/backend_demo_env.md) - H2 インメモリデータベースを使用したデモ環境
 - [フロントエンド構築手順書](./operation/frontend_setup.md) - フロントエンド環境のセットアップ手順
 - [SonarQube セットアップガイド](./operation/sonarqube_setup.md) - コード品質分析環境の構築
 
