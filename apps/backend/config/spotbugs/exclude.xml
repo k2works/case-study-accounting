@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- テストコードは除外 -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+    </Match>
+    <Match>
+        <Source name="~.*Tests\.java"/>
+    </Match>
+
+    <!-- Spring の設定クラスの警告を除外 -->
+    <Match>
+        <Class name="~.*Config"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="~.*Config"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Record クラスのコンストラクタ警告を除外 -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Class name="~.*Properties"/>
+    </Match>
+
+    <!-- Record クラスの getter 警告を除外 -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Class name="~.*Response"/>
+    </Match>
+
+    <!-- Lombok 生成コードの警告を除外 -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Annotation name="lombok.Data"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Annotation name="lombok.Data"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Annotation name="lombok.Getter"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Annotation name="lombok.Setter"/>
+    </Match>
+</FindBugsFilter>

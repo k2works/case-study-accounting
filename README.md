@@ -33,7 +33,9 @@ case-study-accounting/
 │   ├── requirements/        #   要件定義
 │   ├── template/            #   テンプレート
 │   └── wiki/                #   Wiki
-├── scripts/                 # ユーティリティスクリプト
+├── ops/                     # 運用関連
+│   ├── docker/              #   Docker 設定
+│   └── scripts/             #   ユーティリティスクリプト
 ├── .claude/                 # Claude Code 設定
 ├── .devcontainer/           # Dev Container 設定
 ├── .github/                 # GitHub Actions ワークフロー
@@ -62,6 +64,49 @@ case-study-accounting/
 npm install
 npm start
 ```
+
+### Docker Compose でアプリケーション起動
+
+バックエンドとフロントエンドを Docker Compose で起動できます。
+
+```bash
+# バックエンド・フロントエンドを起動（PostgreSQL も自動起動）
+docker compose up -d backend frontend
+
+# ログ確認
+docker compose logs -f backend frontend
+
+# 停止
+docker compose down
+```
+
+#### サービス一覧
+
+| サービス | ポート | 説明 |
+|----------|--------|------|
+| frontend | 3001 | React SPA (nginx) |
+| backend | 8081 | Spring Boot API |
+| postgres | 5432 | PostgreSQL データベース |
+| adminer | 8888 | データベース管理ツール |
+| mkdocs | 8000 | ドキュメントサーバー |
+| sonarqube | 9000 | コード品質分析 |
+
+#### アクセス URL
+
+- フロントエンド: http://localhost:3001
+- バックエンド API: http://localhost:8081
+- Adminer: http://localhost:8888
+- MkDocs: http://localhost:8000
+- SonarQube: http://localhost:9000
+
+#### 環境変数
+
+| 変数 | デフォルト | 説明 |
+|------|----------|------|
+| `BACKEND_PORT` | 8081 | バックエンドの公開ポート |
+| `FRONTEND_PORT` | 3001 | フロントエンドの公開ポート |
+| `POSTGRES_PORT` | 5432 | PostgreSQL の公開ポート |
+| `SPRING_PROFILES_ACTIVE` | dev | Spring プロファイル |
 
 ### 構築
 
@@ -163,6 +208,118 @@ npm start
   (例: `npx gulp journal:generate:date --date=2023-04-01`)
 
 生成された作業履歴は `docs/journal/` ディレクトリに保存され、各ファイルには指定された日付のコミット情報が含まれます。
+
+##### SonarQube タスク
+
+- SonarQube サービスの起動:
+  ```
+  npx gulp sonar:start
+  ```
+
+- SonarQube サービスの停止:
+  ```
+  npx gulp sonar:stop
+  ```
+
+- SonarQube ダッシュボードを開く:
+  ```
+  npx gulp sonar:open
+  ```
+
+- バックエンドの解析実行:
+  ```
+  npx gulp sonar:analyze:backend
+  ```
+
+- フロントエンドの解析実行:
+  ```
+  npx gulp sonar:analyze:frontend
+  ```
+
+- 全プロジェクトの解析実行:
+  ```
+  npx gulp sonar:analyze
+  ```
+
+- サービス状態確認:
+  ```
+  npx gulp sonar:status
+  ```
+
+##### SchemaSpy タスク
+
+- ER 図の生成:
+  ```
+  npx gulp schemaspy:generate
+  ```
+
+- 生成した ER 図をブラウザで開く:
+  ```
+  npx gulp schemaspy:open
+  ```
+
+- ER 図の生成と表示（一連の流れ）:
+  ```
+  npx gulp schemaspy
+  ```
+
+- 出力ディレクトリのクリーンアップ:
+  ```
+  npx gulp schemaspy:clean
+  ```
+
+- ER 図の再生成（クリーン後に生成）:
+  ```
+  npx gulp schemaspy:regenerate
+  ```
+
+生成された ER 図は `docs/assets/schemaspy-output/` ディレクトリに保存されます。
+
+##### Heroku デプロイタスク
+
+- バックエンドのデプロイ:
+  ```
+  npx gulp deploy:backend
+  ```
+
+- フロントエンドのデプロイ:
+  ```
+  npx gulp deploy:frontend
+  ```
+
+- 全アプリケーションの一括デプロイ:
+  ```
+  npx gulp deploy:all
+  ```
+
+- デプロイ状態の確認:
+  ```
+  npx gulp deploy:status
+  ```
+
+- バックエンドのログ表示:
+  ```
+  npx gulp deploy:backend:logs
+  ```
+
+- フロントエンドのログ表示:
+  ```
+  npx gulp deploy:frontend:logs
+  ```
+
+- アプリケーションをブラウザで開く:
+  ```
+  npx gulp deploy:open
+  ```
+
+個別のステップを実行する場合:
+- `deploy:login` - Heroku Container Registry にログイン
+- `deploy:backend:build` - バックエンドの Docker イメージをビルド
+- `deploy:backend:push` - バックエンドのイメージをプッシュ
+- `deploy:backend:release` - バックエンドをリリース
+- `deploy:frontend:build` - フロントエンドの Docker イメージをビルド
+- `deploy:frontend:push` - フロントエンドのイメージをプッシュ
+- `deploy:frontend:release` - フロントエンドをリリース
 
 #### GitHub Container Registry
 

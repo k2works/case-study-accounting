@@ -1,8 +1,8 @@
-site_name: Site Name
-site_description: Site Description
+site_name: 財務会計システム ケーススタディ
+site_description: 財務会計システムの設計・開発ドキュメント
 site_author: Project Team
-repo_url: https://github.com/k2works/claude-code-booster
-repo_name: claude-code-booster
+repo_url: https://github.com/k2works/case-study-accounting
+repo_name: case-study-accounting
 
 theme:
   name: material
@@ -17,7 +17,7 @@ theme:
     - search.highlight
 
 extra_css:
-  - docs/mkdocs/assets/css/extra.css
+  - assets/css/extra.css
 
 markdown_extensions:
   - pymdownx.highlight
@@ -40,20 +40,144 @@ markdown_extensions:
         - PLANTUML_SERVER_URL
         - http://www.plantuml.com/plantuml
       format: svg
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js
-  - docs/assets/js/extra.js
+  - assets/js/extra.js
 
 extra:
   plantuml_url: http://www.plantuml.com/plantuml
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/k2works
-      name: GitHub Repository/claude-code-booster
+      link: https://github.com/k2works/case-study-accounting
+      name: 財務会計システム ケーススタディ
 
 plugins:
   - search
 
+exclude_docs: |
+  wiki/
+
 nav:
   - Home: index.md
+  - 要件定義:
+      - 要件定義書: requirements/requirements_definition.md
+      - ビジネスユースケース: requirements/business_usecase.md
+      - システムユースケース: requirements/system_usecase.md
+      - ユーザーストーリー: requirements/user_story.md
+  - 設計:
+      - アーキテクチャ:
+          - バックエンド: design/architecture_backend.md
+          - フロントエンド: design/architecture_frontend.md
+          - インフラストラクチャ: design/architecture_infrastructure.md
+      - モデル設計:
+          - データモデル: design/data-model.md
+          - ドメインモデル: design/domain-model.md
+      - UI 設計: design/ui-design.md
+      - テスト戦略: design/test_strategy.md
+      - 非機能要件: design/non_functional.md
+      - 運用要件: design/operation.md
+      - 技術スタック選定: design/tech_stack.md
+  - 開発:
+      - リリース計画: development/release_plan.md
+      - イテレーション計画:
+          - イテレーション1: development/iteration_plan-1.md
+  - 運用:
+      - 開発コンテナ構築手順書: operation/dev_container.md
+      - バックエンド構築手順書: operation/backend_setup.md
+      - バックエンドデモ環境: operation/backend_demo_env.md
+      - フロントエンド構築手順書: operation/frontend_setup.md
+      - フロントエンドデモ環境: operation/frontend_demo_env.md
+      - デモ環境デプロイ: operation/deploy_demo.md
+      - SonarQube セットアップガイド: operation/sonarqube_setup.md
+  - リファレンス:
+      - 開発ガイド: reference/開発ガイド.md
+      - よいソフトウェアとは: reference/よいソフトウェアとは.md
+      - コーディングとテストガイド: reference/コーディングとテストガイド.md
+      - アーキテクチャ設計ガイド: reference/アーキテクチャ設計ガイド.md
+      - データモデル設計ガイド: reference/データモデル設計ガイド.md
+      - ドメインモデル設計ガイド: reference/ドメインモデル設計ガイド.md
+      - UI設計ガイド: reference/UI設計ガイド.md
+      - テスト戦略ガイド: reference/テスト戦略ガイド.md
+      - 非機能要件定義ガイド: reference/非機能要件定義ガイド.md
+      - 運用要件定義ガイド: reference/運用要件定義ガイド.md
+      - 要件定義ガイド: reference/要件定義ガイド.md
+      - ユースケース作成ガイド: reference/ユースケース作成ガイド.md
+      - リリース・イテレーション計画ガイド: reference/リリース・イテレーション計画ガイド.md
+      - エクストリームプログラミング: reference/エクストリームプログラミング.md
+      - インフラ設計ガイド: reference/インフラ設計ガイド.md
+      - Javaアプリケーション環境構築ガイド: reference/Javaアプリケーション環境構築ガイド.md
+      - TypeScriptアプリケーション環境構築ガイド: reference/TypeScriptアプリケーション環境構築ガイド.md
+  - テンプレート:
+      - ADR: template/ADR.md
+      - イテレーション完了報告書: template/イテレーション完了報告書.md
+      - インセプションデッキ: template/インセプションデッキ.md
+      - まずこれを読もうリスト: template/まずこれを読もうリスト.md
+      - 完全形式のユースケース: template/完全形式のユースケース.md
+      - 要件定義: template/要件定義.md
+      - 設計: template/設計.md
+  - 実践ガイド:
+      - 概要: article/index.md
+      - バックエンド編（Java版）:
+          - はじめに: article/backend/chapter00.md
+          - 第1章: article/backend/chapter01.md
+          - 第2章: article/backend/chapter02.md
+          - 第3章: article/backend/chapter03.md
+          - 第4章: article/backend/chapter04.md
+          - 第5章: article/backend/chapter05.md
+          - 第6章: article/backend/chapter06.md
+          - 第7章: article/backend/chapter07.md
+          - 第8章: article/backend/chapter08.md
+          - 第9章: article/backend/chapter09.md
+          - 第10章: article/backend/chapter10.md
+          - 第11章: article/backend/chapter11.md
+          - 第12章: article/backend/chapter12.md
+          - 第13章: article/backend/chapter13.md
+          - 第14章: article/backend/chapter14.md
+          - 第15章: article/backend/chapter15.md
+          - 第16章: article/backend/chapter16.md
+          - 第17章: article/backend/chapter17.md
+          - 第18章: article/backend/chapter18.md
+          - 第19章: article/backend/chapter19.md
+          - 第20章: article/backend/chapter20.md
+          - 第21章: article/backend/chapter21.md
+          - 第22章: article/backend/chapter22.md
+          - 第23章: article/backend/chapter23.md
+          - 第24章: article/backend/chapter24.md
+          - 第25章: article/backend/chapter25.md
+          - 第26章: article/backend/chapter26.md
+          - 第27章: article/backend/chapter27.md
+          - 第28章: article/backend/chapter28.md
+          - 第29章: article/backend/chapter29.md
+          - 第30章: article/backend/chapter30.md
+          - 第31章: article/backend/chapter31.md
+          - 第32章: article/backend/chapter32.md
+      - フロントエンド編（React版）:
+          - はじめに: article/frontend/chapter00.md
+          - 第1章: article/frontend/chapter01.md
+          - 第2章: article/frontend/chapter02.md
+          - 第3章: article/frontend/chapter03.md
+          - 第4章: article/frontend/chapter04.md
+          - 第5章: article/frontend/chapter05.md
+          - 第6章: article/frontend/chapter06.md
+          - 第7章: article/frontend/chapter07.md
+          - 第8章: article/frontend/chapter08.md
+          - 第9章: article/frontend/chapter09.md
+          - 第10章: article/frontend/chapter10.md
+          - 第11章: article/frontend/chapter11.md
+          - 第12章: article/frontend/chapter12.md
+          - 第13章: article/frontend/chapter13.md
+          - 第14章: article/frontend/chapter14.md
+          - 第15章: article/frontend/chapter15.md
+          - 第16章: article/frontend/chapter16.md
+          - 第17章: article/frontend/chapter17.md
+          - 第18章: article/frontend/chapter18.md
+          - 第19章: article/frontend/chapter19.md
+          - 第20章: article/frontend/chapter20.md
+          - 第21章: article/frontend/chapter21.md
+          - 第22章: article/frontend/chapter22.md
+          - 第23章: article/frontend/chapter23.md
+          - 第24章: article/frontend/chapter24.md

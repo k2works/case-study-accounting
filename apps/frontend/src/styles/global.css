@@ -1,0 +1,113 @@
+/* リセット */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ルート設定 */
+:root {
+  /* カラー */
+  --color-primary: #1976d2;
+  --color-primary-dark: #1565c0;
+  --color-secondary: #dc004e;
+  --color-error: #f44336;
+  --color-warning: #ff9800;
+  --color-success: #4caf50;
+  --color-info: #2196f3;
+
+  /* テキスト */
+  --color-text-primary: #212121;
+  --color-text-secondary: #757575;
+
+  /* 背景 */
+  --color-background: #fafafa;
+  --color-surface: #ffffff;
+
+  /* ボーダー */
+  --color-border: #e0e0e0;
+
+  /* フォント */
+  --font-family: 'Noto Sans JP', 'Hiragino Sans', sans-serif;
+  --font-size-base: 14px;
+  --font-size-small: 12px;
+  --font-size-large: 16px;
+
+  /* スペーシング */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* ボーダー半径 */
+  --border-radius: 4px;
+
+  /* シャドウ */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ボディ */
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* リンク */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ボタン */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* テーブル */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+th {
+  background-color: var(--color-surface);
+  font-weight: 600;
+}
+
+/* 金額表示（右寄せ） */
+.money {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 借方（青） */
+.debit {
+  color: #1976d2;
+}
+
+/* 貸方（赤） */
+.credit {
+  color: #d32f2f;
+}

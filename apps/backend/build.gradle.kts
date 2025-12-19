@@ -1,0 +1,190 @@
+plugins {
+    java
+    jacoco
+    checkstyle
+    pmd
+    id("org.springframework.boot") version "4.0.0"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("com.github.spotbugs") version "6.0.27"
+    id("org.dddjava.jig-gradle-plugin") version "2025.11.1"
+    id("org.sonarqube") version "7.2.1.6560"
+}
+
+group = "com.example"
+version = "0.0.1-SNAPSHOT"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+    // Database
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2") // Demo環境用
+    runtimeOnly("org.springframework.boot:spring-boot-h2console") // H2 Console (Spring Boot 4.0+)
+
+    // Migration
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
+    // Vavr (関数型プログラミング)
+    implementation("io.vavr:vavr:0.10.4")
+
+    // Lombok
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // Testcontainers
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+
+    // ArchUnit
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+
+    // JIG-ERD (ER図生成)
+    testImplementation("com.github.irof:jig-erd:0.2.1")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+// JaCoCo
+jacoco {
+    toolVersion = "0.8.14" // Java 25 support
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.0".toBigDecimal() // 初期は0%、徐々に上げる
+            }
+        }
+    }
+}
+
+// Checkstyle
+checkstyle {
+    toolVersion = "10.20.2"
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+    isIgnoreFailures = true // 初期は警告のみ
+}
+
+// SpotBugs (Java 25 対応: 4.9.7+)
+spotbugs {
+    ignoreFailures = true // 初期は警告のみ
+    excludeFilter = file("${rootDir}/config/spotbugs/exclude.xml")
+    toolVersion = "4.9.8"
+}
+
+tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
+    reports.create("html") {
+        required = true
+    }
+    reports.create("xml") {
+        required = true // SonarQube 連携用
+    }
+}
+
+// PMD (Java 25 対応: 7.16.0+)
+pmd {
+    toolVersion = "7.16.0"
+    isConsoleOutput = true
+    ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml")
+    ruleSets = listOf() // ruleSetFilesを使用するため空に
+    isIgnoreFailures = true // 初期は警告のみ
+}
+
+// JIG (ドキュメント生成)
+// デフォルト設定を使用、カスタマイズは jig.properties で行う
+
+// JIG タスク依存関係
+tasks.named("classes") {
+    mustRunAfter("clean")
+}
+tasks.named("jigReports") {
+    dependsOn("classes")
+}
+
+// カスタムタスク: TDD用の継続的テスト実行
+tasks.register<Test>("tdd") {
+    description = "Run tests in TDD mode (always executes)"
+    group = "verification"
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+    outputs.upToDateWhen { false }
+}
+
+// カスタムタスク: 品質チェック全実行
+tasks.register("qualityCheck") {
+    description = "Run all quality checks (Checkstyle, PMD, SpotBugs)"
+    group = "verification"
+    dependsOn("checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest", "spotbugsMain", "spotbugsTest")
+}
+
+// カスタムタスク: すべてのテストと品質チェックを実行
+tasks.register("fullCheck") {
+    description = "Run all tests and quality checks"
+    group = "verification"
+    dependsOn("test", "qualityCheck", "jacocoTestReport")
+}
+
+// SonarQube (Self-hosted Server - not SonarCloud)
+sonar {
+    properties {
+        // SonarCloud ではなく SonarQube Server を使用するため organization は不要
+        property("sonar.projectKey", "accounting-backend")
+        property("sonar.projectName", "Accounting Backend")
+        property("sonar.sourceEncoding", "UTF-8")
+        property("sonar.sources", "src/main/java")
+        property("sonar.tests", "src/test/java")
+        property("sonar.java.binaries", "build/classes/java/main")
+        property("sonar.java.test.binaries", "build/classes/java/test")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.java.checkstyle.reportPaths", "build/reports/checkstyle/main.xml,build/reports/checkstyle/test.xml")
+        property("sonar.java.pmd.reportPaths", "build/reports/pmd/main.xml,build/reports/pmd/test.xml")
+        property("sonar.java.spotbugs.reportPaths", "build/reports/spotbugs/main.xml,build/reports/spotbugs/test.xml")
+    }
+}
+
+// SonarQube タスク依存関係
+tasks.named("sonar") {
+    dependsOn("test", "jacocoTestReport")
+}

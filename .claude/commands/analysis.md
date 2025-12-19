@@ -1,26 +1,12 @@
 ## Analysis Command
 
-分析フェーズの作業を支援するコマンド。要件定義から非機能要件まで包括的な分析作業を支援します。
+分析フェーズ全体の作業を支援するコマンド。要件定義から非機能要件まで包括的な分析ワークフローを表示します。
 
 ### 使い方
 
 ```bash
-/analysis [オプション]
+/analysis
 ```
-
-### オプション
-
-- なし : 分析フェーズ全体の支援表示
-- `--requirements` : 要件定義関連の作業支援
-- `--usecases` : ユースケース・ユーザーストーリー作成支援
-- `--architecture` : アーキテクチャ設計支援
-- `--data-model` : データモデル設計支援
-- `--domain-model` : ドメインモデル設計支援
-- `--ui-design` : UI設計支援
-- `--test-strategy` : テスト戦略策定支援
-- `--non-functional` : 非機能要件定義支援
-- `--operation` : 運用要件定義支援
-- `--tech-stack` : 技術スタック選定支援
 
 ### 基本例
 
@@ -28,166 +14,57 @@
 # 分析フェーズ全体のワークフロー表示
 /analysis
 「分析フェーズの全体的な進め方と各工程の説明」
-
-# 要件定義の支援
-/analysis --requirements
-「要件定義のRDRAモデルに基づいた体系的なアプローチの説明」
-
-# アーキテクチャ設計の支援
-/analysis --architecture
-「業務領域とデータ構造の複雑さに基づくアーキテクチャパターンの選択支援」
-
-# テスト戦略の策定
-/analysis --test-strategy
-「ピラミッド型・ダイヤモンド型・逆ピラミッド型テストの選択支援」
 ```
 
 ### 詳細機能
 
-#### 要件定義サポート
+#### 分析フェーズの全体像
 
-@docs/reference/要件定義支援.md に基づく要件定義作成を支援します。
-@docs/template/要件定義.md をテンプレートにして成果物を作成します。
-@docs/template/要件定義.md をテンプレートは絶対に編集しないこと。
+分析フェーズは以下の工程で構成されます：
 
-```bash
-/analysis --requirements
-```
+1. **要件定義** (`/analysis-requirements`)
+   - システム価値の明確化
+   - システム外部環境の分析
+   - システム境界の定義
 
-- @docs/requirements/requirements_definition.md が無ければ新規要件定義を開始する
-- システム価値の明確化
-- システム外部環境の分析
-- システム境界の定義
-- システム内部構造の設計
-- 成果物として @docs/requirements/requirements_definition.md を作成
+2. **ユースケース作成** (`/analysis-usecases`)
+   - ビジネスユースケースの抽出
+   - システムユースケースの定義
+   - ユーザーストーリーの作成
 
-#### ユースケースサポート
+3. **アーキテクチャ設計** (`/analysis-architecture`)
+   - バックエンドアーキテクチャ
+   - フロントエンドアーキテクチャ
+   - インフラストラクチャアーキテクチャ
 
-docs/reference/ユースケース作成ガイド.md に基づくユースケース作成を支援します。
-@docs/template/完全形式のユースケース.md をテンプレートにして成果物を作成します。
-@docs/template/完全形式のユースケース.md をテンプレートは絶対に編集しないこと。
+4. **データモデル設計** (`/analysis-data-model`)
+   - ER 図の作成
+   - テーブル定義
 
-```bash
-/analysis --usecases
-```
+5. **ドメインモデル設計** (`/analysis-domain-model`)
+   - エンティティ定義
+   - 値オブジェクト定義
+   - 集約の設計
 
-- @docs/requirements/requirements_definition.md からのユースケース抽出
-- @docs/requirements/business_usecase.md を作成
-- @docs/requirements/system_usecase.md を作成
-- @docs/requirements/user_story.md を作成
-- ユースケースとユーザーストーリーでトレーサビリティを維持する
-- user_story.mdにはユーザーストーリーのみ記述する、リリース計画とイテレーション計画は別途作成する
+6. **UI 設計** (`/analysis-ui-design`)
+   - 画面遷移図
+   - 画面イメージ
 
-#### アーキテクチャ設計サポート
+7. **テスト戦略** (`/analysis-test-strategy`)
+   - テストピラミッド設計
+   - テスト種別の定義
 
-@docs/reference/アーキテクチャ設計ガイド.md に基づくアーキテクチャ設計ドキュメントを作成します。
-成果物は architecture_backend.md と architecture_frontend.md architecture_infrastructure.md です。
+8. **非機能要件** (`/analysis-non-functional`)
+   - 性能要件
+   - セキュリティ要件
 
-```bash
-/analysis --architecture
-```
-- @docs/requirements/requirements_definition.md を参照
-- @docs/requirements/business_usecase.md を参照
-- @docs/requirements/system_usecase.md を参照
-- @docs/requirements/user_story.md を参照
-- バックエンドアーキテクチャ設計を実施して @docs/design/architecture_backend.md を作成
-- フロンエンドアーキテクチャ設計を実施して @docs/design/architecture_frontend.md を作成
-- インフラストラクチャアーキテクチャ設計を実施して @docs/design/architecture_infrastructure.md を作成
+9. **運用要件** (`/analysis-operation`)
+   - 運用フロー
+   - 監視設計
 
-#### データモデル設計サポート
-
-@docs/reference/データモデル設計ガイド.md に基づくデータモデル設計ドキュメントを作成します。
-成果物は data-model.md です。
-plantumlのER図を使います。
-
-```bash
-/analysis --data-model
-```
-- @docs/requirements/requirements_definition.md を参照
-- @docs/requirements/business_usecase.md を参照
-- @docs/requirements/system_usecase.md を参照
-- @docs/requirements/user_story.md を参照
-- @docs/design/architecture_backend.md を参照
-- @docs/design/architecture_frontend.md を参照
-- @docs/design/data-model.md を作成
-
-#### ドメインモデル設計サポート
-
-@docs/reference/ドメインモデル設計ガイド.md に基づくドメインモデル設計ドキュメントを作成します。
-成果物は domain_model.md です。
-ダイアグラムにはplantumlを使います。
-
-```bash
-/analysis --domain-model
-```
-- @docs/requirements/requirements_definition.md を参照
-- @docs/requirements/business_usecase.md を参照
-- @docs/requirements/system_usecase.md を参照
-- @docs/requirements/user_story.md を参照
-- @docs/design/architecture_backend.md を参照
-- @docs/design/architecture_frontend.md を参照
-- @docs/design/domain-model.md を作成
-
-#### UI設計サポート
-
-@docs/reference/UI設計ガイド.md に基づくUI設計ドキュメントを作成します。
-成果物は ui_design.md です。
-画面遷移にはplantumlのステートチャート図を使います。
-画面イメージはplantumlのsalt図を使います。
-
-```bash
-/analysis --ui-design
-```
-- @docs/requirements/requirements_definition.md を参照
-- @docs/requirements/business_usecase.md を参照
-- @docs/requirements/system_usecase.md を参照
-- @docs/requirements/user_story.md を参照
-- @docs/design/architecture_backend.md を参照
-- @docs/design/architecture_frontend.md を参照
-- @docs/design/ui_design.md を作成
-
-#### テスト戦略サポート
-
-テスト戦略ドキュメントを作成します。
-成果物は test-strategy.md です。
-
-```bash
-/analysis --test-strategy
-```
-- @docs/design/test_strategy.md を作成
-
-#### 非機能要件サポート
-
-非機能要件定義ドキュメントを作成します。
-成果物は non-functional.md です。
-
-```bash
-/analysis --non-functional
-```
-
-- @docs/design/test_strategy.md を作成
-
-#### 運用要件定義サポート
-
-運用要件定義ドキュメントを作成します。
-成果物は operation.md です。
-
-```bash
-/analysis --operation
-```
-
-- @docs/design/operation.md を作成
-
-#### 技術スタックサポート
-
-表形式の技術スタック一覧作成をサポートします
-
-```bash
-/analysis --tech-stack
-```
-- @docs/design/architecture_backend.md を参照
-- @docs/design/architecture_frontend.md を参照
-- @docs/design/tech_stack.md を作成
+10. **技術スタック** (`/analysis-tech-stack`)
+    - 技術選定
+    - バージョン管理
 
 ### Claude との連携
 
@@ -197,17 +74,6 @@ ls -la docs/
 cat README.md
 /analysis
 「プロジェクトの現状を踏まえた分析フェーズの進め方を提案」
-
-# 既存の要件ドキュメントがある場合
-cat docs/requirements_definition.md
-/analysis --requirements
-「既存要件を基にした詳細化とRDRAモデルへのマッピング」
-
-# 技術的制約がある場合
-cat package.json
-/acat pom.xml
-/analysis --tech-stack
-「既存技術スタックを考慮したアーキテクチャ選択の提案」
 ```
 
 ### 注意事項
@@ -221,11 +87,17 @@ cat package.json
 1. **段階的分析**: 要件定義から始めて段階的に詳細化する
 2. **チーム連携**: 分析結果をチーム全体で共有し、合意形成を行う
 3. **継続的改善**: 開発フェーズでのフィードバックを基に分析結果を見直す
-4. **文書化**: 分析結果はPlantUMLやMarkdownで視覚的に文書化する
+4. **文書化**: 分析結果は PlantUML や Markdown で視覚的に文書化する
 
 ### 関連コマンド
 
-- `/plan` : 実装計画の策定
-- `/spec` : 仕様書の作成・更新
-- `/design-patterns` : 設計パターンの適用検討
-- `/tech-debt` : 技術的負債の分析
+- `/analysis-requirements` : 要件定義関連の作業支援
+- `/analysis-usecases` : ユースケース・ユーザーストーリー作成支援
+- `/analysis-architecture` : アーキテクチャ設計支援
+- `/analysis-data-model` : データモデル設計支援
+- `/analysis-domain-model` : ドメインモデル設計支援
+- `/analysis-ui-design` : UI 設計支援
+- `/analysis-test-strategy` : テスト戦略策定支援
+- `/analysis-non-functional` : 非機能要件定義支援
+- `/analysis-operation` : 運用要件定義支援
+- `/analysis-tech-stack` : 技術スタック選定支援

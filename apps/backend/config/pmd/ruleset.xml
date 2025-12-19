@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<ruleset name="Custom Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+         https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>カスタム PMD ルールセット</description>
+
+    <!-- ベストプラクティス -->
+    <rule ref="category/java/bestpractices.xml">
+        <!-- PMD 7.x では以下のルールを除外 -->
+        <exclude name="UnitTestContainsTooManyAsserts"/>
+        <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
+        <!-- ArchUnit などフレームワーク固有の検証を使用するテストでは不要 -->
+        <exclude name="UnitTestShouldIncludeAssert"/>
+        <!-- ログガードは常に必要ではない -->
+        <exclude name="GuardLogStatement"/>
+        <!-- ArchUnit では実装型の使用が必要 -->
+        <exclude name="LooseCoupling"/>
+        <!-- ドキュメント生成ツール等では System.out が必要 -->
+        <exclude name="SystemPrintln"/>
+    </rule>
+
+    <!-- コードスタイル -->
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="AtLeastOneConstructor"/>
+        <exclude name="CommentDefaultAccessModifier"/>
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="LocalVariableCouldBeFinal"/>
+        <exclude name="MethodArgumentCouldBeFinal"/>
+        <exclude name="ShortVariable"/>
+        <exclude name="LongVariable"/>
+        <!-- ArchUnit テストでは多数の static import が一般的 -->
+        <exclude name="TooManyStaticImports"/>
+        <!-- var の使用を許可 -->
+        <exclude name="UseExplicitTypes"/>
+        <!-- 数値リテラルのアンダースコアは任意 -->
+        <exclude name="UseUnderscoresInNumericLiterals"/>
+        <!-- 未使用インポートは Checkstyle で検出 -->
+        <exclude name="UnnecessaryImport"/>
+        <!-- フィールド命名は Checkstyle で検出 -->
+        <exclude name="FieldNamingConventions"/>
+    </rule>
+
+    <!-- 設計 -->
+    <rule ref="category/java/design.xml">
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="CognitiveComplexity"/>
+        <exclude name="LawOfDemeter"/>
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="TooManyMethods"/>
+        <!-- Spring Boot Application クラスは誤検知される -->
+        <exclude name="UseUtilityClass"/>
+        <!-- 例外ハンドラでは汎用例外のキャッチが必要な場合がある（Design → ErrorProne に移動済み） -->
+        <exclude name="AvoidCatchingGenericException"/>
+    </rule>
+
+    <!-- 循環複雑度のカスタム設定 -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="classReportLevel" value="80"/>
+            <property name="methodReportLevel" value="7"/>
+        </properties>
+    </rule>
+
+    <!-- 認知複雑度の設定 -->
+    <rule ref="category/java/design.xml/CognitiveComplexity">
+        <properties>
+            <property name="reportLevel" value="7"/>
+        </properties>
+    </rule>
+
+    <!-- エラー発生しやすいコード -->
+    <rule ref="category/java/errorprone.xml">
+        <!-- PMD 7.x では以下のルールを除外 -->
+        <exclude name="MissingSerialVersionUID"/>
+        <!-- テスト設定クラスは誤検知される -->
+        <exclude name="TestClassWithoutTestCases"/>
+        <!-- テストでリテラル重複は許容 -->
+        <exclude name="AvoidDuplicateLiterals"/>
+        <!-- 外部ライブラリ（JJWT）が java.util.Date を要求する場合がある -->
+        <exclude name="ReplaceJavaUtilDate"/>
+    </rule>
+
+    <!-- パフォーマンス -->
+    <rule ref="category/java/performance.xml"/>
+
+    <!-- セキュリティ -->
+    <rule ref="category/java/security.xml"/>
+
+    <!-- マルチスレッド -->
+    <rule ref="category/java/multithreading.xml">
+        <exclude name="UseConcurrentHashMap"/>
+    </rule>
+</ruleset>

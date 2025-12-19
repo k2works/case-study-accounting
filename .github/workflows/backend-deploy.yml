@@ -1,0 +1,47 @@
+name: Backend Deploy to Heroku
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/backend/**'
+      - '.github/workflows/backend-deploy.yml'
+  workflow_dispatch:
+
+env:
+  HEROKU_APP_NAME: case-study-accounting-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Heroku CLI
+      run: curl https://cli-assets.heroku.com/install.sh | sh
+
+    - name: Login to Heroku Container Registry
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: heroku container:login
+
+    - name: Build Docker image
+      run: docker build -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web ./apps/backend
+
+    - name: Push Docker image to Heroku
+      run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
+
+    - name: Release to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
+
+    - name: Verify deployment
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        echo "Waiting for deployment to complete..."
+        sleep 10
+        heroku ps -a ${{ env.HEROKU_APP_NAME }}
