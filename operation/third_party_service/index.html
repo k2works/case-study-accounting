@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../frontend_setup/">
+        <link rel="prev" href="../deploy_demo/">
       
       
-        <link rel="next" href="../deploy_demo/">
+        <link rel="next" href="../sonarqube_setup/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>フロントエンドデモ環境 - 財務会計システム ケーススタディ</title>
+        <title>外部サービス連携 - 財務会計システム ケーススタディ</title>
       
     
     
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              フロントエンドデモ環境
+              外部サービス連携
             
           </span>
         </div>
@@ -1416,37 +1416,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    フロントエンドデモ環境
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../frontend_demo_env/" class="md-nav__link">
         
   
   
@@ -1462,414 +1435,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        概要
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        デモ環境の特徴
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        技術スタック
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ローカル実行
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="ローカル実行">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        前提条件
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        起動方法
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        本番ビルド
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        設定ファイル
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="設定ファイル">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        環境変数
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="環境変数">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#envproduction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        .env.production
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dockerfile" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dockerfile
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nginxconf" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nginx.conf
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#startsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        start.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#heroku" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Heroku デプロイ
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Heroku デプロイ">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        前提条件
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        デプロイ手順（Docker コマンド使用・推奨）
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="デプロイ手順（Docker コマンド使用・推奨）">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-heroku" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Heroku アプリ作成
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-container" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. スタックを container に設定
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 環境変数設定
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-heroku-container-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Heroku Container Registry にログイン
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-docker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Docker ビルド
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. プッシュ
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. リリース
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 動作確認
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        環境変数一覧
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        トラブルシューティング
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="トラブルシューティング">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#startsh-not-found" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        start.sh: not found エラー
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        API 接続エラー
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        画面が真っ白になる
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#spa" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SPA ルーティングが動作しない
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        制約事項
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_16" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        関連ドキュメント
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1907,10 +1472,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../third_party_service/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    外部サービス連携
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1926,6 +1518,487 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        サービス一覧
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Actions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GitHub Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概要
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ワークフロー一覧
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        バッジ
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sonarcloud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SonarCloud
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SonarCloud">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概要
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        機能
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        設定
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="設定">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-sonarcloud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. SonarCloud でプロジェクト作成
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-github-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. GitHub Secrets 設定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-buildgradlekts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. build.gradle.kts 設定
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ワークフロー
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qlty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qlty
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Qlty">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概要
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        機能
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        設定
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="設定">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-qlty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Qlty でプロジェクト設定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-github-secrets_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. GitHub Secrets 設定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ワークフロー設定
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        バッジ
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#heroku" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Heroku
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Heroku">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概要
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        アプリケーション
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        設定
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="設定">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-heroku-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Heroku CLI インストール
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-heroku-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Heroku API キー取得
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-github-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. GitHub Secrets 設定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-config-vars" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 環境変数（Config Vars）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        デプロイ方法
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Secrets 一覧
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GitHub Secrets 一覧">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        設定手順
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        トラブルシューティング
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="トラブルシューティング">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sonarcloud_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SonarCloud 分析が失敗する
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qlty_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qlty カバレッジがアップロードされない
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heroku_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Heroku デプロイが失敗する
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        関連ドキュメント
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -4607,240 +4680,383 @@
   
 
 
-<h1 id="_1">フロントエンドデモ環境構築手順書<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<h2 id="_2">概要<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p>本ドキュメントは、財務会計システムのフロントエンドデモ環境について説明します。
-デモ環境は React アプリケーションを nginx でホストし、バックエンド API にプロキシする構成です。</p>
-<h2 id="_3">デモ環境の特徴<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h1 id="_1">外部サービス連携<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>本ドキュメントでは、プロジェクトで使用している外部サービスとその設定方法について説明します。</p>
+<h2 id="_2">サービス一覧<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>項目</th>
+<th>サービス</th>
+<th>用途</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GitHub Actions</td>
+<td>CI/CD パイプライン</td>
+<td>https://github.com/k2works/case-study-accounting/actions</td>
+</tr>
+<tr>
+<td>SonarCloud</td>
+<td>コード品質分析</td>
+<td>https://sonarcloud.io</td>
+</tr>
+<tr>
+<td>Qlty</td>
+<td>コードカバレッジ・保守性分析</td>
+<td>https://qlty.sh</td>
+</tr>
+<tr>
+<td>Heroku</td>
+<td>デモ環境ホスティング</td>
+<td>https://heroku.com</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="github-actions">GitHub Actions<a class="headerlink" href="#github-actions" title="Permanent link">&para;</a></h2>
+<h3 id="_3">概要<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>GitHub Actions を使用して CI/CD パイプラインを構築しています。</p>
+<h3 id="_4">ワークフロー一覧<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ワークフロー</th>
+<th>ファイル</th>
+<th>トリガー</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend CI</td>
+<td><code>backend-ci.yml</code></td>
+<td>push/PR to main, develop</td>
+<td>バックエンドのビルド、テスト、静的解析</td>
+</tr>
+<tr>
+<td>Frontend CI</td>
+<td><code>frontend-ci.yml</code></td>
+<td>push/PR to main, develop</td>
+<td>フロントエンドのビルド、テスト、Lint</td>
+</tr>
+<tr>
+<td>Backend Deploy</td>
+<td><code>backend-deploy.yml</code></td>
+<td>push to main</td>
+<td>バックエンドを Heroku にデプロイ</td>
+</tr>
+<tr>
+<td>Frontend Deploy</td>
+<td><code>frontend-deploy.yml</code></td>
+<td>push to main</td>
+<td>フロントエンドを Heroku にデプロイ</td>
+</tr>
+<tr>
+<td>Backend SonarQube</td>
+<td><code>backend-sonar-qube.yml</code></td>
+<td>push/PR to main</td>
+<td>バックエンド SonarCloud 分析</td>
+</tr>
+<tr>
+<td>Frontend SonarQube</td>
+<td><code>frontend-sonar-qube.yml</code></td>
+<td>push/PR to main</td>
+<td>フロントエンド SonarCloud 分析</td>
+</tr>
+<tr>
+<td>Deploy MkDocs</td>
+<td><code>mkdocs.yml</code></td>
+<td>push to main</td>
+<td>ドキュメントを GitHub Pages にデプロイ</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_5">バッジ<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>README.md に以下のバッジを表示しています：</p>
+<div class="highlight"><pre><span></span><code>[<span class="nt">![Backend CI</span>](<span class="na">https://github.com/k2works/case-study-accounting/actions/workflows/backend-ci.yml/badge.svg</span>)](https://github.com/k2works/case-study-accounting/actions/workflows/backend-ci.yml)
+[<span class="nt">![Frontend CI</span>](<span class="na">https://github.com/k2works/case-study-accounting/actions/workflows/frontend-ci.yml/badge.svg</span>)](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-ci.yml)
+[<span class="nt">![Backend Deploy to Heroku</span>](<span class="na">https://github.com/k2works/case-study-accounting/actions/workflows/backend-deploy.yml/badge.svg</span>)](https://github.com/k2works/case-study-accounting/actions/workflows/backend-deploy.yml)
+[<span class="nt">![Frontend Deploy to Heroku</span>](<span class="na">https://github.com/k2works/case-study-accounting/actions/workflows/frontend-deploy.yml/badge.svg</span>)](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-deploy.yml)
+[<span class="nt">![Deploy MkDocs</span>](<span class="na">https://github.com/k2works/case-study-accounting/actions/workflows/mkdocs.yml/badge.svg</span>)](https://github.com/k2works/case-study-accounting/actions/workflows/mkdocs.yml)
+</code></pre></div>
+<hr />
+<h2 id="sonarcloud">SonarCloud<a class="headerlink" href="#sonarcloud" title="Permanent link">&para;</a></h2>
+<h3 id="_6">概要<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>SonarCloud を使用してコード品質を継続的に分析しています。</p>
+<h3 id="_7">機能<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>コードの品質ゲート</li>
+<li>バグ検出</li>
+<li>コードスメル検出</li>
+<li>セキュリティ脆弱性検出</li>
+<li>コードカバレッジ表示</li>
+<li>重複コード検出</li>
+</ul>
+<h3 id="_8">設定<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<h4 id="1-sonarcloud">1. SonarCloud でプロジェクト作成<a class="headerlink" href="#1-sonarcloud" title="Permanent link">&para;</a></h4>
+<ol>
+<li><a href="https://sonarcloud.io">SonarCloud</a> にログイン</li>
+<li>GitHub リポジトリをインポート</li>
+<li>プロジェクトキーと組織を確認</li>
+</ol>
+<h4 id="2-github-secrets">2. GitHub Secrets 設定<a class="headerlink" href="#2-github-secrets" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>シークレット名</th>
 <th>内容</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>フレームワーク</td>
-<td>React 18 + TypeScript</td>
-</tr>
-<tr>
-<td>ビルドツール</td>
-<td>Vite</td>
-</tr>
-<tr>
-<td>Web サーバー</td>
-<td>nginx (Alpine)</td>
-</tr>
-<tr>
-<td>API 接続</td>
-<td>バックエンドへのリバースプロキシ</td>
-</tr>
-<tr>
-<td>用途</td>
-<td>デモ、プレゼンテーション、機能確認</td>
+<td><code>SONAR_TOKEN</code></td>
+<td>SonarCloud のアクセストークン</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_4">技術スタック<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Node.js</strong>: 22 (ビルド時)</li>
-<li><strong>React</strong>: 18.3</li>
-<li><strong>TypeScript</strong>: 5.5</li>
-<li><strong>Vite</strong>: 5.4</li>
-<li><strong>nginx</strong>: Alpine</li>
-<li><strong>状態管理</strong>: TanStack Query</li>
-</ul>
-<h2 id="_5">ローカル実行<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
-<h3 id="_6">前提条件<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Node.js 22 以上</li>
-<li>npm 10.x 以上</li>
-</ul>
-<h3 id="_7">起動方法<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>apps/frontend
-npm<span class="w"> </span>install
-npm<span class="w"> </span>run<span class="w"> </span>dev
-</code></pre></div>
-<p>デフォルトで http://localhost:3000 で起動します。</p>
-<h3 id="_8">本番ビルド<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>run<span class="w"> </span>build
-npm<span class="w"> </span>run<span class="w"> </span>preview
-</code></pre></div>
-<h2 id="_9">設定ファイル<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
-<h3 id="_10">環境変数<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
-<h4 id="envproduction">.env.production<a class="headerlink" href="#envproduction" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code># API ベース URL（本番）
-VITE_API_BASE_URL=/api
+<h4 id="3-buildgradlekts">3. build.gradle.kts 設定<a class="headerlink" href="#3-buildgradlekts" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">plugins</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">id</span><span class="p">(</span><span class="s">&quot;org.sonarqube&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="s">&quot;5.1.0.4882&quot;</span>
+<span class="p">}</span>
 
-# アプリケーション名
-VITE_APP_NAME=財務会計システム
-
-# 開発モード
-VITE_DEV_MODE=false
-
-# MSW 有効化
-VITE_ENABLE_MSW=false
-</code></pre></div>
-<h3 id="dockerfile">Dockerfile<a class="headerlink" href="#dockerfile" title="Permanent link">&para;</a></h3>
-<p><code>apps/frontend/Dockerfile</code> に以下の内容が配置されています:</p>
-<div class="highlight"><pre><span></span><code><span class="c"># ビルドステージ</span>
-<span class="k">FROM</span><span class="w"> </span><span class="s">node:22-alpine</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">builder</span>
-<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
-<span class="k">COPY</span><span class="w"> </span>package*.json<span class="w"> </span>./
-<span class="k">RUN</span><span class="w"> </span>npm<span class="w"> </span>ci
-<span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
-<span class="k">RUN</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>build
-
-<span class="c"># 実行ステージ</span>
-<span class="k">FROM</span><span class="w"> </span><span class="s">nginx:alpine</span>
-<span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/app/dist<span class="w"> </span>/usr/share/nginx/html
-<span class="k">COPY</span><span class="w"> </span>nginx.conf<span class="w"> </span>/etc/nginx/nginx.conf.template
-<span class="k">COPY</span><span class="w"> </span>start.sh<span class="w"> </span>/start.sh
-<span class="k">RUN</span><span class="w"> </span>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/\r$//&#39;</span><span class="w"> </span>/start.sh<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>chmod<span class="w"> </span>+x<span class="w"> </span>/start.sh
-<span class="k">EXPOSE</span><span class="w"> </span><span class="s">80</span>
-<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/bin/sh&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/start.sh&quot;</span><span class="p">]</span>
-</code></pre></div>
-<h3 id="nginxconf">nginx.conf<a class="headerlink" href="#nginxconf" title="Permanent link">&para;</a></h3>
-<p>nginx 設定ファイルでは以下を行います:</p>
-<ul>
-<li>SPA のルーティング対応（すべてのパスを index.html にフォールバック）</li>
-<li>API リクエストをバックエンドにプロキシ</li>
-<li>静的ファイルのキャッシュ設定</li>
-<li>ヘルスチェックエンドポイント</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="k">server</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="nv">${PORT}</span><span class="p">;</span>
-<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">localhost</span><span class="p">;</span>
-<span class="w">    </span><span class="kn">root</span><span class="w"> </span><span class="s">/usr/share/nginx/html</span><span class="p">;</span>
-<span class="w">    </span><span class="kn">index</span><span class="w"> </span><span class="s">index.html</span><span class="p">;</span>
-
-<span class="w">    </span><span class="c1"># SPA 用: すべてのルートを index.html にフォールバック</span>
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">try_files</span><span class="w"> </span><span class="nv">$uri</span><span class="w"> </span><span class="nv">$uri/</span><span class="w"> </span><span class="s">/index.html</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="c1"># API プロキシ</span>
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/api/</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="nv">${API_URL}/</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">...</span>
-<span class="w">    </span><span class="err">}</span>
-
-<span class="w">    </span><span class="c1"># ヘルスチェック</span>
-<span class="w">    </span><span class="s">location</span><span class="w"> </span><span class="s">/health</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">return</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="s">&#39;OK&#39;</span><span class="p">;</span>
+<span class="n">sonar</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">properties</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">property</span><span class="p">(</span><span class="s">&quot;sonar.projectKey&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;k2works_case-study-accounting&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">property</span><span class="p">(</span><span class="s">&quot;sonar.organization&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;k2works&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">property</span><span class="p">(</span><span class="s">&quot;sonar.host.url&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;https://sonarcloud.io&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<h3 id="startsh">start.sh<a class="headerlink" href="#startsh" title="Permanent link">&para;</a></h3>
-<p>起動スクリプトで環境変数を nginx 設定に注入します:</p>
-<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/sh</span>
-:<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PORT</span><span class="p">:=80</span><span class="si">}</span><span class="s2">&quot;</span>
-:<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">API_URL</span><span class="p">:=http://localhost:</span><span class="nv">8080</span><span class="p">/api</span><span class="si">}</span><span class="s2">&quot;</span>
-envsubst<span class="w"> </span><span class="s1">&#39;${PORT} ${API_URL}&#39;</span><span class="w"> </span>&lt;<span class="w"> </span>/etc/nginx/nginx.conf.template<span class="w"> </span>&gt;<span class="w"> </span>/etc/nginx/nginx.conf
-<span class="nb">exec</span><span class="w"> </span>nginx<span class="w"> </span>-g<span class="w"> </span><span class="s1">&#39;daemon off;&#39;</span>
-</code></pre></div>
-<h2 id="heroku">Heroku デプロイ<a class="headerlink" href="#heroku" title="Permanent link">&para;</a></h2>
-<h3 id="_11">前提条件<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Heroku CLI インストール済み</li>
-<li>Heroku アカウント作成済み</li>
-<li>Docker Desktop インストール済み</li>
-<li>バックエンドがデプロイ済み</li>
-</ul>
-<h3 id="docker">デプロイ手順（Docker コマンド使用・推奨）<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h3>
-<h4 id="1-heroku">1. Heroku アプリ作成<a class="headerlink" href="#1-heroku" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>heroku<span class="w"> </span>create<span class="w"> </span>アプリ名
-</code></pre></div>
-<h4 id="2-container">2. スタックを container に設定<a class="headerlink" href="#2-container" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>heroku<span class="w"> </span>stack:set<span class="w"> </span>container<span class="w"> </span>-a<span class="w"> </span>アプリ名
-</code></pre></div>
-<h4 id="3">3. 環境変数設定<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>heroku<span class="w"> </span>config:set<span class="w"> </span><span class="nv">API_URL</span><span class="o">=</span>https://バックエンドアプリ名.herokuapp.com/api<span class="w"> </span>-a<span class="w"> </span>アプリ名
-</code></pre></div>
-<h4 id="4-heroku-container-registry">4. Heroku Container Registry にログイン<a class="headerlink" href="#4-heroku-container-registry" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>heroku<span class="w"> </span>container:login
-</code></pre></div>
-<h4 id="5-docker">5. Docker ビルド<a class="headerlink" href="#5-docker" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>registry.heroku.com/アプリ名/web<span class="w"> </span>apps/frontend
-</code></pre></div>
-<h4 id="6">6. プッシュ<a class="headerlink" href="#6" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>push<span class="w"> </span>registry.heroku.com/アプリ名/web
-</code></pre></div>
-<h4 id="7">7. リリース<a class="headerlink" href="#7" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>heroku<span class="w"> </span>container:release<span class="w"> </span>web<span class="w"> </span>-a<span class="w"> </span>アプリ名
-</code></pre></div>
-<h4 id="8">8. 動作確認<a class="headerlink" href="#8" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="c1"># ログ確認</span>
-heroku<span class="w"> </span>logs<span class="w"> </span>--tail<span class="w"> </span>-a<span class="w"> </span>アプリ名
+<h3 id="_9">ワークフロー<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/backend-sonar-qube.yml</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SonarQube</span>
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">branches</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">main</span>
+<span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">types</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">opened</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">synchronize</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">reopened</span><span class="p p-Indicator">]</span>
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and analyze</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">fetch-depth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 
-<span class="c1"># ヘルスチェック</span>
-curl<span class="w"> </span>https://アプリ名.herokuapp.com/health
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Set up JDK</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-java@v4</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">java-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;25&#39;</span>
+<span class="w">          </span><span class="nt">distribution</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;oracle&#39;</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and analyze</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">GITHUB_TOKEN</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
+<span class="w">          </span><span class="nt">SONAR_TOKEN</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.SONAR_TOKEN }}</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./gradlew build sonar --info</span>
+<span class="w">        </span><span class="nt">working-directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/backend</span>
 </code></pre></div>
-<h2 id="_12">環境変数一覧<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="qlty">Qlty<a class="headerlink" href="#qlty" title="Permanent link">&para;</a></h2>
+<h3 id="_10">概要<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<p>Qlty を使用してコードカバレッジと保守性を分析しています。</p>
+<h3 id="_11">機能<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>コードカバレッジ追跡</li>
+<li>保守性スコア（Maintainability）</li>
+<li>技術的負債の可視化</li>
+<li>トレンド分析</li>
+</ul>
+<h3 id="_12">設定<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<h4 id="1-qlty">1. Qlty でプロジェクト設定<a class="headerlink" href="#1-qlty" title="Permanent link">&para;</a></h4>
+<ol>
+<li><a href="https://qlty.sh">Qlty</a> にログイン</li>
+<li>GitHub リポジトリを連携</li>
+<li>カバレッジトークンを取得</li>
+</ol>
+<h4 id="2-github-secrets_1">2. GitHub Secrets 設定<a class="headerlink" href="#2-github-secrets_1" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>シークレット名</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QLTY_COVERAGE_TOKEN</code></td>
+<td>Qlty のカバレッジトークン</td>
+</tr>
+</tbody>
+</table>
+<h4 id="3">3. ワークフロー設定<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># backend-ci.yml に追加</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Upload coverage to Codecov</span>
+<span class="w">  </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qltysh/qlty-action/coverage@v1</span>
+<span class="w">  </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.QLTY_COVERAGE_TOKEN }}</span>
+<span class="w">    </span><span class="nt">files</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/backend/build/reports/jacoco/test/jacocoTestReport.xml</span>
+</code></pre></div>
+<h3 id="_13">バッジ<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>[<span class="nt">![Maintainability</span>](<span class="na">https://qlty.sh/gh/k2works/projects/case-study-accounting/maintainability.svg</span>)](https://qlty.sh/gh/k2works/projects/case-study-accounting)
+[<span class="nt">![Code Coverage</span>](<span class="na">https://qlty.sh/gh/k2works/projects/case-study-accounting/coverage.svg</span>)](https://qlty.sh/gh/k2works/projects/case-study-accounting)
+</code></pre></div>
+<hr />
+<h2 id="heroku">Heroku<a class="headerlink" href="#heroku" title="Permanent link">&para;</a></h2>
+<h3 id="_14">概要<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>Heroku Container Registry を使用してデモ環境をホスティングしています。</p>
+<h3 id="_15">アプリケーション<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>アプリ名</th>
+<th>URL</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>case-study-accounting-backend</td>
+<td>https://case-study-accounting-backend-8d23bb5e8bbe.herokuapp.com</td>
+<td>バックエンド API</td>
+</tr>
+<tr>
+<td>case-study-accounting-frontend</td>
+<td>https://case-study-accounting-frontend-2cb4e7e16f2f.herokuapp.com</td>
+<td>フロントエンド SPA</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_16">設定<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<h4 id="1-heroku-cli">1. Heroku CLI インストール<a class="headerlink" href="#1-heroku-cli" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># macOS</span>
+brew<span class="w"> </span>tap<span class="w"> </span>heroku/brew<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>brew<span class="w"> </span>install<span class="w"> </span>heroku
+
+<span class="c1"># Windows</span>
+choco<span class="w"> </span>install<span class="w"> </span>heroku-cli
+</code></pre></div>
+<h4 id="2-heroku-api">2. Heroku API キー取得<a class="headerlink" href="#2-heroku-api" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>heroku<span class="w"> </span>auth:token
+</code></pre></div>
+<h4 id="3-github-secrets">3. GitHub Secrets 設定<a class="headerlink" href="#3-github-secrets" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>シークレット名</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HEROKU_API_KEY</code></td>
+<td>Heroku API キー</td>
+</tr>
+</tbody>
+</table>
+<h4 id="4-config-vars">4. 環境変数（Config Vars）<a class="headerlink" href="#4-config-vars" title="Permanent link">&para;</a></h4>
+<p><strong>バックエンド:</strong></p>
 <table>
 <thead>
 <tr>
 <th>変数名</th>
-<th>説明</th>
-<th>例</th>
+<th>値</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>PORT</code></td>
-<td>nginx がリッスンするポート（Heroku が自動設定）</td>
-<td>自動</td>
+<td><code>SPRING_PROFILES_ACTIVE</code></td>
+<td>demo</td>
 </tr>
 <tr>
-<td><code>API_URL</code></td>
-<td>バックエンド API の URL</td>
-<td><code>https://backend.herokuapp.com/api</code></td>
+<td><code>JWT_SECRET</code></td>
+<td>(自動生成)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_13">トラブルシューティング<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
-<h3 id="startsh-not-found">start.sh: not found エラー<a class="headerlink" href="#startsh-not-found" title="Permanent link">&para;</a></h3>
-<p>Windows で作成したシェルスクリプトの改行コード（CRLF）が原因です。
-Dockerfile で <code>sed -i 's/\r$//' /start.sh</code> を実行して解決します。</p>
-<h3 id="api">API 接続エラー<a class="headerlink" href="#api" title="Permanent link">&para;</a></h3>
-<ol>
-<li><code>API_URL</code> 環境変数が正しく設定されているか確認</li>
-<li>バックエンドが起動しているか確認</li>
-<li>CORS 設定を確認</li>
-</ol>
-<h3 id="_14">画面が真っ白になる<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
-<ol>
-<li>ブラウザの開発者ツールでコンソールエラーを確認</li>
-<li>ネットワークタブで API リクエストの状態を確認</li>
-<li>nginx のエラーログを確認: <code>heroku logs --tail -a アプリ名</code></li>
-</ol>
-<h3 id="spa">SPA ルーティングが動作しない<a class="headerlink" href="#spa" title="Permanent link">&para;</a></h3>
-<p>nginx 設定で <code>try_files $uri $uri/ /index.html;</code> が正しく設定されているか確認してください。</p>
-<h2 id="_15">制約事項<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p><strong>フロントエンド:</strong></p>
 <table>
 <thead>
 <tr>
-<th>制約</th>
-<th>説明</th>
+<th>変数名</th>
+<th>値</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>バックエンド依存</td>
-<td>API 機能はバックエンドに依存</td>
-</tr>
-<tr>
-<td>環境変数</td>
-<td>ビルド時の環境変数は固定（ランタイムでは変更不可）</td>
+<td><code>API_URL</code></td>
+<td>https://case-study-accounting-backend-8d23bb5e8bbe.herokuapp.com/api</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_16">関連ドキュメント<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<h3 id="_17">デプロイ方法<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>詳細は <a href="../deploy_demo/">デモ環境デプロイ手順</a> を参照。</p>
+<hr />
+<h2 id="github-secrets">GitHub Secrets 一覧<a class="headerlink" href="#github-secrets" title="Permanent link">&para;</a></h2>
+<p>プロジェクトで必要な GitHub Secrets の一覧です。</p>
+<table>
+<thead>
+<tr>
+<th>シークレット名</th>
+<th>サービス</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SONAR_TOKEN</code></td>
+<td>SonarCloud</td>
+<td>コード品質分析</td>
+</tr>
+<tr>
+<td><code>QLTY_COVERAGE_TOKEN</code></td>
+<td>Qlty</td>
+<td>カバレッジレポート</td>
+</tr>
+<tr>
+<td><code>HEROKU_API_KEY</code></td>
+<td>Heroku</td>
+<td>デモ環境デプロイ</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_18">設定手順<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<ol>
+<li>GitHub リポジトリの <strong>Settings</strong> を開く</li>
+<li><strong>Secrets and variables</strong> → <strong>Actions</strong> を選択</li>
+<li><strong>New repository secret</strong> をクリック</li>
+<li>Name と Secret を入力して保存</li>
+</ol>
+<hr />
+<h2 id="_19">トラブルシューティング<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h2>
+<h3 id="sonarcloud_1">SonarCloud 分析が失敗する<a class="headerlink" href="#sonarcloud_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>SONAR_TOKEN</code> が正しく設定されているか確認</li>
+<li>SonarCloud でプロジェクトが存在するか確認</li>
+<li><code>build.gradle.kts</code> の sonar 設定を確認</li>
+</ol>
+<h3 id="qlty_1">Qlty カバレッジがアップロードされない<a class="headerlink" href="#qlty_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>QLTY_COVERAGE_TOKEN</code> が正しく設定されているか確認</li>
+<li>JaCoCo レポートが生成されているか確認</li>
+<li>レポートファイルのパスが正しいか確認</li>
+</ol>
+<h3 id="heroku_1">Heroku デプロイが失敗する<a class="headerlink" href="#heroku_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>HEROKU_API_KEY</code> が有効か確認</li>
+<li>Heroku アプリが存在するか確認</li>
+<li>Docker ビルドがローカルで成功するか確認</li>
+</ol>
+<hr />
+<h2 id="_20">関連ドキュメント<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../frontend_setup/">フロントエンド構築手順書</a> - 開発環境のセットアップ</li>
-<li><a href="../backend_demo_env/">バックエンドデモ環境</a> - バックエンドデモ環境</li>
-<li><a href="../../design/architecture_frontend/">フロントエンドアーキテクチャ</a> - アーキテクチャ設計</li>
+<li><a href="../deploy_demo/">デモ環境デプロイ手順</a></li>
+<li><a href="../backend_demo_env/">バックエンドデモ環境</a></li>
+<li><a href="../frontend_demo_env/">フロントエンドデモ環境</a></li>
+<li><a href="../sonarqube_setup/">SonarQube セットアップガイド</a></li>
 </ul>
 
 
