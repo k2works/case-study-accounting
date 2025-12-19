@@ -168,85 +168,56 @@ CREATE TABLE IF NOT EXISTS accounts (
 - Heroku アカウント作成済み
 - Docker Desktop インストール済み
 
-### デプロイ手順
-
-#### 1. Heroku アプリ作成
-
-```bash
-heroku create accounting-demo --stack container
-```
-
-#### 2. 環境変数設定
-
-```bash
-heroku config:set SPRING_PROFILES_ACTIVE=demo
-heroku config:set JWT_SECRET=$(openssl rand -base64 32)
-```
-
-**注意:** `JWT_SECRET` は必須です。設定しないと起動時にエラーになります。
-
-#### 3. Dockerfile 確認
+### Dockerfile
 
 `apps/backend/Dockerfile` に以下の内容が配置されています:
 
 ```dockerfile
 # ビルドステージ
-FROM gradle:8-jdk21 AS builder
+FROM gradle:ubi10 AS builder
 WORKDIR /app
-COPY apps/backend/ ./
+COPY ./ ./
 RUN gradle build -x test --no-daemon
 
 # 実行ステージ
-# OpenJDK 公式は Docker Hub での更新を停止しているため eclipse-temurin を使用
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
-
-# Heroku では EXPOSE は無視されるが、ドキュメントとして残す
 EXPOSE 8080
-
-# $PORT 変数をシェル形式で渡す
-CMD java -Dserver.port=$PORT -jar app.jar
+CMD ["java", "-Dserver.port=${PORT:-8080}", "-jar", "app.jar"]
 ```
 
 **ビルドコンテキストについて:**
 
-この Dockerfile はプロジェクトルートをビルドコンテキストとして使用します。
-`COPY apps/backend/ ./` でバックエンドのソースコードをコピーしています。
+この Dockerfile は `apps/backend/` ディレクトリをビルドコンテキストとして使用します。
+`COPY ./ ./` でカレントディレクトリ（`apps/backend/`）のソースコードをコピーします。
 
-**Docker イメージのバージョン番号について:**
+### デプロイ手順（Docker コマンド使用・推奨）
 
-Docker Hub のタグ名に含まれる数字は複数の意味を持つ場合があります:
-- `openjdk:25` → Java 25
-- `nanoserver-ltsc2025` → Windows Server 2025（Java バージョンではない）
+サブディレクトリに Dockerfile がある場合は、Docker コマンドで直接ビルド・プッシュする方法が確実です。
 
-混同しやすいため、イメージ選択時は注意してください。
-
-#### 4. heroku.yml 確認
-
-プロジェクトルートの `heroku.yml` で Dockerfile のパスを指定しています:
-
-```yaml
-build:
-  docker:
-    web: ./apps/backend/Dockerfile
-
-run:
-  web: java -Dserver.port=$PORT -Dspring.profiles.active=demo -jar app.jar
-```
-
-`heroku.yml` を使用する場合は、Git push でデプロイします:
+#### 1. Heroku アプリ作成
 
 ```bash
-heroku stack:set container
-git add heroku.yml
-git commit -m "Add heroku.yml"
-git push heroku main
+heroku create アプリ名
 ```
 
-#### 5. Heroku Container Registry にログイン
+#### 2. スタックを container に設定
 
-**重要:** デプロイ前に必ず認証が必要です。
+```bash
+heroku stack:set container -a アプリ名
+```
+
+#### 3. 環境変数設定
+
+```bash
+heroku config:set SPRING_PROFILES_ACTIVE=demo -a アプリ名
+heroku config:set JWT_SECRET=$(openssl rand -base64 32) -a アプリ名
+```
+
+**注意:** `JWT_SECRET` は必須です。設定しないと起動時にエラーになります。
+
+#### 4. Heroku Container Registry にログイン
 
 ```bash
 heroku container:login
@@ -254,42 +225,63 @@ heroku container:login
 
 `Login Succeeded` と表示されれば成功です。
 
-#### 6. デプロイ実行
+#### 5. Docker ビルド
 
-**方法 A: heroku container:push を使用（Dockerfile が標準名の場合）**
+`apps/backend/` をビルドコンテキストとしてビルドします:
 
 ```bash
-heroku container:push web -a アプリ名
-heroku container:release web -a アプリ名
+docker build -t registry.heroku.com/アプリ名/web apps/backend
 ```
 
-**方法 B: Docker コマンドで直接ビルド・プッシュ**
-
-`heroku container:push` は `--dockerfile` オプションをサポートしていないため、
-`apps/backend/Dockerfile` を使用する場合は Docker コマンドで直接ビルドします:
+#### 6. プッシュ
 
 ```bash
-# プロジェクトルートで実行（ビルドコンテキストがルートになる）
-docker build -t registry.heroku.com/アプリ名/web -f apps/backend/Dockerfile .
-
-# プッシュ
 docker push registry.heroku.com/アプリ名/web
+```
 
-# リリース
+#### 7. リリース
+
+```bash
 heroku container:release web -a アプリ名
 ```
 
-#### 7. 動作確認
+#### 8. 動作確認
 
 ```bash
 # ログ確認
 heroku logs --tail -a アプリ名
 
-# アプリを開く
-heroku open -a アプリ名
-
 # ヘルスチェック
-curl https://アプリ名.herokuapp.com/api/health
+curl https://アプリ名.herokuapp.com/actuator/health
+```
+
+### デプロイ手順（heroku.yml 使用・代替）
+
+Git push でデプロイしたい場合は `heroku.yml` を使用します。
+
+#### heroku.yml の設定
+
+プロジェクトルートに `heroku.yml` を作成:
+
+```yaml
+build:
+  docker:
+    web: apps/backend/Dockerfile
+
+run:
+  web: java -Dserver.port=$PORT -Dspring.profiles.active=demo -jar app.jar
+```
+
+**重要:**
+- Dockerfile のパスは `heroku.yml` からの相対パスで指定
+- ビルドコンテキストは Dockerfile があるディレクトリに自動設定される
+- `context` オプションは存在しない（[公式ドキュメント](https://devcenter.heroku.com/ja/articles/build-docker-images-heroku-yml)参照）
+
+#### デプロイ実行
+
+```bash
+heroku stack:set container -a アプリ名
+git push heroku main
 ```
 
 ### データリセット
@@ -367,10 +359,10 @@ heroku config -a アプリ名
 `heroku container:push` は `--dockerfile` オプションをサポートしていません。
 
 **解決策:**
-1. `heroku.yml` でパスを指定して Git push でデプロイ（推奨）
-2. `docker build -f apps/backend/Dockerfile .` で直接ビルドしてプッシュ
+1. `docker build apps/backend` でサブディレクトリをコンテキストとしてビルド（推奨）
+2. `heroku.yml` で Dockerfile パスを指定して Git push でデプロイ
 
-詳細は「デプロイ実行」セクションを参照してください。
+詳細は「デプロイ手順」セクションを参照してください。
 
 ### Heroku: App crashed (H10 エラー)
 

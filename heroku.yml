@@ -1,6 +1,6 @@
 build:
   docker:
-    web: ./apps/backend/Dockerfile
+    web: apps/backend/Dockerfile
 
 run:
   web: java -Dserver.port=$PORT -Dspring.profiles.active=demo -jar app.jar
