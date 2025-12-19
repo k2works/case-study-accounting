@@ -26,11 +26,14 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // Database
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4")
     runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2") // Demo環境用
+    runtimeOnly("org.springframework.boot:spring-boot-h2console") // H2 Console (Spring Boot 4.0+)
 
     // Migration
     implementation("org.flywaydb:flyway-core")

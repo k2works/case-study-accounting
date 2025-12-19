@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: accounting-backend
+
+  # Flyway 自動構成を除外
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+
+  # H2 インメモリデータベース（デモ用）
+  datasource:
+    url: jdbc:h2:mem:accounting_demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # H2 コンソール（デバッグ用）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  # SQL 初期化
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/demo-data.sql
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.example.accounting.domain
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+
+server:
+  port: ${PORT:8080}
+
+jwt:
+  secret: ${JWT_SECRET:demo-secret-key-for-demonstration-purposes-only-do-not-use-in-production}
+  expiration: 86400000
+  refresh-expiration: 604800000
+
+# Actuator（ヘルスチェック・デバッグ用）
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: "*"
+      base-path: /actuator
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    info:
+      enabled: true
+    env:
+      enabled: true
+      show-values: always
+
+logging:
+  level:
+    root: INFO
+    com.example.accounting: INFO
+  pattern:
+    console: "[%thread] %-5level %logger{36} - %msg%n"
