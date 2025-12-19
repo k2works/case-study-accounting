@@ -166,26 +166,11 @@ tasks.register("fullCheck") {
     dependsOn("test", "qualityCheck", "jacocoTestReport")
 }
 
-// SonarCloud
+// SonarCloud (最小構成)
 sonar {
     properties {
         property("sonar.projectKey", "k2works_case-study-accounting-backend")
         property("sonar.organization", "k2works")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.projectName", "Accounting Backend")
-        property("sonar.sourceEncoding", "UTF-8")
-        property("sonar.sources", "src/main/java")
-        property("sonar.tests", "src/test/java")
-        property("sonar.java.binaries", "build/classes/java/main")
-        property("sonar.java.test.binaries", "build/classes/java/test")
-        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
-        property("sonar.java.checkstyle.reportPaths", "build/reports/checkstyle/main.xml,build/reports/checkstyle/test.xml")
-        property("sonar.java.pmd.reportPaths", "build/reports/pmd/main.xml,build/reports/pmd/test.xml")
-        property("sonar.java.spotbugs.reportPaths", "build/reports/spotbugs/main.xml,build/reports/spotbugs/test.xml")
     }
-}
-
-// SonarQube タスク依存関係
-tasks.named("sonar") {
-    dependsOn("test", "jacocoTestReport")
 }
