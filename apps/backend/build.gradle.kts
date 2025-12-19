@@ -7,7 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.spotbugs") version "6.0.27"
     id("org.dddjava.jig-gradle-plugin") version "2025.11.1"
-    id("org.sonarqube") version "7.2.1.6560"
+    id("org.sonarqube") version "7.0.1.6134"
 }
 
 group = "com.example"
