@@ -46,5 +46,6 @@ jobs:
           ./gradlew build sonar --info \
             -Dsonar.projectKey=k2works_case-study-accounting-backend \
             -Dsonar.organization=k2works \
-            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN
         working-directory: apps/backend
