@@ -12,15 +12,20 @@ interface FormErrors {
   password?: string;
 }
 
-// 開発環境用のデフォルト認証情報
-const DEV_CREDENTIALS = {
+// デフォルト認証情報（開発/デモ環境用）
+const DEFAULT_CREDENTIALS = {
   username: 'admin',
   password: 'Password123!',
 };
 
+// 開発環境またはデモモードの場合はデフォルト値を設定
+const shouldUseDefaultCredentials = (): boolean => {
+  return import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true';
+};
+
 const getInitialFormData = (): FormData => ({
-  username: import.meta.env.DEV ? DEV_CREDENTIALS.username : '',
-  password: import.meta.env.DEV ? DEV_CREDENTIALS.password : '',
+  username: shouldUseDefaultCredentials() ? DEFAULT_CREDENTIALS.username : '',
+  password: shouldUseDefaultCredentials() ? DEFAULT_CREDENTIALS.password : '',
 });
 
 const validateFormData = (formData: FormData): FormErrors => {
@@ -78,7 +83,7 @@ export const LoginForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await login(formData.username, formData.password);
+      await login(formData.username.trim(), formData.password.trim());
     } catch (error) {
       setLoginError(getErrorMessage(error));
     } finally {
