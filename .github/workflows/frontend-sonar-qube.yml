@@ -11,6 +11,7 @@ on:
     paths:
       - 'apps/frontend/**'
       - '.github/workflows/frontend-sonar-qube.yml'
+  workflow_dispatch:
 
 defaults:
   run:
