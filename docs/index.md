@@ -1,7 +1,8 @@
 # プロジェクトポータル
 
-## 開発ツール
-
+- [フロントエンド](http://localhost:3001){:target="_blank"} - React アプリケーション
+- [バックエンド API](http://localhost:8081){:target="_blank"} - Spring Boot API サーバー
+- [Swagger UI](http://localhost:8081/swagger-ui.html){:target="_blank"} - API ドキュメント
 - [Adminer](http://localhost:8888){:target="_blank"} - データベース管理ツール
 - [SonarQube](http://localhost:9000){:target="_blank"} - コード品質分析ツール
 - [SchemaSpy ER 図](./assets/schemaspy-output/index.html){:target="_blank"} - データベース ER 図

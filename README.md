@@ -51,7 +51,8 @@ case-study-accounting/
 ├── .github/                 # GitHub Actions ワークフロー
 ├── CLAUDE.md                # AI Agent 実行ガイドライン
 ├── Dockerfile               # Docker イメージ定義
-├── docker-compose.yml       # Docker Compose 設定
+├── docker-compose.yml       # Docker Compose 設定（開発環境）
+├── docker-compose-demo.yml  # Docker Compose 設定（デモ環境）
 ├── gulpfile.js              # Gulp タスク定義
 ├── mkdocs.yml               # MkDocs 設定
 └── package.json             # npm パッケージ設定
@@ -331,6 +332,46 @@ docker compose down
 - `deploy:frontend:build` - フロントエンドの Docker イメージをビルド
 - `deploy:frontend:push` - フロントエンドのイメージをプッシュ
 - `deploy:frontend:release` - フロントエンドをリリース
+
+##### Docker Compose ビルドタスク
+
+開発環境（docker-compose.yml）とデモ環境（docker-compose-demo.yml）を Gulp タスクで管理できます。
+
+- 開発環境をビルドして起動:
+  ```
+  npx gulp build:dev:start
+  ```
+
+- デモ環境をビルドして起動:
+  ```
+  npx gulp build:demo:start
+  ```
+
+- 環境を停止:
+  ```
+  npx gulp build:down:dev   # 開発環境
+  npx gulp build:down:demo  # デモ環境
+  ```
+
+- ログを表示:
+  ```
+  npx gulp build:logs:dev   # 開発環境
+  npx gulp build:logs:demo  # デモ環境
+  ```
+
+- 状態を確認:
+  ```
+  npx gulp build:status:dev   # 開発環境
+  npx gulp build:status:demo  # デモ環境
+  ```
+
+個別のステップを実行する場合:
+- `build:dev` - 開発環境をビルド
+- `build:demo` - デモ環境をビルド
+- `build:up:dev` - 開発環境を起動
+- `build:up:demo` - デモ環境を起動
+
+デモ環境は H2 インメモリデータベースを使用し、フロントエンドはデモモード（認証情報自動入力）で起動します。
 
 #### GitHub Container Registry
 
