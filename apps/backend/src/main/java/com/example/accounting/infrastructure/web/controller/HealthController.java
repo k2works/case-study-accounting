@@ -1,5 +1,8 @@
 package com.example.accounting.infrastructure.web.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,8 +14,12 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * ヘルスチェックコントローラ
+ */
 @RestController
 @RequestMapping("/api")
+@Tag(name = "ヘルスチェック", description = "システムの稼働状態を確認する API")
 public class HealthController {
 
     private final DataSource dataSource;
@@ -21,6 +28,11 @@ public class HealthController {
         this.dataSource = dataSource;
     }
 
+    @Operation(
+            summary = "ヘルスチェック",
+            description = "アプリケーションとデータベースの稼働状態を返します"
+    )
+    @ApiResponse(responseCode = "200", description = "システム稼働状態")
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new LinkedHashMap<>();

@@ -53,10 +53,17 @@ public class SecurityConfig {
                 // 認可設定
                 .authorizeHttpRequests(auth -> auth
                         // 認証不要
+                        .requestMatchers("/").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/health/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+
+                        // Swagger UI / OpenAPI
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api-docs/**").permitAll()
 
                         // ユーザー管理は ADMIN のみ
                         .requestMatchers("/api/users/**").hasRole("ADMIN")

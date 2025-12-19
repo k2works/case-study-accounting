@@ -48,6 +48,9 @@ dependencies {
     // Vavr (関数型プログラミング)
     implementation("io.vavr:vavr:0.10.4")
 
+    // OpenAPI / Swagger UI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
