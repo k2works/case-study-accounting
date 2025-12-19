@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+
+echo "Running pre-commit quality checks..."
+
+# Frontend quality check using lint-staged
+echo "[Frontend] Running lint-staged..."
+npx lint-staged --allow-empty
+
+# Backend quality check (only if backend files changed)
+BACKEND_CHANGED=$(git diff --cached --name-only | grep -E "^apps/backend/" || true)
+if [ -n "$BACKEND_CHANGED" ]; then
+    echo "[Backend] Running quality checks..."
+    (cd apps/backend && ./gradlew.bat check --console=plain) || exit 1
+fi
+
+echo "Pre-commit checks completed!"
