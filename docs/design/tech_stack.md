@@ -53,6 +53,7 @@
 | ビルド | Gradle | 9.2.1 | ビルドツール |
 | 関数型 | Vavr | 0.10.4 | 関数型プログラミング |
 | 認証 | JJWT | 0.12.6 | JWT トークン処理 |
+| API ドキュメント | springdoc-openapi | 2.8.8 | OpenAPI / Swagger UI |
 | ユーティリティ | Lombok | - | ボイラープレート削減 |
 | テスト | JUnit 5 | 5.11.x | テストフレームワーク |
 | テスト | Testcontainers | 1.20.4 | テスト用 DB コンテナ |
@@ -280,6 +281,50 @@ MyBatis のマッパーからデータベーススキーマを解析し、ER 図
 | 自動生成 | コードから ER 図を自動生成 |
 | 常に最新 | コード変更時に再生成で同期 |
 | 保守性 | ドキュメントの手動メンテナンス不要 |
+
+### springdoc-openapi 選定理由
+
+API ドキュメントの自動生成と対話的なテスト環境として springdoc-openapi を採用しました。
+
+```plantuml
+@startuml
+title springdoc-openapi による API ドキュメント生成
+
+[*] --> Controller解析
+Controller解析 : @RestController, @RequestMapping
+Controller解析 --> アノテーション解析
+アノテーション解析 : @Operation, @ApiResponse, @Schema
+アノテーション解析 --> OpenAPI仕様生成
+OpenAPI仕様生成 : openapi.yaml / openapi.json
+OpenAPI仕様生成 --> SwaggerUI表示
+SwaggerUI表示 : ブラウザでAPI確認・テスト
+SwaggerUI表示 --> [*]
+@enduml
+```
+
+| 機能 | 説明 |
+|------|------|
+| OpenAPI 仕様生成 | Controller から OpenAPI 3.0 仕様を自動生成 |
+| Swagger UI | ブラウザベースの API ドキュメント・テストツール |
+| JWT 認証対応 | Bearer トークン認証をサポート |
+| スキーマ定義 | DTO から JSON スキーマを自動生成 |
+
+#### springdoc-openapi のメリット
+
+| メリット | 説明 |
+|---------|------|
+| コード同期 | Controller の変更が即座にドキュメントに反映 |
+| 対話的テスト | Swagger UI から直接 API を実行・テスト可能 |
+| フロントエンド連携 | OpenAPI 仕様から Orval で TypeScript コードを生成 |
+| チーム連携 | API 仕様を共有し、フロントエンド開発を並行実施 |
+
+#### アクセス URL
+
+| URL | 説明 |
+|-----|------|
+| `/swagger-ui.html` | Swagger UI（API ドキュメント・テスト画面） |
+| `/v3/api-docs` | OpenAPI 仕様（JSON 形式） |
+| `/api-docs.yaml` | OpenAPI 仕様（YAML 形式） |
 
 ---
 
@@ -585,6 +630,9 @@ stop
 ** 関数型・ユーティリティ
 *** Vavr 0.10.4
 *** JJWT 0.12.6
+** API ドキュメント
+*** springdoc-openapi 2.8.8
+*** Swagger UI
 ** テスト
 *** JUnit 5
 *** Testcontainers 1.20.4

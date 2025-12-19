@@ -86,6 +86,7 @@ nav:
       - イテレーション計画:
           - イテレーション1: development/iteration_plan-1.md
   - 運用:
+      - 開発環境解説: operation/dev_env.md
       - 開発コンテナ構築手順書: operation/dev_container.md
       - バックエンド構築手順書: operation/backend_setup.md
       - バックエンドデモ環境: operation/backend_demo_env.md

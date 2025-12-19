@@ -83,6 +83,27 @@ cd apps/backend && ./gradlew test --tests "UserServiceTest"
 cd apps/backend && ./gradlew jacocoTestReport
 ```
 
+### API ドキュメント
+
+バックエンドには Swagger UI が組み込まれており、API ドキュメントをブラウザで確認できます。
+
+```bash
+# バックエンドを起動
+cd apps/backend && ./gradlew bootRun
+
+# ブラウザでアクセス
+# Swagger UI: http://localhost:8080/swagger-ui.html
+# OpenAPI JSON: http://localhost:8080/v3/api-docs
+# OpenAPI YAML: http://localhost:8080/api-docs.yaml
+```
+
+#### Swagger UI の機能
+
+- **API 仕様の確認**: 全エンドポイントの詳細を表示
+- **リクエスト実行**: ブラウザから直接 API をテスト
+- **認証サポート**: JWT トークンを設定して認証付き API をテスト
+- **スキーマ確認**: リクエスト/レスポンスの型定義を確認
+
 ### Claude との連携
 
 ```bash

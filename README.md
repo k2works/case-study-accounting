@@ -105,6 +105,7 @@ docker compose down
 
 - フロントエンド: http://localhost:3001
 - バックエンド API: http://localhost:8081
+- **Swagger UI**: http://localhost:8081/swagger-ui.html
 - Adminer: http://localhost:8888
 - MkDocs: http://localhost:8000
 - SonarQube: http://localhost:9000
