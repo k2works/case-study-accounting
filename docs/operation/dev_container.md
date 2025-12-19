@@ -28,12 +28,13 @@
 ```
 project-root/
 ├── docker-compose.yml            # Docker Compose 設定
-├── docker/
-│   ├── postgres/
-│   │   └── init/
-│   │       └── 01-init.sql       # PostgreSQL 初期化スクリプト
-│   └── schemaspy/
-│       └── Dockerfile            # SchemaSpy カスタムイメージ
+├── ops/
+│   └── docker/
+│       ├── postgres/
+│       │   └── init/
+│       │       └── 01-init.sql   # PostgreSQL 初期化スクリプト
+│       └── schemaspy/
+│           └── Dockerfile        # SchemaSpy カスタムイメージ
 ├── docs/
 │   └── Dockerfile                # MkDocs イメージ
 ├── schemaspy-output/             # SchemaSpy 出力先
@@ -134,10 +135,10 @@ jdbc:postgresql://localhost:5432/accounting
 
 **初期化スクリプト:**
 
-`docker/postgres/init/` 配下の SQL ファイルがコンテナ起動時に自動実行されます。
+`ops/docker/postgres/init/` 配下の SQL ファイルがコンテナ起動時に自動実行されます。
 
 ```sql
--- docker/postgres/init/01-init.sql
+-- ops/docker/postgres/init/01-init.sql
 SET timezone = 'Asia/Tokyo';
 ```
 
@@ -199,7 +200,7 @@ open schemaspy-output/index.html
 日本語フォント対応のため、カスタムイメージを使用しています。
 
 ```dockerfile
-# docker/schemaspy/Dockerfile
+# ops/docker/schemaspy/Dockerfile
 FROM schemaspy/schemaspy:latest
 
 USER root

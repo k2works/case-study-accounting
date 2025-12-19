@@ -842,7 +842,7 @@ package "docs/release" {
 
 ```bash
 #!/bin/bash
-# scripts/generate-release-docs.sh
+# ops/scripts/generate-release-docs.sh
 
 VERSION=$1
 if [ -z "$VERSION" ]; then
@@ -1146,7 +1146,7 @@ app:
 
 ```bash
 #!/bin/bash
-# scripts/release.sh
+# ops/scripts/release.sh
 
 VERSION=$1
 if [ -z "$VERSION" ]; then
@@ -1273,7 +1273,7 @@ spring:
 
 ```bash
 #!/bin/bash
-# scripts/migrate-production.sh
+# ops/scripts/migrate-production.sh
 
 # 1. バックアップ
 echo "Creating database backup..."

@@ -33,7 +33,9 @@ case-study-accounting/
 │   ├── requirements/        #   要件定義
 │   ├── template/            #   テンプレート
 │   └── wiki/                #   Wiki
-├── scripts/                 # ユーティリティスクリプト
+├── ops/                     # 運用関連
+│   ├── docker/              #   Docker 設定
+│   └── scripts/             #   ユーティリティスクリプト
 ├── .claude/                 # Claude Code 設定
 ├── .devcontainer/           # Dev Container 設定
 ├── .github/                 # GitHub Actions ワークフロー

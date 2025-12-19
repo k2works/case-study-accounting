@@ -733,10 +733,11 @@ case-study-accounting/
 │   ├── assets/               # 図表、仕様書
 │   ├── reference/            # リファレンスガイド
 │   └── wiki/                 # 開発 Wiki
-├── docker/                   # Docker 設定
-│   ├── postgres/
-│   └── mysql/
-├── scripts/                  # ビルド・開発スクリプト
+├── ops/
+│   ├── docker/               # Docker 設定
+│   │   ├── postgres/
+│   │   └── mysql/
+│   └── scripts/              # ビルド・開発スクリプト
 └── docker-compose.yml
 ```
 

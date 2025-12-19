@@ -5,11 +5,11 @@
  */
 
 import gulp from 'gulp';
-import mkdocsTasks from './scripts/mkdocs.js';
-import journalTasks from './scripts/journal.js';
-import sonarTasks from './scripts/sonar.js';
-import schemaspyTasks from './scripts/schemaspy.js';
-import deployTasks from './scripts/deploy.js';
+import mkdocsTasks from './ops/scripts/mkdocs.js';
+import journalTasks from './ops/scripts/journal.js';
+import sonarTasks from './ops/scripts/sonar.js';
+import schemaspyTasks from './ops/scripts/schemaspy.js';
+import deployTasks from './ops/scripts/deploy.js';
 
 // Load gulp tasks from script modules
 mkdocsTasks(gulp);
