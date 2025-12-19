@@ -230,6 +230,52 @@ npm start
 
 生成された ER 図は `docs/assets/schemaspy-output/` ディレクトリに保存されます。
 
+##### Heroku デプロイタスク
+
+- バックエンドのデプロイ:
+  ```
+  npx gulp deploy:backend
+  ```
+
+- フロントエンドのデプロイ:
+  ```
+  npx gulp deploy:frontend
+  ```
+
+- 全アプリケーションの一括デプロイ:
+  ```
+  npx gulp deploy:all
+  ```
+
+- デプロイ状態の確認:
+  ```
+  npx gulp deploy:status
+  ```
+
+- バックエンドのログ表示:
+  ```
+  npx gulp deploy:backend:logs
+  ```
+
+- フロントエンドのログ表示:
+  ```
+  npx gulp deploy:frontend:logs
+  ```
+
+- アプリケーションをブラウザで開く:
+  ```
+  npx gulp deploy:open
+  ```
+
+個別のステップを実行する場合:
+- `deploy:login` - Heroku Container Registry にログイン
+- `deploy:backend:build` - バックエンドの Docker イメージをビルド
+- `deploy:backend:push` - バックエンドのイメージをプッシュ
+- `deploy:backend:release` - バックエンドをリリース
+- `deploy:frontend:build` - フロントエンドの Docker イメージをビルド
+- `deploy:frontend:push` - フロントエンドのイメージをプッシュ
+- `deploy:frontend:release` - フロントエンドをリリース
+
 #### GitHub Container Registry
 
 このプロジェクトでは、GitHub Container Registry（GHCR）を使用して開発コンテナイメージを管理しています。
