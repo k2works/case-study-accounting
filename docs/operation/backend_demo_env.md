@@ -185,9 +185,9 @@ heroku config:set JWT_SECRET=$(openssl rand -base64 32)
 
 **注意:** `JWT_SECRET` は必須です。設定しないと起動時にエラーになります。
 
-#### 3. Dockerfile 作成
+#### 3. Dockerfile 確認
 
-プロジェクトルートに以下の Dockerfile を作成:
+`apps/backend/Dockerfile` に以下の内容が配置されています:
 
 ```dockerfile
 # ビルドステージ
@@ -209,6 +209,11 @@ EXPOSE 8080
 CMD java -Dserver.port=$PORT -jar app.jar
 ```
 
+**ビルドコンテキストについて:**
+
+この Dockerfile はプロジェクトルートをビルドコンテキストとして使用します。
+`COPY apps/backend/ ./` でバックエンドのソースコードをコピーしています。
+
 **Docker イメージのバージョン番号について:**
 
 Docker Hub のタグ名に含まれる数字は複数の意味を持つ場合があります:
@@ -217,14 +222,14 @@ Docker Hub のタグ名に含まれる数字は複数の意味を持つ場合が
 
 混同しやすいため、イメージ選択時は注意してください。
 
-#### 4. heroku.yml 作成（オプション）
+#### 4. heroku.yml 確認
 
-`heroku.yml` を使用すると、カスタム Dockerfile 名を指定できます:
+プロジェクトルートの `heroku.yml` で Dockerfile のパスを指定しています:
 
 ```yaml
 build:
   docker:
-    web: Docker-demo  # カスタム Dockerfile 名
+    web: ./apps/backend/Dockerfile
 
 run:
   web: java -Dserver.port=$PORT -Dspring.profiles.active=demo -jar app.jar
@@ -258,31 +263,21 @@ heroku container:push web -a アプリ名
 heroku container:release web -a アプリ名
 ```
 
-**方法 B: カスタム Dockerfile 名を使用する場合**
+**方法 B: Docker コマンドで直接ビルド・プッシュ**
 
-`heroku container:push` は `--dockerfile` オプションをサポートしていません。
-以下のいずれかの方法を使用してください:
+`heroku container:push` は `--dockerfile` オプションをサポートしていないため、
+`apps/backend/Dockerfile` を使用する場合は Docker コマンドで直接ビルドします:
 
-1. **一時的にファイル名を変更:**
-   ```bash
-   # Windows (PowerShell)
-   mv Docker-demo Dockerfile; heroku container:push web; mv Dockerfile Docker-demo
+```bash
+# プロジェクトルートで実行（ビルドコンテキストがルートになる）
+docker build -t registry.heroku.com/アプリ名/web -f apps/backend/Dockerfile .
 
-   # Mac / Linux
-   mv Docker-demo Dockerfile && heroku container:push web && mv Dockerfile Docker-demo
-   ```
+# プッシュ
+docker push registry.heroku.com/アプリ名/web
 
-2. **Docker コマンドで直接ビルド・プッシュ:**
-   ```bash
-   # ビルド（Docker-demo を指定）
-   docker build -t registry.heroku.com/アプリ名/web -f Docker-demo .
-
-   # プッシュ
-   docker push registry.heroku.com/アプリ名/web
-
-   # リリース
-   heroku container:release web -a アプリ名
-   ```
+# リリース
+heroku container:release web -a アプリ名
+```
 
 #### 7. 動作確認
 
@@ -367,14 +362,13 @@ heroku config:set JWT_SECRET=$(openssl rand -base64 32) -a アプリ名
 heroku config -a アプリ名
 ```
 
-### Heroku: カスタム Dockerfile 名を指定できない
+### Heroku: サブディレクトリの Dockerfile を使用したい
 
 `heroku container:push` は `--dockerfile` オプションをサポートしていません。
 
 **解決策:**
-1. ファイル名を一時的に `Dockerfile` に変更
-2. `heroku.yml` を使用して Git push でデプロイ
-3. `docker build -f` で直接ビルドしてプッシュ
+1. `heroku.yml` でパスを指定して Git push でデプロイ（推奨）
+2. `docker build -f apps/backend/Dockerfile .` で直接ビルドしてプッシュ
 
 詳細は「デプロイ実行」セクションを参照してください。
 
