@@ -1,43 +1,36 @@
 ## Development Guide Reference
 
-コーディングとテストガイドを参照し、TDD サイクルに従った開発を支援します。
+開発フェーズ全体の作業を支援するコマンド。TDD サイクルに従った開発ワークフローを表示します。
 
 ### 使い方
 
 ```bash
-/dev [オプション]
+/dev
 ```
-
-### オプション
-
-- なし : ガイド全体の要約と TDD サイクルの説明
-- `--tdd` : TDD の Red-Green-Refactor サイクルの詳細
-- `--approach` : インサイドアウト/アウトサイドインアプローチの選択指針
-- `--checklist` : コミット前の品質チェックリスト表示
-- `--refactor` : リファクタリングパターンの一覧
-- `--test` : テスト作成のベストプラクティス
 
 ### 基本例
 
 ```bash
-# TDD サイクルの開始
-/dev --tdd
-「現在のタスクに対して Red-Green-Refactor サイクルを開始」
-
-# アプローチ戦略の確認
-/dev --approach
-「実装アプローチ（インサイドアウト/アウトサイドイン）の選択を支援」
-
-# 品質チェックの実行
-/dev --checklist
-「コミット前の必須確認事項を順次実行」
-
-# リファクタリング支援
-/dev --refactor
-「現在のコードに適用可能なリファクタリングパターンを提案」
+# 開発フェーズ全体のワークフロー表示
+/dev
+「開発フェーズの全体的な進め方と TDD サイクルの説明」
 ```
 
 ### 詳細機能
+
+#### 開発フェーズの全体像
+
+開発フェーズは以下の工程で構成されます：
+
+1. **バックエンド開発** (`/dev-backend`)
+   - Java/Kotlin での実装
+   - Gradle によるビルド・テスト
+   - インサイドアウトアプローチ推奨
+
+2. **フロントエンド開発** (`/dev-frontend`)
+   - TypeScript/React での実装
+   - npm によるビルド・テスト
+   - アウトサイドインアプローチ推奨
 
 #### TDD サイクルの実践
 
@@ -48,42 +41,40 @@ Red-Green-Refactor サイクルを厳密に実行：
 3. **Refactor フェーズ**: 重複を除去し設計を改善
 4. @docs/reference/コーディングとテストガイド.md のワークフローに従う
 
-```bash
-# 新機能の TDD 実装開始
-/dev --tdd
-「User エンティティのテストから開始します」
-```
+#### 参照ドキュメント
+
 - @docs/design/architecture_backend.md を参照
 - @docs/design/architecture_frontend.md を参照
 - @docs/design/data-model.md を参照
 - @docs/design/domain-model.md を参照
 - @docs/design/tech_stack.md を参照
+- @docs/design/ui-design.md を参照
+- @docs/design/test_strategy.md を参照
 - 作業完了後に対象のイテレーション @docs/development/iteration_plan-N.md の進捗を更新する
 
 #### アプローチ戦略の選択
 
 プロジェクトの状態に応じた最適なアプローチを選択：
 
-- **インサイドアウト**: データ層から開始し上位層へ展開
-- **アウトサイドイン**: UI から開始しドメインロジックを段階的に実装
+- **インサイドアウト**: データ層から開始し上位層へ展開（バックエンド推奨）
+- **アウトサイドイン**: UI から開始しドメインロジックを段階的に実装（フロントエンド推奨）
 
 ### Claude との連携
 
 ```bash
-# 現在のコードを分析してリファクタリング提案
-cat src/User.java
-/dev --refactor
-「このクラスに適用可能なリファクタリングパターンを分析」
+# プロジェクト情報の確認後に開発開始
+ls -la apps/
+cat README.md
+/dev
+「プロジェクトの現状を踏まえた開発フェーズの進め方を提案」
 
-# テストカバレッジを確認してテスト追加
-npm run test:coverage
-/dev --test
-「カバレッジが低い箇所のテストを追加」
+# バックエンド開発の開始
+/dev-backend --tdd
+「User エンティティのテストから開始します」
 
-# コミット前の品質確認
-git status
-/dev --checklist
-「全ての品質基準を満たすまで確認を実行」
+# フロントエンド開発の開始
+/dev-frontend --tdd
+「LoginForm コンポーネントのテストから開始します」
 ```
 
 ### 注意事項
@@ -101,6 +92,5 @@ git status
 
 ### 関連コマンド
 
-- `/task` : タスク管理と TODO リストの作成
-- `/review` : コードレビューの実施
-- `/test` : テスト実行と結果確認
+- `/dev-backend` : バックエンド開発ガイド
+- `/dev-frontend` : フロントエンド開発ガイド
