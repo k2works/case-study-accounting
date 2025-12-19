@@ -105,3 +105,9 @@ jobs:
       with:
         name: spotbugs-report
         path: apps/backend/build/reports/spotbugs
+
+    - name: Upload coverage to Codecov
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: apps/backend/build/reports/jacoco/test/jacocoTestReport.xml

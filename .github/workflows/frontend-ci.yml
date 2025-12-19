@@ -63,3 +63,9 @@ jobs:
       with:
         name: build-artifacts
         path: apps/frontend/dist
+
+    - name: Upload coverage to Codecov
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: apps/frontend/coverage/lcov.info
