@@ -2,7 +2,7 @@ name: SonarQube
 on:
   push:
     branches:
-      - main
+      - test
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
@@ -42,5 +42,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BACKEND }}
-        run: ./gradlew build sonar --info
+        run: |
+          ./gradlew build sonar --info \
+            -Dsonar.projectKey=k2works_case-study-accounting-backend \
+            -Dsonar.organization=k2works \
+            -Dsonar.host.url=https://sonarcloud.io
         working-directory: apps/backend

@@ -7,7 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.spotbugs") version "6.0.27"
     id("org.dddjava.jig-gradle-plugin") version "2025.11.1"
-    id("org.sonarqube") version "7.0.1.6134"
+    id("org.sonarqube") version "7.2.1.6560"
 }
 
 group = "com.example"
@@ -166,11 +166,6 @@ tasks.register("fullCheck") {
     dependsOn("test", "qualityCheck", "jacocoTestReport")
 }
 
-// SonarCloud (最小構成)
+// SonarCloud (最小構成 - 設定はワークフローで渡す)
 sonar {
-    properties {
-        property("sonar.projectKey", "k2works_case-study-accounting-backend")
-        property("sonar.organization", "k2works")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
 }
