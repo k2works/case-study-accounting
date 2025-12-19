@@ -23,9 +23,29 @@ public class OpenApiConfig {
     @Value("${spring.application.name:Accounting API}")
     private String applicationName;
 
+    @Value("${openapi.server.url:}")
+    private String serverUrl;
+
     @Bean
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
+
+        List<Server> servers = new java.util.ArrayList<>();
+
+        // 環境変数で指定されたサーバー（Heroku等）
+        if (serverUrl != null && !serverUrl.isBlank()) {
+            servers.add(new Server()
+                    .url(serverUrl)
+                    .description("本番/デモ環境"));
+        }
+
+        // デフォルトサーバー
+        servers.add(new Server()
+                .url("http://localhost:8080")
+                .description("ローカル開発環境"));
+        servers.add(new Server()
+                .url("http://localhost:8081")
+                .description("Docker Compose 環境"));
 
         return new OpenAPI()
                 .info(new Info()
@@ -56,10 +76,7 @@ public class OpenApiConfig {
                         .license(new License()
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
-                .servers(List.of(
-                        new Server()
-                                .url("http://localhost:8080")
-                                .description("ローカル開発環境")))
+                .servers(servers)
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName, new SecurityScheme()
