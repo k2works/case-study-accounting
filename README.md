@@ -1,5 +1,13 @@
 # 会計システムのケーススタディ
 
+[![Backend CI](https://github.com/k2works/case-study-accounting/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-ci.yml)
+[![Backend Deploy to Heroku](https://github.com/k2works/case-study-accounting/actions/workflows/backend-deploy.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/backend-deploy.yml)
+[![Frontend Deploy to Heroku](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-deploy.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/frontend-deploy.yml)
+[![Deploy MkDocs](https://github.com/k2works/case-study-accounting/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/k2works/case-study-accounting/actions/workflows/mkdocs.yml)
+[![Maintainability](https://qlty.sh/gh/k2works/projects/case-study-accounting/maintainability.svg)](https://qlty.sh/gh/k2works/projects/case-study-accounting)
+[![Code Coverage](https://qlty.sh/gh/k2works/projects/case-study-accounting/coverage.svg)](https://qlty.sh/gh/k2works/projects/case-study-accounting)
+
 ## 概要
 
 会計システムの設計・開発に関するケーススタディプロジェクトです。
