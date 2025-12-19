@@ -158,10 +158,10 @@
 |----------|---------|---------|------|------|
 | COMMON-01 | 開発環境セットアップ確認 | 2h | - | 完了 |
 | COMMON-02 | DB マイグレーション設定 | 2h | - | 完了 |
-| COMMON-03 | JWT ライブラリ選定・検証（スパイク） | 4h | - | 未着手 |
+| COMMON-03 | JWT ライブラリ選定・検証（スパイク） | 4h | - | 完了 |
 | COMMON-04 | API 共通エラーハンドリング実装 | 3h | - | 完了 |
-| COMMON-05 | フロントエンド共通レイアウト実装 | 4h | - | 未着手 |
-| COMMON-06 | CI/CD パイプライン確認 | 2h | - | 未着手 |
+| COMMON-05 | フロントエンド共通レイアウト実装 | 4h | - | 完了 |
+| COMMON-06 | CI/CD パイプライン確認 | 2h | - | 完了 |
 | | **小計** | **17h** | | |
 
 ### 完了した共通タスク詳細
@@ -208,17 +208,43 @@ apps/backend/
 - ArchUnit（アーキテクチャテスト）
 - JWT ライブラリ
 
-#### COMMON-02: DB マイグレーション設定（未着手）
-
-次のステップで実施予定:
+#### COMMON-02: DB マイグレーション設定（完了）
 
 - Flyway 設定を application.yml に追加
-- 初期マイグレーション作成
+- 初期マイグレーション `V1__create_accounts_table.sql` 作成
+- PostgreSQL 16 + Testcontainers による統合テスト環境構築
 
-#### COMMON-04: API 共通エラーハンドリング実装（一部完了）
+#### COMMON-03: JWT ライブラリ選定・検証（完了）
 
-- ヘルスチェック API `/api/health` を実装
-- GlobalExceptionHandler は次のステップで実装予定
+- jjwt ライブラリ（0.12.6）を選定
+- JwtService 実装（トークン生成・検証）
+- JwtProperties による設定管理
+- 単体テスト作成済み
+
+#### COMMON-04: API 共通エラーハンドリング実装（完了）
+
+- ヘルスチェック API `/api/health` 実装
+- GlobalExceptionHandler 実装
+- BusinessException, ResourceNotFoundException 実装
+- ErrorResponse DTO 実装
+
+#### COMMON-05: フロントエンド共通レイアウト実装（完了）
+
+- React + TypeScript + Vite 環境構築
+- TanStack Query によるデータフェッチ
+- MSW によるモック環境
+- ESLint + Prettier 設定
+- Vitest + Cypress テスト環境
+
+#### COMMON-06: CI/CD パイプライン確認（完了）
+
+- GitHub Actions ワークフロー構築
+  - backend-ci.yml: ビルド、テスト、静的解析
+  - frontend-ci.yml: ビルド、テスト、Lint
+  - backend-deploy.yml: Heroku デプロイ
+  - frontend-deploy.yml: Heroku デプロイ
+- Docker Compose 開発環境
+- Heroku Container デモ環境
 
 ---
 
@@ -380,3 +406,4 @@ gantt
 |------|---------|--------|
 | 2026-01-05 | 初版作成 | - |
 | 2025-12-18 | バックエンド環境構築完了（COMMON-01, 02, 04） | Claude |
+| 2025-12-19 | 共通タスク全完了（COMMON-03, 05, 06） | Claude |
