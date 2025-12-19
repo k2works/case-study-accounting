@@ -516,42 +516,38 @@ jobs:
 
 ## 本番環境構成（デモ用）
 
-### Heroku Container + H2 インメモリ構成
+### Heroku Container 構成
 
-本環境はデモ用途のため、H2 インメモリデータベースを使用します。
-Dyno 再起動時にデータはリセットされ、初期データが再投入されます。
+本環境はデモ用途で、フロントエンドとバックエンドを別々の Heroku アプリとしてデプロイします。
+バックエンドは H2 インメモリデータベースを使用し、Dyno 再起動時にデータはリセットされます。
 
 ```plantuml
 @startuml
-title デモ環境構成（Heroku Container + H2）
+title デモ環境構成（Heroku Container）
 
 cloud "Internet" as internet
 
 cloud "Heroku" as heroku {
-  rectangle "Heroku Router" as router {
-    (HTTPS 終端)
-    (ルーティング)
+  rectangle "Frontend App" as frontendApp {
+    node "case-study-accounting-frontend" as frontendDyno {
+      [nginx]
+      [React SPA]
+    }
   }
 
-  rectangle "Dyno" as dyno {
-    node "web" as web {
+  rectangle "Backend App" as backendApp {
+    node "case-study-accounting-backend" as backendDyno {
       [Spring Boot]
-      [React SPA]
       database "H2 In-Memory" as h2 {
         [デモデータ]
       }
     }
   }
-
-  rectangle "Config Vars" as config {
-    [SPRING_PROFILES_ACTIVE=demo]
-    [JWT_SECRET]
-  }
 }
 
-internet --> router
-router --> web
-web --> config
+internet --> frontendDyno : HTTPS
+frontendDyno --> backendDyno : API リクエスト
+backendDyno --> h2
 
 note bottom of h2
   Dyno 再起動で
@@ -560,188 +556,153 @@ end note
 @enduml
 ```
 
+### デプロイ対象
+
+| アプリケーション | Heroku アプリ名 | URL |
+|------------------|-----------------|-----|
+| フロントエンド | case-study-accounting-frontend | https://case-study-accounting-frontend-2cb4e7e16f2f.herokuapp.com |
+| バックエンド | case-study-accounting-backend | https://case-study-accounting-backend-8d23bb5e8bbe.herokuapp.com |
+
 ### デモ環境の特徴
 
 | 項目 | 内容 |
 |------|------|
+| フロントエンド | React SPA + nginx |
+| バックエンド | Spring Boot + H2 |
 | データベース | H2 インメモリ |
 | データ永続性 | なし（再起動でリセット） |
 | 初期データ | 起動時に自動投入 |
 | 用途 | デモ、プレゼンテーション、機能確認 |
 | Dyno タイプ | Eco または Basic |
 
-### heroku.yml
-
-```yaml
-# heroku.yml
-build:
-  docker:
-    web: Dockerfile
-
-run:
-  web: java -Dserver.port=$PORT -Dspring.profiles.active=demo -jar app.jar
-```
-
-### Dockerfile（デモ用）
+### Dockerfile（バックエンド）
 
 ```dockerfile
-# Dockerfile
-# ビルドステージ - Frontend
-FROM node:20-alpine AS frontend-builder
-WORKDIR /frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build
+# apps/backend/Dockerfile
+FROM gradle:ubi10 AS builder
 
-# ビルドステージ - Backend
-FROM gradle:8-jdk25 AS backend-builder
 WORKDIR /app
-COPY backend/build.gradle backend/settings.gradle ./
-COPY backend/src ./src
-# Frontend のビルド成果物を static に配置
-COPY --from=frontend-builder /frontend/dist ./src/main/resources/static
+COPY ./ ./
 RUN gradle build -x test --no-daemon
 
-# 実行ステージ
 FROM eclipse-temurin:25-jre-alpine
-WORKDIR /app
 
-COPY --from=backend-builder /app/build/libs/*.jar app.jar
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
 CMD ["java", "-Dserver.port=${PORT:-8080}", "-jar", "app.jar"]
 ```
 
-### 環境変数（Config Vars）
+### Dockerfile（フロントエンド）
+
+```dockerfile
+# apps/frontend/Dockerfile
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf.template
+COPY start.sh /start.sh
+RUN sed -i 's/\r$//' /start.sh && chmod +x /start.sh
+
+EXPOSE 80
+
+CMD ["/bin/sh", "/start.sh"]
+```
+
+### GitHub Actions デプロイ
+
+main ブランチへの push 時、または手動実行で自動デプロイされます。
+
+| ワークフロー | ファイル | トリガー |
+|--------------|----------|----------|
+| Backend Deploy | `.github/workflows/backend-deploy.yml` | `apps/backend/**` 変更時 |
+| Frontend Deploy | `.github/workflows/frontend-deploy.yml` | `apps/frontend/**` 変更時 |
+
+#### 必要な GitHub Secrets
+
+| シークレット名 | 内容 |
+|----------------|------|
+| `HEROKU_API_KEY` | Heroku API キー |
+
+### 手動デプロイ（Gulp タスク）
 
 ```bash
-# Heroku CLI で設定
-heroku config:set SPRING_PROFILES_ACTIVE=demo
-heroku config:set JWT_SECRET=$(openssl rand -base64 32)
-```
+# バックエンドのみ
+npx gulp deploy:backend
 
-### application-demo.yml
+# フロントエンドのみ
+npx gulp deploy:frontend
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:h2:mem:accounting_demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+# 両方
+npx gulp deploy:all
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
-
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:db/schema.sql
-      data-locations: classpath:db/demo-data.sql
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: false
-
-server:
-  port: ${PORT:8080}
-
-logging:
-  level:
-    root: INFO
-    com.example.accounting: INFO
-  pattern:
-    console: "[%thread] %-5level %logger{36} - %msg%n"
-```
-
-### デモデータ（db/demo-data.sql）
-
-```sql
--- 勘定科目マスタ（デモ用初期データ）
-INSERT INTO account (account_id, account_code, account_name, account_type, bs_pl_type, debit_credit_type, display_order, version)
-VALUES
-  (gen_random_uuid(), '111', '現金預金', '資産', 'B', '借', 1, 0),
-  (gen_random_uuid(), '131', '売掛金', '資産', 'B', '借', 2, 0),
-  (gen_random_uuid(), '211', '買掛金', '負債', 'B', '貸', 10, 0),
-  (gen_random_uuid(), '311', '資本金', '純資産', 'B', '貸', 20, 0),
-  (gen_random_uuid(), '411', '売上高', '収益', 'P', '貸', 30, 0),
-  (gen_random_uuid(), '511', '仕入高', '費用', 'P', '借', 40, 0),
-  (gen_random_uuid(), '611', '給与手当', '費用', 'P', '借', 50, 0);
-
--- デモ用サンプル仕訳
-INSERT INTO journal_entry (journal_id, transaction_date, description, status, version)
-VALUES
-  (gen_random_uuid(), CURRENT_DATE, '商品仕入', 'APPROVED', 0),
-  (gen_random_uuid(), CURRENT_DATE, '売上計上', 'APPROVED', 0);
-```
-
-### GitHub Actions - Heroku デプロイ
-
-```yaml
-# .github/workflows/deploy-demo.yml
-name: Deploy Demo to Heroku
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to Heroku Container Registry
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          echo $HEROKU_API_KEY | docker login --username=_ --password-stdin registry.heroku.com
-
-      - name: Build and Push Docker Image
-        env:
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-        run: |
-          docker build -t registry.heroku.com/$HEROKU_APP_NAME/web .
-          docker push registry.heroku.com/$HEROKU_APP_NAME/web
-
-      - name: Release
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-        run: |
-          heroku container:release web --app $HEROKU_APP_NAME
-```
-
-### Heroku CLI コマンド
-
-```bash
-# アプリ作成（Add-on 不要）
-heroku create accounting-demo --stack container
-
-# 環境変数設定
-heroku config:set SPRING_PROFILES_ACTIVE=demo
-heroku config:set JWT_SECRET=$(openssl rand -base64 32)
-
-# デプロイ
-heroku container:push web
-heroku container:release web
+# デプロイ状態確認
+npx gulp deploy:status
 
 # ログ確認
-heroku logs --tail
+npx gulp deploy:backend:logs
+npx gulp deploy:frontend:logs
 
-# Dyno 再起動（データリセット）
-heroku restart
+# ブラウザで開く
+npx gulp deploy:open
+```
 
-# H2 コンソールアクセス
-# https://<app-name>.herokuapp.com/h2-console
+### 手動デプロイ（Docker コマンド）
+
+```bash
+# Heroku Container Registry にログイン
+heroku container:login
+
+# バックエンド
+docker build -t registry.heroku.com/case-study-accounting-backend/web ./apps/backend
+docker push registry.heroku.com/case-study-accounting-backend/web
+heroku container:release web -a case-study-accounting-backend
+
+# フロントエンド
+docker build -t registry.heroku.com/case-study-accounting-frontend/web ./apps/frontend
+docker push registry.heroku.com/case-study-accounting-frontend/web
+heroku container:release web -a case-study-accounting-frontend
+```
+
+### 環境変数（Config Vars）
+
+#### バックエンド
+
+```bash
+heroku config:set SPRING_PROFILES_ACTIVE=demo -a case-study-accounting-backend
+heroku config:set JWT_SECRET=$(openssl rand -base64 32) -a case-study-accounting-backend
+```
+
+#### フロントエンド
+
+```bash
+heroku config:set API_URL=https://case-study-accounting-backend-8d23bb5e8bbe.herokuapp.com/api -a case-study-accounting-frontend
+```
+
+### ログ確認
+
+```bash
+# バックエンド
+heroku logs --tail -a case-study-accounting-backend
+
+# フロントエンド
+heroku logs --tail -a case-study-accounting-frontend
+```
+
+### Dyno 再起動（データリセット）
+
+```bash
+heroku restart -a case-study-accounting-backend
 ```
 
 ### デモ環境の制約
@@ -752,6 +713,12 @@ heroku restart
 | シングル Dyno | 複数 Dyno でのデータ共有不可 |
 | 同時アクセス | 大量アクセスには非対応 |
 | 本番利用不可 | あくまでデモ・検証用途 |
+
+### 関連ドキュメント
+
+- [バックエンドデモ環境](../operation/backend_demo_env.md)
+- [フロントエンドデモ環境](../operation/frontend_demo_env.md)
+- [デモ環境デプロイ手順](../operation/deploy_demo.md)
 
 ---
 
