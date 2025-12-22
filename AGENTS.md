@@ -9,7 +9,7 @@ AI コーディングエージェント向けのプロジェクトガイドラ�
 会計システムのケーススタディ - フルスタック Web アプリケーション
 
 - **フロントエンド**: React + TypeScript + Vite (`apps/frontend/`)
-- **バックエンド**: Spring Boot + Kotlin (`apps/backend/`)
+- **バックエンド**: Spring Boot + Java (`apps/backend/`)
 - **アーキテクチャ**: クリーンアーキテクチャ / DDD
 
 ## ビルド・テストコマンド
@@ -54,9 +54,9 @@ npm run backend:check    # バックエンド Check
 - 関数コンポーネント + Hooks パターン
 - `@/` パスエイリアスを使用
 
-### Kotlin (Backend)
+### Java (Backend)
 
-- ktlint によるフォーマット
+- Checkstyle によるフォーマット
 - クリーンアーキテクチャの層構造を遵守
 
 ## テスト指示
@@ -64,7 +64,7 @@ npm run backend:check    # バックエンド Check
 - **TDD サイクル**に従う: Red → Green → Refactor
 - テストが通る状態でのみコミット
 - フロントエンド: Vitest + React Testing Library
-- バックエンド: JUnit 5 + MockK
+- バックエンド: JUnit 5 + Mockito
 
 ## コミット規約
 
