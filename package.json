@@ -14,7 +14,7 @@
     "frontend:format": "cd apps/frontend && npm run format:check",
     "frontend:test": "cd apps/frontend && npm run test:run",
     "frontend:check": "cd apps/frontend && npm run lint && npm run format:check",
-    "backend:check": "cd apps/backend && ./gradlew.bat check"
+    "backend:check": "apps\\backend\\gradlew.bat -p apps/backend check"
   },
   "repository": {
     "type": "git",
