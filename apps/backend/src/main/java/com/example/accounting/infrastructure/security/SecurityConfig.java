@@ -39,9 +39,15 @@ public class SecurityConfig {
     }
 
     @Bean
+    @SuppressWarnings("java:S4502") // CSRF 無効化は JWT ベースのステートレス認証では安全
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF 無効化（JWT 使用のため）
+                // CSRF 無効化: JWT ベースのステートレス認証では CSRF 保護は不要
+                // - JWT は Authorization ヘッダーで送信（Cookie ではない）
+                // - セッションは STATELESS（Cookie ベースのセッションなし）
+                // - CSRF 攻撃はブラウザの自動 Cookie 送信を悪用するが、
+                //   Authorization ヘッダーは自動送信されないため脅威なし
+                // See: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-when
                 .csrf(csrf -> csrf.disable())
 
                 // CORS 設定
