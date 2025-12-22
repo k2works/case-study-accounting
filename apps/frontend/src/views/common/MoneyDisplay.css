@@ -1,0 +1,25 @@
+.money-display {
+  font-family: 'Roboto Mono', 'Consolas', monospace;
+  white-space: nowrap;
+}
+
+.money-display--small {
+  font-size: 0.813rem;
+}
+
+.money-display--medium {
+  font-size: 0.875rem;
+}
+
+.money-display--large {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.money-display--positive {
+  color: #2e7d32;
+}
+
+.money-display--negative {
+  color: #c62828;
+}

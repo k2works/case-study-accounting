@@ -1,0 +1,36 @@
+.success-notification {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #e8f5e9;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  color: #2e7d32;
+}
+
+.success-notification__icon {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.success-notification__text {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.success-notification__dismiss {
+  padding: 4px 8px;
+  font-size: 1.25rem;
+  line-height: 1;
+  background: none;
+  border: none;
+  color: #2e7d32;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.success-notification__dismiss:hover {
+  opacity: 1;
+}

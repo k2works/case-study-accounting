@@ -1,0 +1,95 @@
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-layout__body {
+  display: flex;
+  flex: 1;
+}
+
+.main-layout__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  background-color: #fafafa;
+}
+
+.main-layout__page {
+  flex: 1;
+  padding: 20px;
+}
+
+.main-layout__overlay {
+  display: none;
+}
+
+.main-layout__menu-toggle {
+  display: none;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 767px) {
+  .main-layout__overlay {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+
+  .main-layout__overlay.is-visible {
+    display: block;
+  }
+
+  .main-layout__menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background-color: #1a237e;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 101;
+  }
+
+  .main-layout__menu-icon {
+    position: relative;
+    width: 24px;
+    height: 2px;
+    background-color: #fff;
+  }
+
+  .main-layout__menu-icon::before,
+  .main-layout__menu-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 2px;
+    background-color: #fff;
+  }
+
+  .main-layout__menu-icon::before {
+    top: -8px;
+  }
+
+  .main-layout__menu-icon::after {
+    top: 8px;
+  }
+
+  .main-layout__page {
+    padding: 16px;
+  }
+}

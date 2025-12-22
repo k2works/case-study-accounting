@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import LoginPage from './pages/LoginPage';
-import { config } from './config';
+import DashboardPage from './pages/DashboardPage';
+import { Loading } from './views/common';
 
 /**
  * 認証が必要なルートのガード
@@ -10,7 +11,7 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div style={{ padding: '20px' }}>読み込み中...</div>;
+    return <Loading message="認証情報を確認中..." fullScreen />;
   }
 
   if (!isAuthenticated) {
@@ -18,24 +19,6 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }
 
   return <>{children}</>;
-};
-
-/**
- * ダッシュボード（仮）
- */
-const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
-
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>{config.appName}</h1>
-      <p>ようこそ、{user?.username} さん</p>
-      <p>ロール: {user?.role}</p>
-      <button onClick={logout} style={{ marginTop: '20px', padding: '8px 16px' }}>
-        ログアウト
-      </button>
-    </div>
-  );
 };
 
 export const App = () => {
@@ -46,7 +29,7 @@ export const App = () => {
         path="/"
         element={
           <PrivateRoute>
-            <Dashboard />
+            <DashboardPage />
           </PrivateRoute>
         }
       />
