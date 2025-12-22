@@ -1,4 +1,4 @@
-package com.example.accounting.application.usecase.auth;
+package com.example.accounting.application.port.in.command;
 
 /**
  * ログインコマンド

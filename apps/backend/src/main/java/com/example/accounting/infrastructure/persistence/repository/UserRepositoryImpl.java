@@ -2,7 +2,7 @@ package com.example.accounting.infrastructure.persistence.repository;
 
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
-import com.example.accounting.domain.repository.UserRepository;
+import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.infrastructure.persistence.entity.UserEntity;
 import com.example.accounting.infrastructure.persistence.mapper.UserMapper;
 import org.springframework.stereotype.Repository;

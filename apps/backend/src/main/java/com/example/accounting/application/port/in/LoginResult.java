@@ -1,4 +1,4 @@
-package com.example.accounting.application.usecase.auth;
+package com.example.accounting.application.port.in;
 
 import com.example.accounting.domain.model.user.Role;
 

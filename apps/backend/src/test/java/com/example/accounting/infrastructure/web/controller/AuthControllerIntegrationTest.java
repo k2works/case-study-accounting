@@ -1,6 +1,7 @@
-package com.example.accounting.presentation.api.auth;
+package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.TestcontainersConfiguration;
+import com.example.accounting.infrastructure.web.dto.LoginResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

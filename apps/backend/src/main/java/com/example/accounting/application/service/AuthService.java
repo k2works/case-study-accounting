@@ -1,7 +1,10 @@
-package com.example.accounting.application.usecase.auth;
+package com.example.accounting.application.service;
 
+import com.example.accounting.application.port.in.AuthUseCase;
+import com.example.accounting.application.port.in.LoginResult;
+import com.example.accounting.application.port.in.command.LoginCommand;
+import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.User;
-import com.example.accounting.domain.repository.UserRepository;
 import com.example.accounting.infrastructure.security.JwtService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,16 +13,16 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * ログインユースケース
+ * 認証サービス（AuthUseCase の実装）
  */
 @Service
 @Transactional
-public class LoginUseCase {
+public class AuthService implements AuthUseCase {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
-    public LoginUseCase(UserRepository userRepository, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, JwtService jwtService) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
     }
@@ -30,6 +33,7 @@ public class LoginUseCase {
      * @param command ログインコマンド
      * @return ログイン結果
      */
+    @Override
     public LoginResult execute(LoginCommand command) {
         // ユーザーを検索
         Optional<User> userOptional = userRepository.findByUsername(command.username());

@@ -1,4 +1,4 @@
-package com.example.accounting.domain.repository;
+package com.example.accounting.application.port.out;
 
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * ユーザーリポジトリインターフェース
+ * ユーザーリポジトリインターフェース（Output Port）
  *
- * <p>ドメイン層で定義されるOutput Port。
- * 実装はインフラストラクチャ層で行う。</p>
+ * <p>アプリケーション層で定義されるOutput Port。
+ * 実装はインフラストラクチャ層（infrastructure.persistence.repository）で行う。</p>
  */
 public interface UserRepository {
 

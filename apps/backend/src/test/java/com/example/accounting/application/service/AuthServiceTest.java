@@ -1,8 +1,10 @@
-package com.example.accounting.application.usecase.auth;
+package com.example.accounting.application.service;
 
+import com.example.accounting.application.port.in.LoginResult;
+import com.example.accounting.application.port.in.command.LoginCommand;
+import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
-import com.example.accounting.domain.repository.UserRepository;
 import com.example.accounting.infrastructure.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,16 +16,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
- * ログインユースケースのテスト
+ * 認証サービスのテスト
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ログインユースケース")
-class LoginUseCaseTest {
+@DisplayName("認証サービス")
+class AuthServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -31,11 +38,11 @@ class LoginUseCaseTest {
     @Mock
     private JwtService jwtService;
 
-    private LoginUseCase loginUseCase;
+    private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        loginUseCase = new LoginUseCase(userRepository, jwtService);
+        authService = new AuthService(userRepository, jwtService);
     }
 
     @Nested
@@ -58,7 +65,7 @@ class LoginUseCaseTest {
             LoginCommand command = new LoginCommand(username, password);
 
             // When
-            LoginResult result = loginUseCase.execute(command);
+            LoginResult result = authService.execute(command);
 
             // Then
             assertThat(result.success()).isTrue();
@@ -85,7 +92,7 @@ class LoginUseCaseTest {
             LoginCommand command = new LoginCommand("nonexistent", "password");
 
             // When
-            LoginResult result = loginUseCase.execute(command);
+            LoginResult result = authService.execute(command);
 
             // Then
             assertThat(result.success()).isFalse();
@@ -108,7 +115,7 @@ class LoginUseCaseTest {
             LoginCommand command = new LoginCommand(username, "WrongPassword");
 
             // When
-            LoginResult result = loginUseCase.execute(command);
+            LoginResult result = authService.execute(command);
 
             // Then
             assertThat(result.success()).isFalse();
@@ -134,7 +141,7 @@ class LoginUseCaseTest {
             LoginCommand command = new LoginCommand(username, "Password123!");
 
             // When
-            LoginResult result = loginUseCase.execute(command);
+            LoginResult result = authService.execute(command);
 
             // Then
             assertThat(result.success()).isFalse();
@@ -156,7 +163,7 @@ class LoginUseCaseTest {
             LoginCommand command = new LoginCommand(username, "Password123!");
 
             // When
-            LoginResult result = loginUseCase.execute(command);
+            LoginResult result = authService.execute(command);
 
             // Then
             assertThat(result.success()).isFalse();
@@ -183,9 +190,9 @@ class LoginUseCaseTest {
             LoginCommand command = new LoginCommand(username, "WrongPassword");
 
             // When - 3回失敗
-            loginUseCase.execute(command);
-            loginUseCase.execute(command);
-            LoginResult result = loginUseCase.execute(command);
+            authService.execute(command);
+            authService.execute(command);
+            LoginResult result = authService.execute(command);
 
             // Then
             assertThat(result.success()).isFalse();

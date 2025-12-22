@@ -1,4 +1,4 @@
-package com.example.accounting.presentation.api.auth;
+package com.example.accounting.infrastructure.web.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

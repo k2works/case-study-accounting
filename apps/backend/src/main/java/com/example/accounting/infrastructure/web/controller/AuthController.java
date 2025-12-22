@@ -1,8 +1,10 @@
-package com.example.accounting.presentation.api.auth;
+package com.example.accounting.infrastructure.web.controller;
 
-import com.example.accounting.application.usecase.auth.LoginCommand;
-import com.example.accounting.application.usecase.auth.LoginResult;
-import com.example.accounting.application.usecase.auth.LoginUseCase;
+import com.example.accounting.application.port.in.AuthUseCase;
+import com.example.accounting.application.port.in.LoginResult;
+import com.example.accounting.application.port.in.command.LoginCommand;
+import com.example.accounting.infrastructure.web.dto.LoginRequest;
+import com.example.accounting.infrastructure.web.dto.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "認証", description = "ユーザー認証に関する API")
 public class AuthController {
 
-    private final LoginUseCase loginUseCase;
+    private final AuthUseCase authUseCase;
 
-    public AuthController(LoginUseCase loginUseCase) {
-        this.loginUseCase = loginUseCase;
+    public AuthController(AuthUseCase authUseCase) {
+        this.authUseCase = authUseCase;
     }
 
     /**
@@ -57,7 +59,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginCommand command = new LoginCommand(request.username(), request.password());
-        LoginResult result = loginUseCase.execute(command);
+        LoginResult result = authUseCase.execute(command);
 
         if (result.success()) {
             return ResponseEntity.ok(LoginResponse.success(

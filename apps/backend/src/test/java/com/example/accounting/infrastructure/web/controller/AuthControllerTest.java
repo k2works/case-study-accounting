@@ -1,9 +1,11 @@
-package com.example.accounting.presentation.api.auth;
+package com.example.accounting.infrastructure.web.controller;
 
-import com.example.accounting.application.usecase.auth.LoginCommand;
-import com.example.accounting.application.usecase.auth.LoginResult;
-import com.example.accounting.application.usecase.auth.LoginUseCase;
+import com.example.accounting.application.port.in.AuthUseCase;
+import com.example.accounting.application.port.in.LoginResult;
+import com.example.accounting.application.port.in.command.LoginCommand;
 import com.example.accounting.domain.model.user.Role;
+import com.example.accounting.infrastructure.web.dto.LoginRequest;
+import com.example.accounting.infrastructure.web.dto.LoginResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,13 +30,13 @@ import static org.mockito.Mockito.when;
 class AuthControllerTest {
 
     @Mock
-    private LoginUseCase loginUseCase;
+    private AuthUseCase authUseCase;
 
     private AuthController authController;
 
     @BeforeEach
     void setUp() {
-        authController = new AuthController(loginUseCase);
+        authController = new AuthController(authUseCase);
     }
 
     @Nested
@@ -52,7 +54,7 @@ class AuthControllerTest {
                     "testuser",
                     Role.USER
             );
-            when(loginUseCase.execute(any(LoginCommand.class))).thenReturn(result);
+            when(authUseCase.execute(any(LoginCommand.class))).thenReturn(result);
 
             // When
             ResponseEntity<LoginResponse> response = authController.login(request);
@@ -73,7 +75,7 @@ class AuthControllerTest {
         void shouldConvertRequestToCommand() {
             // Given
             LoginRequest request = new LoginRequest("testuser", "Password123!");
-            when(loginUseCase.execute(any(LoginCommand.class)))
+            when(authUseCase.execute(any(LoginCommand.class)))
                     .thenReturn(LoginResult.failure("error"));
 
             // When
@@ -81,7 +83,7 @@ class AuthControllerTest {
 
             // Then
             ArgumentCaptor<LoginCommand> captor = ArgumentCaptor.forClass(LoginCommand.class);
-            verify(loginUseCase).execute(captor.capture());
+            verify(authUseCase).execute(captor.capture());
             assertThat(captor.getValue().username()).isEqualTo("testuser");
             assertThat(captor.getValue().password()).isEqualTo("Password123!");
         }
@@ -92,7 +94,7 @@ class AuthControllerTest {
             // Given
             LoginRequest request = new LoginRequest("testuser", "wrongpassword");
             LoginResult result = LoginResult.failure("ユーザー名またはパスワードが正しくありません");
-            when(loginUseCase.execute(any(LoginCommand.class))).thenReturn(result);
+            when(authUseCase.execute(any(LoginCommand.class))).thenReturn(result);
 
             // When
             ResponseEntity<LoginResponse> response = authController.login(request);
@@ -111,7 +113,7 @@ class AuthControllerTest {
             // Given
             LoginRequest request = new LoginRequest("lockeduser", "Password123!");
             LoginResult result = LoginResult.failure("アカウントがロックされています");
-            when(loginUseCase.execute(any(LoginCommand.class))).thenReturn(result);
+            when(authUseCase.execute(any(LoginCommand.class))).thenReturn(result);
 
             // When
             ResponseEntity<LoginResponse> response = authController.login(request);
@@ -129,7 +131,7 @@ class AuthControllerTest {
             // Given
             LoginRequest request = new LoginRequest("deactivateduser", "Password123!");
             LoginResult result = LoginResult.failure("アカウントが無効化されています");
-            when(loginUseCase.execute(any(LoginCommand.class))).thenReturn(result);
+            when(authUseCase.execute(any(LoginCommand.class))).thenReturn(result);
 
             // When
             ResponseEntity<LoginResponse> response = authController.login(request);
