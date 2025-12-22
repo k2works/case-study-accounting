@@ -33,53 +33,54 @@ val archunitVersion = "1.3.0"
 val jigErdVersion = "0.2.1"
 
 dependencies {
+    // === implementation ===
     // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
-
     // Database
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:$mybatisVersion")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
-    runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2")
-    runtimeOnly("org.springframework.boot:spring-boot-h2console")
-
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
-
     // Functional Programming
     implementation("io.vavr:vavr:$vavrVersion")
-
     // OpenAPI / Swagger UI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
-    // Lombok
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    testCompileOnly("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
+    // === runtimeOnly ===
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.springframework.boot:spring-boot-h2console")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
-    // Testing - Spring Boot
+    // === compileOnly ===
+    compileOnly("org.projectlombok:lombok")
+
+    // === annotationProcessor ===
+    annotationProcessor("org.projectlombok:lombok")
+
+    // === testImplementation ===
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // Testing - Testcontainers
     testImplementation(platform("org.testcontainers:testcontainers-bom:$testcontainersVersion"))
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
-
-    // Testing - Architecture
     testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
-
-    // Testing - Documentation
     testImplementation("com.github.irof:jig-erd:$jigErdVersion")
+
+    // === testCompileOnly ===
+    testCompileOnly("org.projectlombok:lombok")
+
+    // === testAnnotationProcessor ===
+    testAnnotationProcessor("org.projectlombok:lombok")
+
+    // === testRuntimeOnly ===
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {
