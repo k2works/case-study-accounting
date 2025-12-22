@@ -27,9 +27,6 @@ public class UserEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public UserEntity() {
-    }
-
     /**
      * ドメインモデルからエンティティを生成する
      */

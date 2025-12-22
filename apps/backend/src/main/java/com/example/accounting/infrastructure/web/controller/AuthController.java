@@ -39,7 +39,7 @@ public class AuthController {
             summary = "ログイン",
             description = "ユーザー名とパスワードで認証し、JWT トークンを取得します"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
                     description = "ログイン成功",

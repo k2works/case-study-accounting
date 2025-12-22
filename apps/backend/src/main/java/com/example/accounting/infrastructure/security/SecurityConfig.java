@@ -7,6 +7,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,7 +50,7 @@ public class SecurityConfig {
                 // - CSRF 攻撃はブラウザの自動 Cookie 送信を悪用するが、
                 //   Authorization ヘッダーは自動送信されないため脅威なし
                 // See: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-when
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
 
                 // CORS 設定
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -96,7 +98,7 @@ public class SecurityConfig {
                 )
 
                 // H2 Console 用のフレームオプション許可
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin))
 
                 // JWT フィルタを追加
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

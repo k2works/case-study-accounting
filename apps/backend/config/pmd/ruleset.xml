@@ -20,6 +20,8 @@
         <exclude name="LooseCoupling"/>
         <!-- ドキュメント生成ツール等では System.out が必要 -->
         <exclude name="SystemPrintln"/>
+        <!-- UseCaseインターフェースは意図的に単一メソッド -->
+        <exclude name="ImplicitFunctionalInterface"/>
     </rule>
 
     <!-- コードスタイル -->
@@ -41,6 +43,10 @@
         <exclude name="UnnecessaryImport"/>
         <!-- フィールド命名は Checkstyle で検出 -->
         <exclude name="FieldNamingConventions"/>
+        <!-- ドメインモデルの命名として User, IO などは適切 -->
+        <exclude name="ShortClassName"/>
+        <!-- ファクトリメソッド of() は慣習的な命名 -->
+        <exclude name="ShortMethodName"/>
     </rule>
 
     <!-- 設計 -->
@@ -54,6 +60,14 @@
         <exclude name="UseUtilityClass"/>
         <!-- 例外ハンドラでは汎用例外のキャッチが必要な場合がある（Design → ErrorProne に移動済み） -->
         <exclude name="AvoidCatchingGenericException"/>
+        <!-- DTO/エンティティは意図的なデータクラス -->
+        <exclude name="DataClass"/>
+        <!-- イミュータブルオブジェクトのコンストラクタでは多パラメータは許容 -->
+        <exclude name="ExcessiveParameterList"/>
+        <!-- record型の静的ファクトリでは多引数は許容 -->
+        <exclude name="UseObjectForClearerAPI"/>
+        <!-- Spring Security API の制約 -->
+        <exclude name="SignatureDeclareThrowsException"/>
     </rule>
 
     <!-- 循環複雑度のカスタム設定 -->
@@ -81,6 +95,8 @@
         <exclude name="AvoidDuplicateLiterals"/>
         <!-- 外部ライブラリ（JJWT）が java.util.Date を要求する場合がある -->
         <exclude name="ReplaceJavaUtilDate"/>
+        <!-- record型ではフィールド名とアクセサ名が一致するのは仕様 -->
+        <exclude name="AvoidFieldNameMatchingMethodName"/>
     </rule>
 
     <!-- パフォーマンス -->
