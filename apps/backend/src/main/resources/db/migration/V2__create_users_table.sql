@@ -20,7 +20,7 @@ CREATE INDEX idx_users_role ON users(role);
 COMMENT ON TABLE users IS 'ユーザーマスタ';
 COMMENT ON COLUMN users.id IS 'ユーザーID';
 COMMENT ON COLUMN users.email IS 'メールアドレス（ログインID）';
-COMMENT ON COLUMN users.password_hash IS 'パスワードハッシュ（BCrypt）';
+COMMENT ON COLUMN users.password_hash IS 'パスワードハッシュ（SHA-256 with Salt）';
 COMMENT ON COLUMN users.name IS 'ユーザー名';
 COMMENT ON COLUMN users.role IS 'ロール（ADMIN:管理者, MANAGER:経理責任者, STAFF:経理担当者, VIEWER:閲覧者）';
 COMMENT ON COLUMN users.account_locked IS 'アカウントロック状態';
