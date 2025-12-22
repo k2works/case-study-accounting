@@ -883,3 +883,228 @@ public class ArchitectureTest {
 | リポジトリ | Output Port として application.port.out に定義 |
 | ドメインサービス | JournalDomainService, BalanceCalculationService |
 | ユースケース | Input Port として application.port.in に定義、application.service で実装 |
+
+---
+
+## 関数型プログラミング
+
+本システムでは関数型プログラミングの原則を積極的に採用しています。
+詳細は [Grokking Functional Programming Java 版解説](../article/functional-java/index.md) を参照してください。
+
+### 関数型プログラミングの利点
+
+| 利点 | 説明 |
+|------|------|
+| 予測可能性 | 純粋関数は同じ入力に対して常に同じ出力を返す |
+| テスト容易性 | 副作用がないためテストが簡単 |
+| 合成可能性 | 小さな関数を組み合わせて複雑な処理を構築 |
+| 並行安全性 | イミュータブルデータは競合状態を防ぐ |
+| 型安全性 | Option、Either で null や例外を型で表現 |
+
+### 適用している概念
+
+```plantuml
+@startuml
+title 関数型プログラミングの適用
+
+rectangle "イミュータブル設計" as immutable {
+  card "@Value" as value
+  card "@With" as with
+  card "record" as record
+}
+
+rectangle "副作用の分離" as effects {
+  card "IO モナド" as io
+  card "純粋関数" as pure
+}
+
+rectangle "型安全なエラーハンドリング" as error {
+  card "Option<T>" as option
+  card "Either<L, R>" as either
+  card "Try<T>" as try_type
+}
+
+rectangle "Vavr ライブラリ" as vavr {
+  card "イミュータブルコレクション" as col
+  card "関数型データ型" as types
+}
+
+immutable --> pure : 参照透過性を実現
+effects --> error : 失敗を型で表現
+vavr --> immutable
+vavr --> error
+
+@enduml
+```
+
+### イミュータブル設計
+
+ドメインエンティティは Lombok の `@Value` と `@With` を使用してイミュータブルに設計しています。
+
+```java
+@Value
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class User {
+    UserId id;
+    Username username;
+    Email email;
+    // ...
+
+    // 状態変更は新しいインスタンスを返す
+    public User recordSuccessfulLoginAt(LocalDateTime now) {
+        return this
+                .withFailedLoginAttempts(0)
+                .withLastLoginAt(now)
+                .withUpdatedAt(now);
+    }
+}
+```
+
+### IO モナド
+
+副作用を持つ計算を純粋関数として扱うために IO モナドパターンを採用しています。
+
+```java
+/**
+ * IO モナド - 副作用を持つ計算の記述を表す型
+ *
+ * IO 値を作成しただけでは副作用は発生しない。
+ * unsafeRun() で実際に実行される。
+ */
+public final class IO<A> {
+
+    private final Supplier<A> thunk;
+
+    // 副作用のある式を遅延実行する IO を作成
+    public static <A> IO<A> delay(Supplier<A> supplier) {
+        return new IO<>(supplier);
+    }
+
+    // 既存の値をラップ（副作用なし）
+    public static <A> IO<A> pure(A value) {
+        return new IO<>(() -> value);
+    }
+
+    // IO を実行して結果を取得（副作用が発生する）
+    public A unsafeRun() {
+        return thunk.get();
+    }
+
+    // 結果を変換する
+    public <B> IO<B> map(Function<A, B> f) {
+        return new IO<>(() -> f.apply(thunk.get()));
+    }
+
+    // IO を返す関数を適用してフラット化
+    public <B> IO<B> flatMap(Function<A, IO<B>> f) {
+        return new IO<>(() -> f.apply(thunk.get()).unsafeRun());
+    }
+}
+```
+
+**使用例:**
+
+```java
+// 副作用を IO として記述
+IO<User> findUser = IO.delay(() -> userRepository.findById(userId));
+IO<User> updateUser = findUser.map(user -> user.recordSuccessfulLogin());
+IO<User> saveUser = updateUser.flatMap(user -> IO.delay(() -> userRepository.save(user)));
+
+// 最後に実行（ここで副作用が発生）
+User result = saveUser.unsafeRun();
+```
+
+### Vavr ライブラリ
+
+関数型データ構造として [Vavr](https://www.vavr.io/) を使用しています。
+
+| データ型 | 用途 |
+|---------|------|
+| `Option<T>` | null の代わりに値の有無を表現 |
+| `Either<L, R>` | 成功/失敗を型で表現（例外の代わり） |
+| `Try<T>` | 例外をスローせずに捕捉 |
+| `List<T>` | イミュータブルなリスト |
+
+**依存関係:**
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("io.vavr:vavr:0.10.4")
+}
+```
+
+### 純粋関数の原則
+
+ドメインロジックは可能な限り純粋関数として実装します。
+
+```java
+// 純粋関数の例: 入力のみに依存し、副作用なし
+public boolean canLogin() {
+    return this.active && !this.locked;
+}
+
+// 純粋関数の例: 新しいインスタンスを返す（元のオブジェクトは変更しない）
+public User recordFailedLoginAttemptAt(LocalDateTime now) {
+    int newFailedAttempts = this.failedLoginAttempts + 1;
+    boolean newLocked = newFailedAttempts >= MAX_FAILED_ATTEMPTS || this.locked;
+    return this
+            .withFailedLoginAttempts(newFailedAttempts)
+            .withLocked(newLocked)
+            .withUpdatedAt(now);
+}
+```
+
+### テスト時の副作用注入
+
+副作用（現在時刻、ID 生成など）はパラメータ化して、テスト時に固定値を注入可能にします。
+
+```java
+// 本番コード
+public static User create(Username username, Email email, Password password,
+                          String displayName, Role role) {
+    return create(username, email, password, displayName, role,
+            UserId::generate, LocalDateTime::now);
+}
+
+// テスト用: 副作用を注入可能
+public static User create(Username username, Email email, Password password,
+                          String displayName, Role role,
+                          Supplier<UserId> idSupplier,
+                          Supplier<LocalDateTime> clockSupplier) {
+    LocalDateTime now = clockSupplier.get();
+    return new User(
+            idSupplier.get(),
+            username,
+            // ...
+            now,  // createdAt
+            now   // updatedAt
+    );
+}
+
+// テストでの使用例
+@Test
+void testUserCreation() {
+    LocalDateTime fixedTime = LocalDateTime.of(2024, 1, 1, 0, 0);
+    UserId fixedId = UserId.of("test-id");
+
+    User user = User.create(
+            username, email, password, displayName, role,
+            () -> fixedId,          // ID 生成を固定
+            () -> fixedTime         // 時刻を固定
+    );
+
+    assertThat(user.getId()).isEqualTo(fixedId);
+    assertThat(user.getCreatedAt()).isEqualTo(fixedTime);
+}
+```
+
+### 学習リソース
+
+関数型プログラミングの詳細な解説は以下を参照:
+
+- [Part I: 関数型プログラミングの基礎](../article/functional-java/part-1.md) - 純粋関数、参照透過性
+- [Part II: 関数型スタイルのプログラミング](../article/functional-java/part-2.md) - イミュータブル、高階関数
+- [Part III: エラーハンドリングと Option/Either](../article/functional-java/part-3.md) - 型安全なエラー処理
+- [Part IV: IO と副作用の管理](../article/functional-java/part-4.md) - IO パターン、Lazy 評価
