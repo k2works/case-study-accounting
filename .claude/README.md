@@ -28,6 +28,7 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 | `/kill`        | 開発サーバーや Node.js プロセスを強制終了する。              |
 | `/ops`         | 環境構築・ビルド・デプロイなど運用ワークフローを実行する。   |
 | `/plan`        | リリース計画とイテレーション計画を作成・管理する。           |
+| `/plan-github` | リリース計画を GitHub Project・Issue・Milestone に同期する。 |
 | `/progress`    | プロジェクトの開発進捗を包括的に確認する。                   |
 
 ### Roles（役割設定）
@@ -69,6 +70,7 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 │   ├── kill.md
 │   ├── ops.md
 │   ├── plan.md
+│   ├── plan-github.md
 │   └── progress.md
 ├── scripts/             # Hooks 用スクリプト
 ├── .gitignore
