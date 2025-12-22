@@ -36,6 +36,15 @@ class AuthControllerIntegrationTest {
                 .build();
     }
 
+    private LoginResponse performLogin(RestClient restClient, String requestBody) {
+        return restClient.post()
+                .uri("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(requestBody)
+                .retrieve()
+                .body(LoginResponse.class);
+    }
+
     @Nested
     @DisplayName("ログイン API")
     class LoginApi {
@@ -53,12 +62,7 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When
-            LoginResponse response = restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class);
+            LoginResponse response = performLogin(restClient, requestBody);
 
             // Then
             assertThat(response).isNotNull();
@@ -83,12 +87,7 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When
-            LoginResponse response = restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class);
+            LoginResponse response = performLogin(restClient, requestBody);
 
             // Then
             assertThat(response).isNotNull();
@@ -110,12 +109,7 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When
-            LoginResponse response = restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class);
+            LoginResponse response = performLogin(restClient, requestBody);
 
             // Then
             assertThat(response).isNotNull();
@@ -137,12 +131,7 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When
-            LoginResponse response = restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class);
+            LoginResponse response = performLogin(restClient, requestBody);
 
             // Then
             assertThat(response).isNotNull();
@@ -164,17 +153,11 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When / Then
-            assertThatThrownBy(() -> restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class))
+            assertThatThrownBy(() -> performLogin(restClient, requestBody))
                     .isInstanceOf(HttpClientErrorException.class)
-                    .satisfies(ex -> {
-                        HttpClientErrorException httpEx = (HttpClientErrorException) ex;
-                        assertThat(httpEx.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-                    });
+                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
+                    .extracting(HttpClientErrorException::getStatusCode)
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
         @Test
@@ -190,17 +173,11 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When / Then
-            assertThatThrownBy(() -> restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class))
+            assertThatThrownBy(() -> performLogin(restClient, requestBody))
                     .isInstanceOf(HttpClientErrorException.class)
-                    .satisfies(ex -> {
-                        HttpClientErrorException httpEx = (HttpClientErrorException) ex;
-                        assertThat(httpEx.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-                    });
+                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
+                    .extracting(HttpClientErrorException::getStatusCode)
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
         @Test
@@ -216,17 +193,11 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When / Then
-            assertThatThrownBy(() -> restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class))
+            assertThatThrownBy(() -> performLogin(restClient, requestBody))
                     .isInstanceOf(HttpClientErrorException.class)
-                    .satisfies(ex -> {
-                        HttpClientErrorException httpEx = (HttpClientErrorException) ex;
-                        assertThat(httpEx.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-                    });
+                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
+                    .extracting(HttpClientErrorException::getStatusCode)
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
         @Test
@@ -242,17 +213,11 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When / Then
-            assertThatThrownBy(() -> restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class))
+            assertThatThrownBy(() -> performLogin(restClient, requestBody))
                     .isInstanceOf(HttpClientErrorException.class)
-                    .satisfies(ex -> {
-                        HttpClientErrorException httpEx = (HttpClientErrorException) ex;
-                        assertThat(httpEx.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    });
+                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
+                    .extracting(HttpClientErrorException::getStatusCode)
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
         }
 
         @Test
@@ -268,17 +233,11 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When / Then
-            assertThatThrownBy(() -> restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class))
+            assertThatThrownBy(() -> performLogin(restClient, requestBody))
                     .isInstanceOf(HttpClientErrorException.class)
-                    .satisfies(ex -> {
-                        HttpClientErrorException httpEx = (HttpClientErrorException) ex;
-                        assertThat(httpEx.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    });
+                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
+                    .extracting(HttpClientErrorException::getStatusCode)
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -299,12 +258,7 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When
-            LoginResponse response = restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class);
+            LoginResponse response = performLogin(restClient, requestBody);
 
             // Then
             assertThat(response).isNotNull();
@@ -333,12 +287,7 @@ class AuthControllerIntegrationTest {
                     """;
 
             // When
-            LoginResponse response = restClient.post()
-                    .uri("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(LoginResponse.class);
+            LoginResponse response = performLogin(restClient, requestBody);
 
             // Then
             assertThat(response).isNotNull();

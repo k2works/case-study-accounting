@@ -210,7 +210,7 @@ class UserRepositoryImplIntegrationTest {
 
             // Then
             assertThat(users).isNotEmpty();
-            assertThat(users.size()).isGreaterThanOrEqualTo(5);
+            assertThat(users).hasSizeGreaterThanOrEqualTo(5);
         }
     }
 

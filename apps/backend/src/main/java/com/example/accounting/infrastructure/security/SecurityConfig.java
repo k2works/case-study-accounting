@@ -29,6 +29,10 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    // ロール定数
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_MANAGER = "MANAGER";
+
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final JwtAuthenticationEntryPoint jwtAuthEntryPoint;
 
@@ -43,7 +47,7 @@ public class SecurityConfig {
     @Bean
     @SuppressWarnings("java:S4502") // CSRF 無効化は JWT ベースのステートレス認証では安全
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+        return http
                 // CSRF 無効化: JWT ベースのステートレス認証では CSRF 保護は不要
                 // - JWT は Authorization ヘッダーで送信（Cookie ではない）
                 // - セッションは STATELESS（Cookie ベースのセッションなし）
@@ -79,19 +83,19 @@ public class SecurityConfig {
                         .requestMatchers("/api-docs/**").permitAll()
 
                         // ユーザー管理は ADMIN のみ
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole(ROLE_ADMIN)
 
                         // 仕訳承認は MANAGER 以上
                         .requestMatchers(HttpMethod.POST, "/api/journals/*/approve")
-                        .hasAnyRole("ADMIN", "MANAGER")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_MANAGER)
 
                         // 仕訳確定は MANAGER 以上
                         .requestMatchers(HttpMethod.POST, "/api/journals/*/confirm")
-                        .hasAnyRole("ADMIN", "MANAGER")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_MANAGER)
 
                         // 財務分析は MANAGER 以上
                         .requestMatchers("/api/analysis/**")
-                        .hasAnyRole("ADMIN", "MANAGER")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_MANAGER)
 
                         // その他は認証必須
                         .anyRequest().authenticated()
@@ -101,9 +105,9 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin))
 
                 // JWT フィルタを追加
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
-        return http.build();
+                .build();
     }
 
     @Bean
