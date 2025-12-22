@@ -183,20 +183,15 @@ package "domain.model" {
   }
 }
 
-package "domain.repository" {
-  interface AccountRepository <<Output Port>> {
-    + findById(AccountId): Optional<Account>
-    + findByCode(AccountCode): Optional<Account>
-    + findAll(): List<Account>
-    + save(Account): Account
-    + delete(AccountId): void
-  }
-}
-
 package "domain.service" {
-  class JournalValidationService <<Domain Service>> {
+  class JournalDomainService <<Domain Service>> {
     + validateDebitCreditBalance(JournalEntry): ValidationResult
-    + validateAccountExists(JournalLine): ValidationResult
+    + validateAccountExists(JournalEntryDetail): ValidationResult
+  }
+
+  class BalanceCalculationService <<Domain Service>> {
+    + calculateDailyBalance(Account, LocalDate): DailyBalance
+    + calculateMonthlyBalance(Account, YearMonth): MonthlyBalance
   }
 }
 
@@ -286,44 +281,65 @@ public record AccountCode(String value) {
 
 ```plantuml
 @startuml
-title アプリケーション層のユースケース
+title アプリケーション層の構成
 
-package "application.usecase.account" {
-  class RegisterAccountUseCase <<Input Port>> {
-    - accountRepository: AccountRepository
-    + execute(RegisterAccountCommand): AccountDto
+package "application.port.in" {
+  interface AccountUseCase <<Input Port>> {
+    + create(CreateAccountCommand): Account
+    + update(UpdateAccountCommand): Account
+    + findByCode(String): Optional<Account>
+    + findAll(): List<Account>
   }
 
-  class UpdateAccountUseCase <<Input Port>> {
-    - accountRepository: AccountRepository
-    + execute(UpdateAccountCommand): AccountDto
+  interface JournalEntryUseCase <<Input Port>> {
+    + create(CreateJournalEntryCommand): JournalEntry
+    + findByNumber(JournalEntryNumber): Optional<JournalEntry>
   }
 
-  class GetAccountUseCase <<Input Port>> {
-    - accountRepository: AccountRepository
-    + execute(String accountCode): AccountDto
-    + executeAll(): List<AccountDto>
+  interface FinancialStatementUseCase <<Input Port>> {
+    + generateBalanceSheet(BalanceSheetQuery): BalanceSheet
+    + generateIncomeStatement(IncomeStatementQuery): IncomeStatement
   }
 }
 
-interface AccountRepository
+package "application.port.out" {
+  interface AccountRepository <<Output Port>> {
+    + findById(AccountId): Optional<Account>
+    + findByCode(AccountCode): Optional<Account>
+    + findAll(): List<Account>
+    + save(Account): Account
+  }
 
-RegisterAccountUseCase --> AccountRepository
-UpdateAccountUseCase --> AccountRepository
-GetAccountUseCase --> AccountRepository
+  interface JournalEntryRepository <<Output Port>> {
+    + findByNumber(JournalEntryNumber): Optional<JournalEntry>
+    + save(JournalEntry): JournalEntry
+  }
+}
+
+package "application.service" {
+  class AccountService <<Application Service>> {
+    - accountRepository: AccountRepository
+    + create(CreateAccountCommand): Account
+    + update(UpdateAccountCommand): Account
+  }
+}
+
+AccountService ..|> AccountUseCase
+AccountService --> AccountRepository
 @enduml
 ```
 
-#### ユースケースの例
+#### アプリケーションサービスの例
 
 ```java
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class RegisterAccountUseCase {
+public class AccountService implements AccountUseCase {
     private final AccountRepository accountRepository;
 
-    public AccountDto execute(RegisterAccountCommand command) {
+    @Override
+    public Account create(CreateAccountCommand command) {
         // 重複チェック
         AccountCode code = AccountCode.of(command.accountCode());
         if (accountRepository.findByCode(code).isPresent()) {
@@ -338,11 +354,27 @@ public class RegisterAccountUseCase {
             command.displayOrder()
         );
 
-        // 永続化
-        Account saved = accountRepository.save(account);
+        // 永続化して返却
+        return accountRepository.save(account);
+    }
 
-        // DTO に変換して返却
-        return AccountDto.from(saved);
+    @Override
+    public Account update(UpdateAccountCommand command) {
+        Account account = accountRepository.findByCode(AccountCode.of(command.accountCode()))
+            .orElseThrow(() -> new AccountNotFoundException(command.accountCode()));
+
+        account.changeAccountName(command.accountName());
+        return accountRepository.save(account);
+    }
+
+    @Override
+    public Optional<Account> findByCode(String accountCode) {
+        return accountRepository.findByCode(AccountCode.of(accountCode));
+    }
+
+    @Override
+    public List<Account> findAll() {
+        return accountRepository.findAll();
     }
 }
 ```
@@ -355,26 +387,29 @@ public class RegisterAccountUseCase {
 @startuml
 title インフラストラクチャ層の実装
 
-package "infrastructure.datasource" {
+package "infrastructure.persistence.repository" {
   class AccountRepositoryImpl <<Output Adapter>> {
     - accountMapper: AccountMapper
     + findById(AccountId): Optional<Account>
     + findByCode(AccountCode): Optional<Account>
+    + findAll(): List<Account>
     + save(Account): Account
   }
 }
 
-package "infrastructure.mapper" {
+package "infrastructure.persistence.mapper" {
   interface AccountMapper <<MyBatis>> {
-    + selectById(String): AccountRecord
-    + selectByCode(String): AccountRecord
-    + selectAll(): List<AccountRecord>
-    + insert(AccountRecord): void
-    + update(AccountRecord): int
+    + selectById(String): AccountEntity
+    + selectByCode(String): AccountEntity
+    + selectAll(): List<AccountEntity>
+    + insert(AccountEntity): void
+    + update(AccountEntity): int
     + delete(String): void
   }
+}
 
-  class AccountRecord <<Record>> {
+package "infrastructure.persistence.entity" {
+  class AccountEntity <<Entity>> {
     + accountId: String
     + accountCode: String
     + accountName: String
@@ -388,7 +423,7 @@ interface AccountRepository <<Output Port>>
 
 AccountRepositoryImpl ..|> AccountRepository
 AccountRepositoryImpl --> AccountMapper
-AccountMapper --> AccountRecord
+AccountMapper --> AccountEntity
 @enduml
 ```
 
@@ -402,21 +437,28 @@ public class AccountRepositoryImpl implements AccountRepository {
 
     @Override
     public Optional<Account> findByCode(AccountCode code) {
-        AccountRecord record = accountMapper.selectByCode(code.value());
-        if (record == null) {
+        AccountEntity entity = accountMapper.selectByCode(code.value());
+        if (entity == null) {
             return Optional.empty();
         }
-        return Optional.of(toEntity(record));
+        return Optional.of(toDomainModel(entity));
+    }
+
+    @Override
+    public List<Account> findAll() {
+        return accountMapper.selectAll().stream()
+            .map(this::toDomainModel)
+            .toList();
     }
 
     @Override
     public Account save(Account account) {
-        AccountRecord record = toRecord(account);
+        AccountEntity entity = toEntity(account);
 
         if (account.getVersion() == 0) {
-            accountMapper.insert(record);
+            accountMapper.insert(entity);
         } else {
-            int updated = accountMapper.update(record);
+            int updated = accountMapper.update(entity);
             if (updated == 0) {
                 throw new OptimisticLockException("勘定科目が更新されています");
             }
@@ -426,19 +468,19 @@ public class AccountRepositoryImpl implements AccountRepository {
             .orElseThrow(() -> new IllegalStateException("保存後の取得に失敗"));
     }
 
-    private Account toEntity(AccountRecord record) {
+    private Account toDomainModel(AccountEntity entity) {
         return Account.reconstruct(
-            AccountId.of(record.accountId()),
-            AccountCode.of(record.accountCode()),
-            record.accountName(),
-            AccountType.valueOf(record.accountType()),
-            record.displayOrder(),
-            record.version()
+            AccountId.of(entity.getAccountId()),
+            AccountCode.of(entity.getAccountCode()),
+            entity.getAccountName(),
+            AccountType.valueOf(entity.getAccountType()),
+            entity.getDisplayOrder(),
+            entity.getVersion()
         );
     }
 
-    private AccountRecord toRecord(Account account) {
-        return new AccountRecord(
+    private AccountEntity toEntity(Account account) {
+        return new AccountEntity(
             account.getAccountId().value(),
             account.getAccountCode().value(),
             account.getAccountName(),
@@ -450,36 +492,44 @@ public class AccountRepositoryImpl implements AccountRepository {
 }
 ```
 
-### API 層（api）
+### Web 層（infrastructure.web）
 
-外部からのリクエストを受け付け、ユースケースを呼び出す層。
+外部からのリクエストを受け付け、ユースケースを呼び出す層（Input Adapter）。
 
 ```plantuml
 @startuml
-title API 層の構成
+title Web 層の構成
 
-package "api.controller" {
+package "infrastructure.web.controller" {
   class AccountController <<Input Adapter>> {
-    - registerAccountUseCase: RegisterAccountUseCase
-    - updateAccountUseCase: UpdateAccountUseCase
-    - getAccountUseCase: GetAccountUseCase
+    - accountUseCase: AccountUseCase
     + getAccounts(): List<AccountResponse>
     + getAccount(String): AccountResponse
     + createAccount(AccountRequest): AccountResponse
     + updateAccount(String, AccountRequest): AccountResponse
   }
+
+  class JournalEntryController <<Input Adapter>> {
+    - journalEntryUseCase: JournalEntryUseCase
+    + createJournalEntry(JournalEntryRequest): JournalEntryResponse
+    + getJournalEntry(String): JournalEntryResponse
+  }
+
+  class FinancialStatementController <<Input Adapter>> {
+    - financialStatementUseCase: FinancialStatementUseCase
+    + getBalanceSheet(BalanceSheetQuery): BalanceSheetResponse
+    + getIncomeStatement(IncomeStatementQuery): IncomeStatementResponse
+  }
 }
 
-package "api.request" {
+package "infrastructure.web.dto" {
   class AccountRequest {
     + accountCode: String
     + accountName: String
     + accountType: String
     + displayOrder: int
   }
-}
 
-package "api.response" {
   class AccountResponse {
     + accountCode: String
     + accountName: String
@@ -489,9 +539,9 @@ package "api.response" {
   }
 }
 
-AccountController --> RegisterAccountUseCase
-AccountController --> UpdateAccountUseCase
-AccountController --> GetAccountUseCase
+interface AccountUseCase <<Input Port>>
+
+AccountController --> AccountUseCase
 AccountController ..> AccountRequest
 AccountController ..> AccountResponse
 @enduml
@@ -505,14 +555,12 @@ AccountController ..> AccountResponse
 @RequiredArgsConstructor
 @Tag(name = "勘定科目", description = "勘定科目マスタ管理 API")
 public class AccountController {
-    private final RegisterAccountUseCase registerAccountUseCase;
-    private final UpdateAccountUseCase updateAccountUseCase;
-    private final GetAccountUseCase getAccountUseCase;
+    private final AccountUseCase accountUseCase;
 
     @GetMapping
     @Operation(summary = "勘定科目一覧取得")
     public ResponseEntity<List<AccountResponse>> getAccounts() {
-        List<AccountDto> accounts = getAccountUseCase.executeAll();
+        List<Account> accounts = accountUseCase.findAll();
         return ResponseEntity.ok(
             accounts.stream()
                 .map(AccountResponse::from)
@@ -524,7 +572,8 @@ public class AccountController {
     @Operation(summary = "勘定科目詳細取得")
     public ResponseEntity<AccountResponse> getAccount(
             @PathVariable String accountCode) {
-        AccountDto account = getAccountUseCase.execute(accountCode);
+        Account account = accountUseCase.findByCode(accountCode)
+            .orElseThrow(() -> new AccountNotFoundException(accountCode));
         return ResponseEntity.ok(AccountResponse.from(account));
     }
 
@@ -532,8 +581,8 @@ public class AccountController {
     @Operation(summary = "勘定科目登録")
     public ResponseEntity<AccountResponse> createAccount(
             @RequestBody @Valid AccountRequest request) {
-        RegisterAccountCommand command = request.toCommand();
-        AccountDto created = registerAccountUseCase.execute(command);
+        CreateAccountCommand command = request.toCreateCommand();
+        Account created = accountUseCase.create(command);
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(AccountResponse.from(created));
@@ -545,7 +594,7 @@ public class AccountController {
             @PathVariable String accountCode,
             @RequestBody @Valid AccountRequest request) {
         UpdateAccountCommand command = request.toUpdateCommand(accountCode);
-        AccountDto updated = updateAccountUseCase.execute(command);
+        Account updated = accountUseCase.update(command);
         return ResponseEntity.ok(AccountResponse.from(updated));
     }
 }
@@ -561,24 +610,30 @@ public class AccountController {
 @startuml
 title 依存性の方向
 
-rectangle "API 層\n(Input Adapter)" as api
-rectangle "アプリケーション層\n(Use Case)" as app
-rectangle "ドメイン層\n(Entity/Value Object)" as domain
-rectangle "インフラ層\n(Output Adapter)" as infra
+rectangle "Web 層\n(infrastructure.web)" as web
+rectangle "アプリケーション層\n(application)" as app
+rectangle "ドメイン層\n(domain)" as domain
+rectangle "永続化層\n(infrastructure.persistence)" as persistence
 
-api --> app : 依存
-app --> domain : 依存
-infra --> domain : 依存
-infra ..|> domain : 実装
+web --> app : Input Port を呼び出す
+app --> domain : ドメインモデルを使用
+persistence --> app : Output Port を実装
+persistence --> domain : ドメインモデルに変換
 
 note right of domain
   ドメイン層は他の層に依存しない
   （最も安定した層）
 end note
 
-note right of infra
-  インフラ層はドメイン層の
-  インターフェースを実装
+note right of app
+  アプリケーション層は
+  Input Port（ユースケース）と
+  Output Port（リポジトリ）を定義
+end note
+
+note left of persistence
+  永続化層はアプリケーション層の
+  Output Port を実装
   （依存性逆転）
 end note
 @enduml
@@ -587,28 +642,38 @@ end note
 ### Spring の DI による実現
 
 ```java
-// ドメイン層：インターフェース定義（Output Port）
+// アプリケーション層：Input Port（ユースケースインターフェース）
+public interface AccountUseCase {
+    Account create(CreateAccountCommand command);
+    Account update(UpdateAccountCommand command);
+    Optional<Account> findByCode(String accountCode);
+    List<Account> findAll();
+}
+
+// アプリケーション層：Output Port（リポジトリインターフェース）
 public interface AccountRepository {
     Optional<Account> findByCode(AccountCode code);
+    List<Account> findAll();
     Account save(Account account);
 }
 
-// インフラ層：実装（Output Adapter）
-@Repository
-public class AccountRepositoryImpl implements AccountRepository {
-    // MyBatis を使った実装
-}
-
-// アプリケーション層：インターフェースに依存
+// アプリケーション層：サービス実装（Input Port を実装）
 @Service
 @RequiredArgsConstructor
-public class RegisterAccountUseCase {
-    private final AccountRepository accountRepository; // インターフェースに依存
+public class AccountService implements AccountUseCase {
+    private final AccountRepository accountRepository; // Output Port に依存
 
-    public AccountDto execute(RegisterAccountCommand command) {
+    @Override
+    public Account create(CreateAccountCommand command) {
         // accountRepository.save() を呼び出し
         // 実際には AccountRepositoryImpl が注入される
     }
+}
+
+// インフラ層：リポジトリ実装（Output Port を実装）
+@Repository
+public class AccountRepositoryImpl implements AccountRepository {
+    // MyBatis を使った実装
 }
 ```
 
@@ -627,29 +692,36 @@ public class ArchitectureTest {
         noClasses()
             .that().resideInAPackage("..domain..")
             .should().dependOnClassesThat()
-            .resideInAnyPackage("..application..", "..infrastructure..", "..api..");
+            .resideInAnyPackage("..application..", "..infrastructure..");
 
     @ArchTest
-    static final ArchRule applicationShouldNotDependOnInfraOrApi =
+    static final ArchRule applicationShouldNotDependOnInfrastructure =
         noClasses()
             .that().resideInAPackage("..application..")
             .should().dependOnClassesThat()
-            .resideInAnyPackage("..infrastructure..", "..api..");
+            .resideInAnyPackage("..infrastructure..");
 
     @ArchTest
-    static final ArchRule useCasesShouldOnlyBeAccessedByControllers =
+    static final ArchRule inputPortsShouldOnlyBeAccessedByWebAndService =
         classes()
-            .that().resideInAPackage("..usecase..")
+            .that().resideInAPackage("..application.port.in..")
             .should().onlyBeAccessed()
-            .byAnyPackage("..api.controller..", "..usecase..");
+            .byAnyPackage("..infrastructure.web..", "..application.service..", "..application.port.in..");
 
     @ArchTest
-    static final ArchRule repositoryImplementationsShouldImplementInterface =
+    static final ArchRule outputPortsShouldOnlyBeAccessedByServiceAndPersistence =
         classes()
-            .that().resideInAPackage("..infrastructure.datasource..")
+            .that().resideInAPackage("..application.port.out..")
+            .should().onlyBeAccessed()
+            .byAnyPackage("..application.service..", "..infrastructure.persistence..", "..application.port.out..");
+
+    @ArchTest
+    static final ArchRule repositoryImplementationsShouldImplementOutputPort =
+        classes()
+            .that().resideInAPackage("..infrastructure.persistence.repository..")
             .and().haveSimpleNameEndingWith("RepositoryImpl")
             .should().implement(
-                classes().that().resideInAPackage("..domain.repository..")
+                classes().that().resideInAPackage("..application.port.out..")
             );
 }
 ```
@@ -678,19 +750,19 @@ public class ArchitectureTest {
 
 | 原則 | 適用例 |
 |------|--------|
-| 単一責任原則（SRP） | ユースケースは1つのビジネス操作のみを担当 |
-| 開放閉鎖原則（OCP） | 新しいアダプターの追加でドメインを変更しない |
+| 単一責任原則（SRP） | アプリケーションサービスは特定のドメイン操作のみを担当 |
+| 開放閉鎖原則（OCP） | 新しいアダプターの追加でアプリケーション層を変更しない |
 | リスコフの置換原則（LSP） | リポジトリの実装は交換可能 |
-| インターフェース分離原則（ISP） | 細かい粒度のリポジトリインターフェース |
-| 依存性逆転原則（DIP） | ドメインがインターフェースを定義、インフラが実装 |
+| インターフェース分離原則（ISP） | Input Port と Output Port を分離 |
+| 依存性逆転原則（DIP） | アプリケーション層がポートを定義、インフラが実装 |
 
 ### ドメイン駆動設計（DDD）の適用
 
 | 概念 | 適用 |
 |------|------|
 | エンティティ | Account, JournalEntry |
-| 値オブジェクト | AccountCode, Money, JournalLine |
-| 集約 | JournalEntry（JournalLine を含む） |
-| リポジトリ | 集約ルートごとにリポジトリを定義 |
-| ドメインサービス | JournalValidationService |
-| ユースケース | アプリケーションサービスとして実装 |
+| 値オブジェクト | AccountCode, Money, JournalEntryNumber |
+| 集約 | JournalEntry（JournalEntryDetail, JournalEntryDetailItem を含む） |
+| リポジトリ | Output Port として application.port.out に定義 |
+| ドメインサービス | JournalDomainService, BalanceCalculationService |
+| ユースケース | Input Port として application.port.in に定義、application.service で実装 |
