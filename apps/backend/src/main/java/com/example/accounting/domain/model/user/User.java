@@ -2,6 +2,7 @@ package com.example.accounting.domain.model.user;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
@@ -23,6 +24,7 @@ import java.util.function.Supplier;
  */
 @Value
 @With
+@Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
 
@@ -115,6 +117,8 @@ public class User {
      *
      * <p>データベースから読み込んだデータを使ってエンティティを再構築する。</p>
      *
+     * <p>代替として {@link User#builder()} を使用することも可能。</p>
+     *
      * @param id                  ユーザー ID
      * @param username            ユーザー名
      * @param email               メールアドレス
@@ -129,6 +133,7 @@ public class User {
      * @param updatedAt           更新日時
      * @return 再構築された User インスタンス
      */
+    @SuppressWarnings("java:S107") // 12パラメータはイミュータブルオブジェクト再構築では正当
     public static User reconstruct(UserId id,
                                    Username username,
                                    Email email,

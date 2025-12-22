@@ -118,7 +118,7 @@ public final class IO<A> {
         return new IO<>(() -> {
             try {
                 return thunk.get();
-            } catch (Exception e) {
+            } catch (Exception _) {
                 return defaultValue;
             }
         });
@@ -134,7 +134,7 @@ public final class IO<A> {
         return new IO<>(() -> {
             try {
                 return thunk.get();
-            } catch (Exception e) {
+            } catch (Exception _) {
                 return fallback.get().unsafeRun();
             }
         });
