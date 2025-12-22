@@ -70,64 +70,79 @@ com.example.accounting/
 ├── domain/                          # ドメイン層
 │   ├── model/                       # ドメインモデル
 │   │   ├── account/                 # 勘定科目
-│   │   │   ├── Account.java         # エンティティ
-│   │   │   ├── AccountCode.java     # 値オブジェクト
-│   │   │   └── AccountType.java     # 列挙型
+│   │   │   ├── Account.java         # 勘定科目エンティティ
+│   │   │   ├── AccountType.java     # 勘定科目種別（列挙型）
+│   │   │   └── AccountCode.java     # 勘定科目コード（値オブジェクト）
 │   │   ├── journal/                 # 仕訳
-│   │   │   ├── JournalEntry.java    # エンティティ
-│   │   │   ├── JournalLine.java     # 値オブジェクト
-│   │   │   └── JournalStatus.java   # 列挙型
-│   │   └── balance/                 # 残高
-│   │       ├── DailyBalance.java
-│   │       └── MonthlyBalance.java
-│   ├── service/                     # ドメインサービス
-│   │   ├── JournalValidationService.java
-│   │   └── BalanceCalculationService.java
-│   └── repository/                  # リポジトリインターフェース（Output Port）
-│       ├── AccountRepository.java
-│       ├── JournalEntryRepository.java
-│       └── BalanceRepository.java
+│   │   │   ├── JournalEntry.java    # 仕訳（集約ルート）
+│   │   │   ├── JournalEntryDetail.java # 仕訳明細
+│   │   │   ├── JournalEntryDetailItem.java # 仕訳貸借明細
+│   │   │   ├── JournalEntryNumber.java # 仕訳伝票番号（値オブジェクト）
+│   │   │   ├── JournalStatus.java   # 仕訳ステータス（列挙型）
+│   │   │   ├── DebitCreditType.java # 貸借区分（列挙型）
+│   │   │   └── Money.java           # 金額（値オブジェクト）
+│   │   ├── balance/                 # 残高
+│   │   │   ├── DailyBalance.java    # 日次勘定科目残高
+│   │   │   └── MonthlyBalance.java  # 月次勘定科目残高
+│   │   └── financial/               # 財務諸表
+│   │       ├── BalanceSheet.java    # 貸借対照表
+│   │       ├── BalanceSheetItem.java # 貸借対照表項目
+│   │       ├── IncomeStatement.java # 損益計算書
+│   │       ├── IncomeStatementItem.java # 損益計算書項目
+│   │       ├── FinancialRatios.java # 財務指標
+│   │       └── AccountCategory.java # 勘定科目区分（列挙型）
+│   └── service/                     # ドメインサービス
+│       ├── JournalDomainService.java # 仕訳ドメインサービス
+│       ├── BalanceCalculationService.java # 残高計算ドメインサービス
+│       └── FinancialAnalysisDomainService.java # 財務分析ドメインサービス
 │
 ├── application/                     # アプリケーション層
-│   ├── usecase/                     # ユースケース（Input Port）
-│   │   ├── account/
-│   │   │   ├── RegisterAccountUseCase.java
-│   │   │   ├── UpdateAccountUseCase.java
-│   │   │   └── GetAccountUseCase.java
-│   │   ├── journal/
-│   │   │   ├── CreateJournalEntryUseCase.java
-│   │   │   ├── ApproveJournalEntryUseCase.java
-│   │   │   └── GetJournalEntryUseCase.java
-│   │   └── balance/
-│   │       └── CalculateBalanceUseCase.java
-│   └── dto/                         # データ転送オブジェクト
-│       ├── AccountDto.java
-│       ├── JournalEntryDto.java
-│       └── BalanceDto.java
+│   ├── port/                        # ポート（ヘキサゴナルアーキテクチャ）
+│   │   ├── in/                      # Input Port（ユースケース）
+│   │   │   ├── AccountUseCase.java  # 勘定科目ユースケース
+│   │   │   ├── JournalEntryUseCase.java # 仕訳ユースケース
+│   │   │   ├── FinancialStatementUseCase.java # 財務諸表ユースケース
+│   │   │   ├── command/             # コマンド
+│   │   │   │   ├── CreateAccountCommand.java
+│   │   │   │   ├── UpdateAccountCommand.java
+│   │   │   │   └── CreateJournalEntryCommand.java
+│   │   │   └── query/               # クエリ
+│   │   │       ├── BalanceSheetQuery.java
+│   │   │       └── IncomeStatementQuery.java
+│   │   └── out/                     # Output Port（リポジトリインターフェース）
+│   │       ├── AccountRepository.java # 勘定科目リポジトリ
+│   │       ├── JournalEntryRepository.java # 仕訳リポジトリ
+│   │       ├── DailyBalanceRepository.java # 日次残高リポジトリ
+│   │       └── MonthlyBalanceRepository.java # 月次残高リポジトリ
+│   └── service/                     # アプリケーションサービス
+│       ├── AccountService.java      # 勘定科目サービス
+│       ├── JournalEntryService.java # 仕訳サービス
+│       └── FinancialStatementService.java # 財務諸表サービス
 │
-├── infrastructure/                  # インフラストラクチャ層
-│   ├── datasource/                  # Output Adapter（データソース）
-│   │   ├── AccountRepositoryImpl.java
-│   │   ├── JournalEntryRepositoryImpl.java
-│   │   └── BalanceRepositoryImpl.java
-│   ├── mapper/                      # MyBatis Mapper
-│   │   ├── AccountMapper.java
-│   │   ├── JournalEntryMapper.java
-│   │   └── BalanceMapper.java
-│   └── external/                    # 外部連携
-│       └── EmailService.java
-│
-└── api/                             # API 層（Input Adapter）
-    ├── controller/                  # REST Controller
-    │   ├── AccountController.java
-    │   ├── JournalEntryController.java
-    │   └── BalanceController.java
-    ├── request/                     # リクエスト DTO
-    │   ├── AccountRequest.java
-    │   └── JournalEntryRequest.java
-    └── response/                    # レスポンス DTO
-        ├── AccountResponse.java
-        └── JournalEntryResponse.java
+└── infrastructure/                  # インフラストラクチャ層
+    ├── persistence/                 # 永続化（Output Adapter）
+    │   ├── entity/                  # JPA/MyBatis エンティティ
+    │   │   ├── AccountEntity.java
+    │   │   ├── JournalEntryEntity.java
+    │   │   └── ...
+    │   ├── mapper/                  # MyBatis Mapper
+    │   │   ├── AccountMapper.java
+    │   │   ├── JournalEntryMapper.java
+    │   │   └── ...
+    │   └── repository/              # リポジトリ実装
+    │       ├── AccountRepositoryImpl.java
+    │       ├── JournalEntryRepositoryImpl.java
+    │       └── ...
+    └── web/                         # Web（Input Adapter）
+        ├── controller/              # REST Controller
+        │   ├── AccountController.java
+        │   ├── JournalEntryController.java
+        │   └── FinancialStatementController.java
+        └── dto/                     # リクエスト/レスポンス DTO
+            ├── AccountRequest.java
+            ├── AccountResponse.java
+            ├── JournalEntryRequest.java
+            └── JournalEntryResponse.java
 ```
 
 ---
