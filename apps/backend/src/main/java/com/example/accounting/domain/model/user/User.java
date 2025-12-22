@@ -134,7 +134,7 @@ public class User {
      * @return ユーザー名
      */
     public String getUsernameValue() {
-        return username.getValue();
+        return username.value();
     }
 
     /**
@@ -143,7 +143,7 @@ public class User {
      * @return メールアドレス
      */
     public String getEmailValue() {
-        return email.getValue();
+        return email.value();
     }
 
     /**
@@ -152,7 +152,7 @@ public class User {
      * @return ハッシュ化されたパスワード
      */
     public String getPasswordValue() {
-        return password.getValue();
+        return password.value();
     }
 
     /**

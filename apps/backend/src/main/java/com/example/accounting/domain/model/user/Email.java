@@ -1,22 +1,14 @@
 package com.example.accounting.domain.model.user;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Value;
-
 import java.util.regex.Pattern;
 
 /**
  * メールアドレスを表す値オブジェクト
  */
-@Value
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Email {
+public record Email(String value) {
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-
-    String value;
 
     /**
      * メールアドレスを生成する

@@ -1,22 +1,14 @@
 package com.example.accounting.domain.model.user;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Value;
-
 /**
  * ユーザー名を表す値オブジェクト
  *
  * <p>3〜50文字の制約を持つ。</p>
  */
-@Value
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Username {
+public record Username(String value) {
 
     private static final int MIN_LENGTH = 3;
     private static final int MAX_LENGTH = 50;
-
-    String value;
 
     /**
      * ユーザー名を生成する

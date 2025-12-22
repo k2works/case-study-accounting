@@ -1,8 +1,5 @@
 package com.example.accounting.domain.model.user;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -11,14 +8,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  * <p>ハッシュ化されたパスワードを保持する。
  * 生のパスワードは保持せず、検証のみ可能。</p>
  */
-@EqualsAndHashCode
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Password {
+public record Password(String value) {
 
     private static final int MIN_LENGTH = 8;
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
-
-    private final String hashedValue;
 
     /**
      * 生のパスワードからハッシュ化されたパスワードを生成する
@@ -60,16 +53,7 @@ public class Password {
      * @return 一致する場合 true
      */
     public boolean matches(String rawPassword) {
-        return PASSWORD_ENCODER.matches(rawPassword, this.hashedValue);
-    }
-
-    /**
-     * ハッシュ化されたパスワードを取得する（DB 保存用）
-     *
-     * @return ハッシュ化されたパスワード
-     */
-    public String getValue() {
-        return hashedValue;
+        return PASSWORD_ENCODER.matches(rawPassword, this.value);
     }
 
     @Override
