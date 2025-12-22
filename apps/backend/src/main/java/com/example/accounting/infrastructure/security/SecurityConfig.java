@@ -45,7 +45,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    @SuppressWarnings("java:S4502") // CSRF 無効化は JWT ベースのステートレス認証では安全
+    @SuppressWarnings({
+            "java:S4502", // CSRF 無効化は JWT ベースのステートレス認証では安全
+            "java:S112"   // Spring Security API の制約で throws Exception が必要
+    })
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 // CSRF 無効化: JWT ベースのステートレス認証では CSRF 保護は不要

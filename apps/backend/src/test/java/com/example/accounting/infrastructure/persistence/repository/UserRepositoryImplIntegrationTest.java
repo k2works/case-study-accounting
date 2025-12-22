@@ -209,8 +209,9 @@ class UserRepositoryImplIntegrationTest {
             List<User> users = userRepository.findAll();
 
             // Then
-            assertThat(users).isNotEmpty();
-            assertThat(users).hasSizeGreaterThanOrEqualTo(5);
+            assertThat(users)
+                    .isNotEmpty()
+                    .hasSizeGreaterThanOrEqualTo(5);
         }
     }
 

@@ -5,6 +5,8 @@ import com.example.accounting.infrastructure.web.dto.LoginResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -45,112 +47,59 @@ class AuthControllerIntegrationTest {
                 .body(LoginResponse.class);
     }
 
+    private String createLoginRequestBody(String username, String password) {
+        return """
+                {
+                    "username": "%s",
+                    "password": "%s"
+                }
+                """.formatted(username, password);
+    }
+
     @Nested
     @DisplayName("ログイン API")
     class LoginApi {
 
-        @Test
-        @DisplayName("正しい認証情報で管理者ユーザーがログインできる")
-        void shouldLoginWithAdminCredentials() {
+        @ParameterizedTest(name = "{0} ユーザーがログインできる")
+        @CsvSource({
+                "admin, ADMIN, 管理者",
+                "manager, MANAGER, 経理責任者",
+                "user, USER, 経理担当者",
+                "viewer, VIEWER, 閲覧者"
+        })
+        @DisplayName("正しい認証情報でログインできる")
+        void shouldLoginWithValidCredentials(String username, String expectedRole, String displayName) {
             // Given
             RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "admin",
-                        "password": "Password123!"
-                    }
-                    """;
+            String requestBody = createLoginRequestBody(username, "Password123!");
 
             // When
             LoginResponse response = performLogin(restClient, requestBody);
 
             // Then
-            assertThat(response).isNotNull();
-            assertThat(response.success()).isTrue();
-            assertThat(response.accessToken()).isNotNull().isNotEmpty();
-            assertThat(response.refreshToken()).isNotNull().isNotEmpty();
-            assertThat(response.username()).isEqualTo("admin");
-            assertThat(response.role()).isEqualTo("ADMIN");
-            assertThat(response.errorMessage()).isNull();
+            assertThat(response)
+                    .isNotNull()
+                    .satisfies(r -> {
+                        assertThat(r.success()).isTrue();
+                        assertThat(r.accessToken()).isNotNull().isNotEmpty();
+                        assertThat(r.refreshToken()).isNotNull().isNotEmpty();
+                        assertThat(r.username()).isEqualTo(username);
+                        assertThat(r.role()).isEqualTo(expectedRole);
+                        assertThat(r.errorMessage()).isNull();
+                    });
         }
 
-        @Test
-        @DisplayName("正しい認証情報で経理責任者ユーザーがログインできる")
-        void shouldLoginWithManagerCredentials() {
+        @ParameterizedTest(name = "{2}")
+        @CsvSource({
+                "admin, WrongPassword123!, 不正なパスワードでログインに失敗する",
+                "nonexistent, Password123!, 存在しないユーザーでログインに失敗する",
+                "locked, Password123!, ロックされたアカウントでログインに失敗する"
+        })
+        @DisplayName("認証失敗時は 401 を返す")
+        void shouldFailWithUnauthorized(String username, String password, String scenario) {
             // Given
             RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "manager",
-                        "password": "Password123!"
-                    }
-                    """;
-
-            // When
-            LoginResponse response = performLogin(restClient, requestBody);
-
-            // Then
-            assertThat(response).isNotNull();
-            assertThat(response.success()).isTrue();
-            assertThat(response.username()).isEqualTo("manager");
-            assertThat(response.role()).isEqualTo("MANAGER");
-        }
-
-        @Test
-        @DisplayName("正しい認証情報で経理担当者ユーザーがログインできる")
-        void shouldLoginWithUserCredentials() {
-            // Given
-            RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "user",
-                        "password": "Password123!"
-                    }
-                    """;
-
-            // When
-            LoginResponse response = performLogin(restClient, requestBody);
-
-            // Then
-            assertThat(response).isNotNull();
-            assertThat(response.success()).isTrue();
-            assertThat(response.username()).isEqualTo("user");
-            assertThat(response.role()).isEqualTo("USER");
-        }
-
-        @Test
-        @DisplayName("正しい認証情報で閲覧者ユーザーがログインできる")
-        void shouldLoginWithViewerCredentials() {
-            // Given
-            RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "viewer",
-                        "password": "Password123!"
-                    }
-                    """;
-
-            // When
-            LoginResponse response = performLogin(restClient, requestBody);
-
-            // Then
-            assertThat(response).isNotNull();
-            assertThat(response.success()).isTrue();
-            assertThat(response.username()).isEqualTo("viewer");
-            assertThat(response.role()).isEqualTo("VIEWER");
-        }
-
-        @Test
-        @DisplayName("不正なパスワードでログインに失敗する")
-        void shouldFailWithWrongPassword() {
-            // Given
-            RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "admin",
-                        "password": "WrongPassword123!"
-                    }
-                    """;
+            String requestBody = createLoginRequestBody(username, password);
 
             // When / Then
             assertThatThrownBy(() -> performLogin(restClient, requestBody))
@@ -160,77 +109,16 @@ class AuthControllerIntegrationTest {
                     .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
-        @Test
-        @DisplayName("存在しないユーザーでログインに失敗する")
-        void shouldFailWithNonExistentUser() {
+        @ParameterizedTest(name = "{2}")
+        @CsvSource({
+                "'', Password123!, 空のユーザー名でログインに失敗する",
+                "admin, '', 空のパスワードでログインに失敗する"
+        })
+        @DisplayName("バリデーションエラー時は 400 を返す")
+        void shouldFailWithBadRequest(String username, String password, String scenario) {
             // Given
             RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "nonexistent",
-                        "password": "Password123!"
-                    }
-                    """;
-
-            // When / Then
-            assertThatThrownBy(() -> performLogin(restClient, requestBody))
-                    .isInstanceOf(HttpClientErrorException.class)
-                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
-                    .extracting(HttpClientErrorException::getStatusCode)
-                    .isEqualTo(HttpStatus.UNAUTHORIZED);
-        }
-
-        @Test
-        @DisplayName("ロックされたアカウントでログインに失敗する")
-        void shouldFailWithLockedAccount() {
-            // Given
-            RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "locked",
-                        "password": "Password123!"
-                    }
-                    """;
-
-            // When / Then
-            assertThatThrownBy(() -> performLogin(restClient, requestBody))
-                    .isInstanceOf(HttpClientErrorException.class)
-                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
-                    .extracting(HttpClientErrorException::getStatusCode)
-                    .isEqualTo(HttpStatus.UNAUTHORIZED);
-        }
-
-        @Test
-        @DisplayName("空のユーザー名でログインに失敗する")
-        void shouldFailWithEmptyUsername() {
-            // Given
-            RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "",
-                        "password": "Password123!"
-                    }
-                    """;
-
-            // When / Then
-            assertThatThrownBy(() -> performLogin(restClient, requestBody))
-                    .isInstanceOf(HttpClientErrorException.class)
-                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
-                    .extracting(HttpClientErrorException::getStatusCode)
-                    .isEqualTo(HttpStatus.BAD_REQUEST);
-        }
-
-        @Test
-        @DisplayName("空のパスワードでログインに失敗する")
-        void shouldFailWithEmptyPassword() {
-            // Given
-            RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "admin",
-                        "password": ""
-                    }
-                    """;
+            String requestBody = createLoginRequestBody(username, password);
 
             // When / Then
             assertThatThrownBy(() -> performLogin(restClient, requestBody))
@@ -250,12 +138,7 @@ class AuthControllerIntegrationTest {
         void shouldReturnValidJwtTokenFormat() {
             // Given
             RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "admin",
-                        "password": "Password123!"
-                    }
-                    """;
+            String requestBody = createLoginRequestBody("admin", "Password123!");
 
             // When
             LoginResponse response = performLogin(restClient, requestBody);
@@ -279,12 +162,7 @@ class AuthControllerIntegrationTest {
         void shouldReturnDifferentTokens() {
             // Given
             RestClient restClient = createRestClient();
-            String requestBody = """
-                    {
-                        "username": "admin",
-                        "password": "Password123!"
-                    }
-                    """;
+            String requestBody = createLoginRequestBody("admin", "Password123!");
 
             // When
             LoginResponse response = performLogin(restClient, requestBody);
