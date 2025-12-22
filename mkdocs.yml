@@ -183,3 +183,12 @@ nav:
           - 第22章: article/frontend/chapter22.md
           - 第23章: article/frontend/chapter23.md
           - 第24章: article/frontend/chapter24.md
+  - 関数型プログラミング実践ガイド:
+    - 関数型プログラミング（Java版）:
+        - はじめに: article/functional-java/index.md
+        - Part I 基礎: article/functional-java/part-1.md
+        - Part II 関数型スタイル: article/functional-java/part-2.md
+        - Part III エラーハンドリング: article/functional-java/part-3.md
+        - Part IV IO と副作用: article/functional-java/part-4.md
+        - Part V 並行処理: article/functional-java/part-5.md
+        - Part VI 実践: article/functional-java/part-6.md
