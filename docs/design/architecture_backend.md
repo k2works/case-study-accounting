@@ -158,16 +158,21 @@ com.example.accounting/
 title ドメイン層の構成
 
 package "domain.model" {
-  class Account <<Entity>> {
+  class Account <<Entity>> <<@Value>> <<@With>> {
     - accountId: AccountId
     - accountCode: AccountCode
     - accountName: String
     - accountType: AccountType
-    + changeAccountName(String): void
+    - displayOrder: int
+    - version: int
+    + {static} create(...): Account
+    + {static} reconstruct(...): Account
+    + changeAccountName(String): Account
+    + changeDisplayOrder(int): Account
     + isDebitNormalBalance(): boolean
   }
 
-  class AccountCode <<Value Object>> {
+  class AccountCode <<Value Object>> <<record>> {
     - value: String
     + getValue(): String
     + {static} of(String): AccountCode
@@ -197,38 +202,97 @@ package "domain.service" {
 
 Account --> AccountCode
 Account --> AccountType
+
+note top of Account
+  @Value: イミュータブル（全フィールド final）
+  @With: 変更時に新インスタンスを生成
+end note
 @enduml
 ```
 
 #### エンティティの例
 
-```java
-@Getter
-public class Account {
-    private final AccountId accountId;
-    private AccountCode accountCode;
-    private String accountName;
-    private final AccountType accountType;
-    private int displayOrder;
-    private int version;
+ドメインエンティティは `@Value` と `@With` を使用してイミュータブルに設計します。
 
-    // ファクトリメソッド
+**設計方針:**
+- `@Value`: すべてのフィールドを `private final` にし、Getter、equals/hashCode、toString を自動生成
+- `@With`: イミュータブルなオブジェクトのフィールドを変更した新しいインスタンスを生成するメソッドを自動生成
+- `@AllArgsConstructor(access = AccessLevel.PRIVATE)`: コンストラクタをプライベートにして、ファクトリメソッド経由でのみ生成可能にする
+
+**生成法の解説:**
+
+| メソッド | 用途 | 説明 |
+|---------|------|------|
+| `create()` | 新規作成 | ビジネスルールに従って新しいエンティティを生成。ID は自動生成、バリデーション実行 |
+| `reconstruct()` | 再構築 | DBからの復元用。バリデーションをスキップし、既存データをそのまま復元 |
+| `withXxx()` | 更新 | `@With` により自動生成。変更したいフィールドのみ指定して新しいインスタンスを返す |
+
+```java
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Value;
+import lombok.With;
+
+/**
+ * 勘定科目エンティティ
+ *
+ * <p>イミュータブル設計により、状態変更は常に新しいインスタンスを生成する。
+ * これにより、並行処理での安全性と、変更履歴の追跡が容易になる。</p>
+ */
+@Value
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class Account {
+    AccountId accountId;
+    AccountCode accountCode;
+    String accountName;
+    AccountType accountType;
+    int displayOrder;
+    int version;
+
+    /**
+     * ファクトリメソッド - 新規作成
+     *
+     * <p>新しい勘定科目を作成する。ID は自動生成され、version は 0 で初期化される。
+     * すべての入力値に対してバリデーションを実行する。</p>
+     *
+     * @param accountCode  勘定科目コード（3〜4桁の数字）
+     * @param accountName  勘定科目名（必須）
+     * @param accountType  勘定科目種別（ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE）
+     * @param displayOrder 表示順序
+     * @return 新しい Account インスタンス
+     * @throws IllegalArgumentException 入力値が不正な場合
+     */
     public static Account create(
             AccountCode accountCode,
             String accountName,
             AccountType accountType,
             int displayOrder) {
+        validateAccountName(accountName);
         return new Account(
             AccountId.generate(),
             accountCode,
             accountName,
             accountType,
             displayOrder,
-            0
+            0  // 新規作成時は version = 0
         );
     }
 
-    // 再構築用コンストラクタ
+    /**
+     * 再構築用ファクトリメソッド - DB からの復元
+     *
+     * <p>データベースから読み込んだデータを使ってエンティティを再構築する。
+     * バリデーションはスキップされる（DBに保存されているデータは既に検証済みのため）。</p>
+     *
+     * @param accountId    勘定科目 ID
+     * @param accountCode  勘定科目コード
+     * @param accountName  勘定科目名
+     * @param accountType  勘定科目種別
+     * @param displayOrder 表示順序
+     * @param version      楽観的ロック用バージョン
+     * @return 再構築された Account インスタンス
+     */
     public static Account reconstruct(
             AccountId accountId,
             AccountCode accountCode,
@@ -240,18 +304,71 @@ public class Account {
                           accountType, displayOrder, version);
     }
 
-    // ビジネスロジック
+    // ===== ビジネスロジック =====
+
+    /**
+     * 借方残高が正常かどうかを判定
+     */
     public boolean isDebitNormalBalance() {
         return accountType.isDebitNormalBalance();
     }
 
-    public void changeAccountName(String newName) {
-        if (newName == null || newName.isBlank()) {
+    /**
+     * 勘定科目名を変更した新しいインスタンスを返す
+     *
+     * <p>@With により生成される withAccountName() をラップし、
+     * バリデーションを追加する。</p>
+     *
+     * @param newName 新しい勘定科目名
+     * @return 変更された Account インスタンス
+     * @throws IllegalArgumentException 勘定科目名が空の場合
+     */
+    public Account changeAccountName(String newName) {
+        validateAccountName(newName);
+        return this.withAccountName(newName);
+    }
+
+    /**
+     * 表示順序を変更した新しいインスタンスを返す
+     *
+     * @param newDisplayOrder 新しい表示順序
+     * @return 変更された Account インスタンス
+     */
+    public Account changeDisplayOrder(int newDisplayOrder) {
+        return this.withDisplayOrder(newDisplayOrder);
+    }
+
+    // ===== バリデーション =====
+
+    private static void validateAccountName(String accountName) {
+        if (accountName == null || accountName.isBlank()) {
             throw new IllegalArgumentException("勘定科目名は必須です");
         }
-        this.accountName = newName;
     }
 }
+```
+
+**使用例:**
+
+```java
+// 新規作成
+Account account = Account.create(
+    AccountCode.of("101"),
+    "現金",
+    AccountType.ASSET,
+    1
+);
+
+// 名前を変更（イミュータブルなので新しいインスタンスが返る）
+Account updated = account.changeAccountName("小口現金");
+
+// @With による直接変更（バリデーションなし）
+Account withNewOrder = account.withDisplayOrder(10);
+
+// 複数フィールドの変更
+Account modified = account
+    .withAccountName("普通預金")
+    .withDisplayOrder(2);
 ```
 
 #### 値オブジェクトの例
