@@ -23,33 +23,41 @@ repositories {
     mavenCentral()
 }
 
+// バージョン管理
+val mybatisVersion = "4.0.0"
+val jjwtVersion = "0.12.6"
+val vavrVersion = "0.10.4"
+val springdocVersion = "2.8.8"
+val testcontainersVersion = "1.20.4"
+val archunitVersion = "1.3.0"
+val jigErdVersion = "0.2.1"
+
 dependencies {
+    // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
 
     // Database
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
-    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.0")
-    runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2") // Demo環境用
-    runtimeOnly("org.springframework.boot:spring-boot-h2console") // H2 Console (Spring Boot 4.0+)
-
-    // Migration
+    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:$mybatisVersion")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.springframework.boot:spring-boot-h2console")
 
     // JWT
-    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
-    // Vavr (関数型プログラミング)
-    implementation("io.vavr:vavr:0.10.4")
+    // Functional Programming
+    implementation("io.vavr:vavr:$vavrVersion")
 
     // OpenAPI / Swagger UI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
@@ -57,20 +65,21 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
 
+    // Testing - Spring Boot
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // Testcontainers
-    testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
+    // Testing - Testcontainers
+    testImplementation(platform("org.testcontainers:testcontainers-bom:$testcontainersVersion"))
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
 
-    // ArchUnit
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    // Testing - Architecture
+    testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
 
-    // JIG-ERD (ER図生成)
-    testImplementation("com.github.irof:jig-erd:0.2.1")
+    // Testing - Documentation
+    testImplementation("com.github.irof:jig-erd:$jigErdVersion")
 }
 
 tasks.withType<Test> {
