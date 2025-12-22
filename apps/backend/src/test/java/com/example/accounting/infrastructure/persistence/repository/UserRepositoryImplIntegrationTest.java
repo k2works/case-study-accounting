@@ -74,9 +74,9 @@ class UserRepositoryImplIntegrationTest {
             );
             userRepository.save(user);
 
-            // When
-            user.changeRole(Role.MANAGER);
-            User updatedUser = userRepository.save(user);
+            // When（イミュータブルなので結果を受け取る）
+            User changedUser = user.changeRole(Role.MANAGER);
+            User updatedUser = userRepository.save(changedUser);
 
             // Then
             assertThat(updatedUser.getRole()).isEqualTo(Role.MANAGER);
@@ -93,12 +93,14 @@ class UserRepositoryImplIntegrationTest {
                     "ロックユーザー",
                     Role.USER
             );
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
+            // イミュータブルなので結果を受け取る
+            User lockedUser = user
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt();
 
             // When
-            User savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(lockedUser);
 
             // Then
             assertThat(savedUser.isLocked()).isTrue();
@@ -345,23 +347,24 @@ class UserRepositoryImplIntegrationTest {
                     "全フィールドユーザー",
                     Role.ADMIN
             );
-            user.recordSuccessfulLogin();
+            // イミュータブルなので結果を受け取る
+            User loggedInUser = user.recordSuccessfulLogin();
 
             // When
-            userRepository.save(user);
-            Optional<User> found = userRepository.findById(user.getId());
+            userRepository.save(loggedInUser);
+            Optional<User> found = userRepository.findById(loggedInUser.getId());
 
             // Then
             assertThat(found).isPresent();
             User restored = found.get();
-            assertThat(restored.getId()).isEqualTo(user.getId());
-            assertThat(restored.getUsername()).isEqualTo(user.getUsername());
-            assertThat(restored.getEmail()).isEqualTo(user.getEmail());
-            assertThat(restored.getDisplayName()).isEqualTo(user.getDisplayName());
-            assertThat(restored.getRole()).isEqualTo(user.getRole());
-            assertThat(restored.isActive()).isEqualTo(user.isActive());
-            assertThat(restored.isLocked()).isEqualTo(user.isLocked());
-            assertThat(restored.getFailedLoginAttempts()).isEqualTo(user.getFailedLoginAttempts());
+            assertThat(restored.getId()).isEqualTo(loggedInUser.getId());
+            assertThat(restored.getUsername()).isEqualTo(loggedInUser.getUsername());
+            assertThat(restored.getEmail()).isEqualTo(loggedInUser.getEmail());
+            assertThat(restored.getDisplayName()).isEqualTo(loggedInUser.getDisplayName());
+            assertThat(restored.getRole()).isEqualTo(loggedInUser.getRole());
+            assertThat(restored.isActive()).isEqualTo(loggedInUser.isActive());
+            assertThat(restored.isLocked()).isEqualTo(loggedInUser.isLocked());
+            assertThat(restored.getFailedLoginAttempts()).isEqualTo(loggedInUser.getFailedLoginAttempts());
             assertThat(restored.getLastLoginAt()).isNotNull();
             assertThat(restored.getCreatedAt()).isNotNull();
             assertThat(restored.getUpdatedAt()).isNotNull();

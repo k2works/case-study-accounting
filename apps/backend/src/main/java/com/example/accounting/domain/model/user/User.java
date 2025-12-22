@@ -1,5 +1,9 @@
 package com.example.accounting.domain.model.user;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Value;
+import lombok.With;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -11,7 +15,13 @@ import java.util.regex.Pattern;
  *
  * <p>財務会計システムのユーザーを表すエンティティ。
  * 認証情報、権限、アカウント状態を管理する。</p>
+ *
+ * <p>イミュータブル設計により、状態変更は常に新しいインスタンスを返す。
+ * これにより、並行処理での安全性と、変更履歴の追跡が容易になる。</p>
  */
+@Value
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
 
     private static final int MAX_FAILED_ATTEMPTS = 3;
@@ -19,54 +29,31 @@ public class User {
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
-    private final UserId id;
-    private final String username;
-    private final String email;
-    private String password;
-    private String displayName;
-    private Role role;
-    private boolean active;
-    private boolean locked;
-    private int failedLoginAttempts;
-    private LocalDateTime lastLoginAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    private User(UserId id,
-                 String username,
-                 String email,
-                 String password,
-                 String displayName,
-                 Role role,
-                 boolean active,
-                 boolean locked,
-                 int failedLoginAttempts,
-                 LocalDateTime lastLoginAt,
-                 LocalDateTime createdAt,
-                 LocalDateTime updatedAt) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.displayName = displayName;
-        this.role = role;
-        this.active = active;
-        this.locked = locked;
-        this.failedLoginAttempts = failedLoginAttempts;
-        this.lastLoginAt = lastLoginAt;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+    UserId id;
+    String username;
+    String email;
+    String password;
+    String displayName;
+    Role role;
+    boolean active;
+    boolean locked;
+    int failedLoginAttempts;
+    LocalDateTime lastLoginAt;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
 
     /**
-     * 新しいユーザーを作成するファクトリメソッド
+     * ファクトリメソッド - 新規作成
      *
-     * @param username    ユーザー名
+     * <p>新しいユーザーを作成する。ID は自動生成され、パスワードはハッシュ化される。
+     * すべての入力値に対してバリデーションを実行する。</p>
+     *
+     * @param username    ユーザー名（3〜50文字）
      * @param email       メールアドレス
-     * @param rawPassword 平文パスワード
+     * @param rawPassword 平文パスワード（8文字以上）
      * @param displayName 表示名
      * @param role        ロール
-     * @return 新しいユーザー
+     * @return 新しい User インスタンス
      * @throws IllegalArgumentException 入力値が不正な場合
      */
     public static User create(String username,
@@ -100,7 +87,24 @@ public class User {
     }
 
     /**
-     * データベースからの再構築用ファクトリメソッド
+     * 再構築用ファクトリメソッド - DB からの復元
+     *
+     * <p>データベースから読み込んだデータを使ってエンティティを再構築する。
+     * バリデーションはスキップされる（DB に保存されているデータは既に検証済みのため）。</p>
+     *
+     * @param id                  ユーザー ID
+     * @param username            ユーザー名
+     * @param email               メールアドレス
+     * @param hashedPassword      ハッシュ化されたパスワード
+     * @param displayName         表示名
+     * @param role                ロール
+     * @param active              有効フラグ
+     * @param locked              ロックフラグ
+     * @param failedLoginAttempts ログイン失敗回数
+     * @param lastLoginAt         最終ログイン日時
+     * @param createdAt           作成日時
+     * @param updatedAt           更新日時
+     * @return 再構築された User インスタンス
      */
     public static User reconstruct(UserId id,
                                    String username,
@@ -117,6 +121,8 @@ public class User {
         return new User(id, username, email, hashedPassword, displayName, role,
                 active, locked, failedLoginAttempts, lastLoginAt, createdAt, updatedAt);
     }
+
+    // ===== バリデーション =====
 
     private static void validateUsername(String username) {
         if (username == null || username.isBlank()) {
@@ -145,6 +151,8 @@ public class User {
         }
     }
 
+    // ===== クエリメソッド =====
+
     /**
      * パスワードを検証する
      *
@@ -156,30 +164,6 @@ public class User {
     }
 
     /**
-     * ログイン失敗を記録する
-     *
-     * <p>失敗回数が上限に達した場合、アカウントをロックする。</p>
-     */
-    public void recordFailedLoginAttempt() {
-        this.failedLoginAttempts++;
-        if (this.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
-            this.locked = true;
-        }
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * ログイン成功を記録する
-     *
-     * <p>失敗回数をリセットし、最終ログイン日時を更新する。</p>
-     */
-    public void recordSuccessfulLogin() {
-        this.failedLoginAttempts = 0;
-        this.lastLoginAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
      * ログイン可能かどうかを判定する
      *
      * @return ログイン可能な場合 true
@@ -188,99 +172,98 @@ public class User {
         return this.active && !this.locked;
     }
 
+    // ===== 状態変更メソッド（@With を活用して新しいインスタンスを返す） =====
+
     /**
-     * アカウントを無効化する
+     * ログイン失敗を記録した新しいインスタンスを返す
+     *
+     * <p>失敗回数が上限に達した場合、アカウントをロックする。</p>
+     *
+     * @return 更新された User インスタンス
      */
-    public void deactivate() {
-        this.active = false;
-        this.updatedAt = LocalDateTime.now();
+    public User recordFailedLoginAttempt() {
+        int newFailedAttempts = this.failedLoginAttempts + 1;
+        boolean newLocked = newFailedAttempts >= MAX_FAILED_ATTEMPTS || this.locked;
+        return this
+                .withFailedLoginAttempts(newFailedAttempts)
+                .withLocked(newLocked)
+                .withUpdatedAt(LocalDateTime.now());
     }
 
     /**
-     * アカウントを有効化する
+     * ログイン成功を記録した新しいインスタンスを返す
+     *
+     * <p>失敗回数をリセットし、最終ログイン日時を更新する。</p>
+     *
+     * @return 更新された User インスタンス
      */
-    public void activate() {
-        this.active = true;
-        this.updatedAt = LocalDateTime.now();
+    public User recordSuccessfulLogin() {
+        LocalDateTime now = LocalDateTime.now();
+        return this
+                .withFailedLoginAttempts(0)
+                .withLastLoginAt(now)
+                .withUpdatedAt(now);
     }
 
     /**
-     * アカウントのロックを解除する
+     * アカウントを無効化した新しいインスタンスを返す
+     *
+     * @return 更新された User インスタンス
      */
-    public void unlock() {
-        this.locked = false;
-        this.failedLoginAttempts = 0;
-        this.updatedAt = LocalDateTime.now();
+    public User deactivate() {
+        return this
+                .withActive(false)
+                .withUpdatedAt(LocalDateTime.now());
     }
 
     /**
-     * パスワードを変更する
+     * アカウントを有効化した新しいインスタンスを返す
+     *
+     * @return 更新された User インスタンス
+     */
+    public User activate() {
+        return this
+                .withActive(true)
+                .withUpdatedAt(LocalDateTime.now());
+    }
+
+    /**
+     * アカウントのロックを解除した新しいインスタンスを返す
+     *
+     * @return 更新された User インスタンス
+     */
+    public User unlock() {
+        return this
+                .withLocked(false)
+                .withFailedLoginAttempts(0)
+                .withUpdatedAt(LocalDateTime.now());
+    }
+
+    /**
+     * パスワードを変更した新しいインスタンスを返す
      *
      * @param newRawPassword 新しい平文パスワード
+     * @return 更新された User インスタンス
+     * @throws IllegalArgumentException パスワードが不正な場合
      */
-    public void changePassword(String newRawPassword) {
+    public User changePassword(String newRawPassword) {
         validatePassword(newRawPassword);
-        this.password = PASSWORD_ENCODER.encode(newRawPassword);
-        this.updatedAt = LocalDateTime.now();
+        return this
+                .withPassword(PASSWORD_ENCODER.encode(newRawPassword))
+                .withUpdatedAt(LocalDateTime.now());
     }
 
     /**
-     * ロールを変更する
+     * ロールを変更した新しいインスタンスを返す
      *
      * @param newRole 新しいロール
+     * @return 更新された User インスタンス
+     * @throws NullPointerException ロールが null の場合
      */
-    public void changeRole(Role newRole) {
+    public User changeRole(Role newRole) {
         Objects.requireNonNull(newRole, "ロールは必須です");
-        this.role = newRole;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    // Getters
-    public UserId getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public int getFailedLoginAttempts() {
-        return failedLoginAttempts;
-    }
-
-    public LocalDateTime getLastLoginAt() {
-        return lastLoginAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+        return this
+                .withRole(newRole)
+                .withUpdatedAt(LocalDateTime.now());
     }
 }

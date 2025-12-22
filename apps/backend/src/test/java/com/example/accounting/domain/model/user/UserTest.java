@@ -4,7 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * User エンティティのテスト
@@ -118,10 +119,12 @@ class UserTest {
             User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
 
             // When
-            user.recordFailedLoginAttempt();
+            User updated = user.recordFailedLoginAttempt();
 
             // Then
-            assertThat(user.getFailedLoginAttempts()).isEqualTo(1);
+            assertThat(updated.getFailedLoginAttempts()).isEqualTo(1);
+            // 元のインスタンスは変更されない（イミュータブル）
+            assertThat(user.getFailedLoginAttempts()).isZero();
         }
 
         @Test
@@ -131,12 +134,14 @@ class UserTest {
             User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
 
             // When
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
+            User updated = user
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt();
 
             // Then
-            assertThat(user.isLocked()).isTrue();
+            assertThat(updated.isLocked()).isTrue();
+            assertThat(updated.getFailedLoginAttempts()).isEqualTo(3);
         }
 
         @Test
@@ -144,15 +149,16 @@ class UserTest {
         void shouldResetFailedAttemptsOnSuccessfulLogin() {
             // Given
             User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
+            User withFailures = user
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt();
 
             // When
-            user.recordSuccessfulLogin();
+            User updated = withFailures.recordSuccessfulLogin();
 
             // Then
-            assertThat(user.getFailedLoginAttempts()).isZero();
-            assertThat(user.getLastLoginAt()).isNotNull();
+            assertThat(updated.getFailedLoginAttempts()).isZero();
+            assertThat(updated.getLastLoginAt()).isNotNull();
         }
 
         @Test
@@ -160,12 +166,13 @@ class UserTest {
         void shouldNotAllowLoginWhenLocked() {
             // Given
             User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
+            User lockedUser = user
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt();
 
             // When & Then
-            assertThat(user.canLogin()).isFalse();
+            assertThat(lockedUser.canLogin()).isFalse();
         }
     }
 
@@ -180,10 +187,12 @@ class UserTest {
             User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
 
             // When
-            user.deactivate();
+            User deactivated = user.deactivate();
 
             // Then
-            assertThat(user.isActive()).isFalse();
+            assertThat(deactivated.isActive()).isFalse();
+            // 元のインスタンスは変更されない（イミュータブル）
+            assertThat(user.isActive()).isTrue();
         }
 
         @Test
@@ -191,10 +200,10 @@ class UserTest {
         void shouldNotAllowLoginWhenDeactivated() {
             // Given
             User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
-            user.deactivate();
+            User deactivated = user.deactivate();
 
             // When & Then
-            assertThat(user.canLogin()).isFalse();
+            assertThat(deactivated.canLogin()).isFalse();
         }
 
         @Test
@@ -202,16 +211,64 @@ class UserTest {
         void shouldUnlockAccount() {
             // Given
             User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
+            User lockedUser = user
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt();
 
             // When
-            user.unlock();
+            User unlocked = lockedUser.unlock();
 
             // Then
-            assertThat(user.isLocked()).isFalse();
-            assertThat(user.getFailedLoginAttempts()).isZero();
+            assertThat(unlocked.isLocked()).isFalse();
+            assertThat(unlocked.getFailedLoginAttempts()).isZero();
+        }
+    }
+
+    @Nested
+    @DisplayName("イミュータブル設計")
+    class ImmutableDesign {
+
+        @Test
+        @DisplayName("状態変更メソッドは元のインスタンスを変更しない")
+        void shouldNotModifyOriginalInstance() {
+            // Given
+            User original = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+
+            // When
+            User afterFailedLogin = original.recordFailedLoginAttempt();
+            User afterDeactivate = original.deactivate();
+            User afterRoleChange = original.changeRole(Role.ADMIN);
+
+            // Then - 元のインスタンスは変更されない
+            assertThat(original.getFailedLoginAttempts()).isZero();
+            assertThat(original.isActive()).isTrue();
+            assertThat(original.getRole()).isEqualTo(Role.USER);
+
+            // 新しいインスタンスは変更されている
+            assertThat(afterFailedLogin.getFailedLoginAttempts()).isEqualTo(1);
+            assertThat(afterDeactivate.isActive()).isFalse();
+            assertThat(afterRoleChange.getRole()).isEqualTo(Role.ADMIN);
+        }
+
+        @Test
+        @DisplayName("メソッドチェーンで複数の変更を適用できる")
+        void shouldSupportMethodChaining() {
+            // Given
+            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+
+            // When
+            User updated = user
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt()
+                    .unlock()
+                    .changeRole(Role.ADMIN);
+
+            // Then
+            assertThat(updated.isLocked()).isFalse();
+            assertThat(updated.getFailedLoginAttempts()).isZero();
+            assertThat(updated.getRole()).isEqualTo(Role.ADMIN);
         }
     }
 }

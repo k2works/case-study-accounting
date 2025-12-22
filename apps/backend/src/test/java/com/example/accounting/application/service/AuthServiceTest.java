@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -60,7 +62,7 @@ class AuthServiceTest {
             when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
             when(jwtService.generateToken(anyString(), anyMap())).thenReturn("access_token");
             when(jwtService.generateRefreshToken(anyString())).thenReturn("refresh_token");
-            when(userRepository.save(any(User.class))).thenReturn(user);
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             LoginCommand command = new LoginCommand(username, password);
 
@@ -75,7 +77,12 @@ class AuthServiceTest {
             assertThat(result.role()).isEqualTo(Role.USER);
             assertThat(result.errorMessage()).isNull();
 
-            verify(userRepository).save(any(User.class)); // ログイン成功記録
+            // ログイン成功時に更新されたユーザーが保存される
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userRepository).save(userCaptor.capture());
+            User savedUser = userCaptor.getValue();
+            assertThat(savedUser.getLastLoginAt()).isNotNull();
+            assertThat(savedUser.getFailedLoginAttempts()).isZero();
         }
     }
 
@@ -110,7 +117,7 @@ class AuthServiceTest {
             User user = User.create(username, "test@example.com", "CorrectPassword123!", "テストユーザー", Role.USER);
 
             when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-            when(userRepository.save(any(User.class))).thenReturn(user);
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             LoginCommand command = new LoginCommand(username, "WrongPassword");
 
@@ -121,7 +128,12 @@ class AuthServiceTest {
             assertThat(result.success()).isFalse();
             assertThat(result.errorMessage()).contains("ユーザー名またはパスワードが正しくありません");
 
-            verify(userRepository).save(any(User.class)); // 失敗記録
+            // 失敗時に更新されたユーザーが保存される
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userRepository).save(userCaptor.capture());
+            User savedUser = userCaptor.getValue();
+            assertThat(savedUser.getFailedLoginAttempts()).isEqualTo(1);
+
             verify(jwtService, never()).generateToken(anyString(), anyMap());
         }
 
@@ -131,12 +143,13 @@ class AuthServiceTest {
             // Given
             String username = "lockeduser";
             User user = User.create(username, "locked@example.com", "Password123!", "ロックユーザー", Role.USER);
-            // 3回失敗してロック状態にする
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
-            user.recordFailedLoginAttempt();
+            // 3回失敗してロック状態にする（イミュータブルなので結果を受け取る）
+            User lockedUser = user
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt()
+                    .recordFailedLoginAttempt();
 
-            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+            when(userRepository.findByUsername(username)).thenReturn(Optional.of(lockedUser));
 
             LoginCommand command = new LoginCommand(username, "Password123!");
 
@@ -156,9 +169,10 @@ class AuthServiceTest {
             // Given
             String username = "deactivateduser";
             User user = User.create(username, "deactivated@example.com", "Password123!", "無効ユーザー", Role.USER);
-            user.deactivate();
+            // 無効化する（イミュータブルなので結果を受け取る）
+            User deactivatedUser = user.deactivate();
 
-            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+            when(userRepository.findByUsername(username)).thenReturn(Optional.of(deactivatedUser));
 
             LoginCommand command = new LoginCommand(username, "Password123!");
 
@@ -184,8 +198,14 @@ class AuthServiceTest {
             String username = "testuser";
             User user = User.create(username, "test@example.com", "CorrectPassword123!", "テストユーザー", Role.USER);
 
-            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            // 各呼び出しで更新されたユーザーを返すようにする（lenient を使用してネストスタブを許容）
+            lenient().when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+                User savedUser = invocation.getArgument(0);
+                // 次回の findByUsername で更新されたユーザーを返す
+                lenient().when(userRepository.findByUsername(username)).thenReturn(Optional.of(savedUser));
+                return savedUser;
+            });
 
             LoginCommand command = new LoginCommand(username, "WrongPassword");
 
@@ -196,9 +216,13 @@ class AuthServiceTest {
 
             // Then
             assertThat(result.success()).isFalse();
-            assertThat(user.isLocked()).isTrue();
 
-            verify(userRepository, times(3)).save(any(User.class));
+            // 3回目の保存でロックされていることを確認
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userRepository, times(3)).save(userCaptor.capture());
+            User lastSavedUser = userCaptor.getAllValues().get(2);
+            assertThat(lastSavedUser.isLocked()).isTrue();
+            assertThat(lastSavedUser.getFailedLoginAttempts()).isEqualTo(3);
         }
     }
 }

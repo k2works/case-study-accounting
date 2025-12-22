@@ -56,14 +56,14 @@ public class AuthService implements AuthUseCase {
 
         // パスワード検証
         if (!user.verifyPassword(command.password())) {
-            user.recordFailedLoginAttempt();
-            userRepository.save(user);
+            User updatedUser = user.recordFailedLoginAttempt();
+            userRepository.save(updatedUser);
             return LoginResult.failure("ユーザー名またはパスワードが正しくありません");
         }
 
         // ログイン成功処理
-        user.recordSuccessfulLogin();
-        userRepository.save(user);
+        User updatedUser = user.recordSuccessfulLogin();
+        userRepository.save(updatedUser);
 
         // トークン生成
         Map<String, Object> claims = Map.of(
