@@ -5,6 +5,7 @@ import com.example.accounting.application.port.in.LoginResult;
 import com.example.accounting.application.port.in.command.LoginCommand;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.User;
+import com.example.accounting.domain.shared.IO;
 import com.example.accounting.infrastructure.security.JwtService;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
@@ -16,7 +17,11 @@ import java.util.Map;
 /**
  * 認証サービス（AuthUseCase の実装）
  *
- * <p>Vavr の Option/Either を使用した関数型スタイルでエラーハンドリングを行う。</p>
+ * <p>Vavr の Option/Either と IO モナドを使用した関数型スタイルで
+ * エラーハンドリングと副作用管理を行う。</p>
+ *
+ * <p>副作用（DB アクセス、トークン生成）は IO でラップされ、
+ * 計算の記述と実行が分離されている。</p>
  */
 @Service
 @Transactional
@@ -38,27 +43,40 @@ public class AuthService implements AuthUseCase {
      */
     @Override
     public LoginResult execute(LoginCommand command) {
-        return findUser(command.username())
-                .flatMap(this::validateAccountNotLocked)
-                .flatMap(this::validateAccountActive)
-                .flatMap(user -> validatePassword(user, command.password()))
-                .map(this::processSuccessfulLogin)
-                .fold(
-                        LoginResult::failure,
-                        this::createLoginResult
-                );
+        // ログイン処理を IO として構築し、実行
+        return buildLoginProgram(command).unsafeRun();
     }
 
     /**
-     * ユーザーを検索する
+     * ログイン処理を IO プログラムとして構築する（純粋関数）
+     *
+     * <p>この時点では副作用は発生しない。
+     * unsafeRun() が呼ばれた時点で実行される。</p>
+     *
+     * @param command ログインコマンド
+     * @return ログイン処理を表す IO
      */
-    private Either<String, User> findUser(String username) {
-        return Option.ofOptional(userRepository.findByUsername(username))
-                .toEither("ユーザー名またはパスワードが正しくありません");
+    IO<LoginResult> buildLoginProgram(LoginCommand command) {
+        return findUserIO(command.username())
+                .map(either -> either
+                        .flatMap(this::validateAccountNotLocked)
+                        .flatMap(this::validateAccountActive)
+                        .flatMap(user -> validatePassword(user, command.password())))
+                .flatMap(this::processLoginResult);
     }
 
     /**
-     * アカウントがロックされていないか検証する
+     * ユーザーを検索する IO を返す
+     */
+    private IO<Either<String, User>> findUserIO(String username) {
+        return IO.delay(() ->
+                Option.ofOptional(userRepository.findByUsername(username))
+                        .toEither("ユーザー名またはパスワードが正しくありません")
+        );
+    }
+
+    /**
+     * アカウントがロックされていないか検証する（純粋関数）
      */
     private Either<String, User> validateAccountNotLocked(User user) {
         return user.isLocked()
@@ -67,7 +85,7 @@ public class AuthService implements AuthUseCase {
     }
 
     /**
-     * アカウントが有効か検証する
+     * アカウントが有効か検証する（純粋関数）
      */
     private Either<String, User> validateAccountActive(User user) {
         return user.isActive()
@@ -77,27 +95,42 @@ public class AuthService implements AuthUseCase {
 
     /**
      * パスワードを検証する
+     *
+     * <p>検証失敗時は失敗回数を記録する副作用が発生する。</p>
      */
     private Either<String, User> validatePassword(User user, String password) {
         if (user.verifyPassword(password)) {
             return Either.right(user);
         }
+        // パスワード検証失敗時の副作用
         User updatedUser = user.recordFailedLoginAttempt();
         userRepository.save(updatedUser);
         return Either.left("ユーザー名またはパスワードが正しくありません");
     }
 
     /**
-     * ログイン成功を処理する
+     * ログイン結果に応じて処理を行う IO を返す
      */
-    private User processSuccessfulLogin(User user) {
-        User updatedUser = user.recordSuccessfulLogin();
-        userRepository.save(updatedUser);
-        return updatedUser;
+    private IO<LoginResult> processLoginResult(Either<String, User> result) {
+        return result.fold(
+                error -> IO.pure(LoginResult.failure(error)),
+                user -> processSuccessfulLoginIO(user).map(this::createLoginResult)
+        );
     }
 
     /**
-     * ログイン結果を生成する
+     * ログイン成功を処理する IO を返す
+     */
+    private IO<User> processSuccessfulLoginIO(User user) {
+        return IO.delay(() -> {
+            User updatedUser = user.recordSuccessfulLogin();
+            userRepository.save(updatedUser);
+            return updatedUser;
+        });
+    }
+
+    /**
+     * ログイン結果を生成する（純粋関数）
      */
     private LoginResult createLoginResult(User user) {
         Map<String, Object> claims = Map.of(

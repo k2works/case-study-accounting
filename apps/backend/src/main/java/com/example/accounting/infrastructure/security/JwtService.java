@@ -8,19 +8,34 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * JWT トークンの生成と検証を行うサービス
+ *
+ * <p>Clock を DI することで、テスト時に固定時刻を注入可能。</p>
+ */
 @Service
 public class JwtService {
 
     private final JwtProperties jwtProperties;
     private final SecretKey secretKey;
+    private final Clock clock;
 
-    public JwtService(JwtProperties jwtProperties) {
+    /**
+     * コンストラクタ
+     *
+     * @param jwtProperties JWT 設定
+     * @param clock         時刻取得用クロック（テスト時に固定クロックを注入可能）
+     */
+    public JwtService(JwtProperties jwtProperties, Clock clock) {
         this.jwtProperties = jwtProperties;
         this.secretKey = Keys.hmacShaKeyFor(jwtProperties.secret().getBytes(StandardCharsets.UTF_8));
+        this.clock = clock;
     }
 
     public String generateToken(String subject) {
@@ -36,14 +51,14 @@ public class JwtService {
     }
 
     private String buildToken(String subject, Map<String, Object> claims, long expiration) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
+        Instant now = clock.instant();
+        Instant expiryInstant = now.plusMillis(expiration);
 
         return Jwts.builder()
                 .subject(subject)
                 .claims(claims)
-                .issuedAt(now)
-                .expiration(expiryDate)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiryInstant))
                 .signWith(secretKey)
                 .compact();
     }
@@ -78,6 +93,6 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(Claims claims) {
-        return claims.getExpiration().before(new Date());
+        return claims.getExpiration().before(Date.from(clock.instant()));
     }
 }
