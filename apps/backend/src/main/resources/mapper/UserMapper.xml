@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.accounting.domain.repository.UserRepository">
+    
+    <resultMap id="userResultMap" type="com.example.accounting.domain.model.User">
+        <id property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="name" column="name"/>
+        <result property="role" column="role"/>
+        <result property="accountLocked" column="account_locked"/>
+        <result property="failedLoginAttempts" column="failed_login_attempts"/>
+        <result property="lastLoginAt" column="last_login_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    
+    <select id="findByEmail" resultMap="userResultMap">
+        SELECT id, email, password_hash, name, role, account_locked, 
+               failed_login_attempts, last_login_at, created_at, updated_at
+        FROM users
+        WHERE email = #{email}
+    </select>
+    
+    <update id="updateLastLoginAt">
+        UPDATE users
+        SET last_login_at = #{lastLoginAt},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+    
+    <update id="updateFailedLoginAttempts">
+        UPDATE users
+        SET failed_login_attempts = #{attempts},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+    
+    <update id="lockAccount">
+        UPDATE users
+        SET account_locked = true,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+    
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (email, password_hash, name, role, account_locked, 
+                          failed_login_attempts, last_login_at, created_at, updated_at)
+        VALUES (#{email}, #{passwordHash}, #{name}, #{role}, #{accountLocked}, 
+                #{failedLoginAttempts}, #{lastLoginAt}, #{createdAt}, #{updatedAt})
+    </insert>
+    
+</mapper>
