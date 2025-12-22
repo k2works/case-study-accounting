@@ -3,8 +3,11 @@ package com.example.accounting.application.service;
 import com.example.accounting.application.port.in.LoginResult;
 import com.example.accounting.application.port.in.command.LoginCommand;
 import com.example.accounting.application.port.out.UserRepository;
+import com.example.accounting.domain.model.user.Email;
+import com.example.accounting.domain.model.user.Password;
 import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
+import com.example.accounting.domain.model.user.Username;
 import com.example.accounting.infrastructure.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +50,17 @@ class AuthServiceTest {
         authService = new AuthService(userRepository, jwtService);
     }
 
+    // テスト用ヘルパーメソッド
+    private User createTestUser(String username, String email, String password) {
+        return User.create(
+                Username.of(username),
+                Email.of(email),
+                Password.fromRawPassword(password),
+                "テストユーザー",
+                Role.USER
+        );
+    }
+
     @Nested
     @DisplayName("ログイン成功")
     class SuccessfulLogin {
@@ -57,7 +71,7 @@ class AuthServiceTest {
             // Given
             String username = "testuser";
             String password = "Password123!";
-            User user = User.create(username, "test@example.com", password, "テストユーザー", Role.USER);
+            User user = createTestUser(username, "test@example.com", password);
 
             when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
             when(jwtService.generateToken(anyString(), anyMap())).thenReturn("access_token");
@@ -114,7 +128,7 @@ class AuthServiceTest {
         void shouldFailWithWrongPassword() {
             // Given
             String username = "testuser";
-            User user = User.create(username, "test@example.com", "CorrectPassword123!", "テストユーザー", Role.USER);
+            User user = createTestUser(username, "test@example.com", "CorrectPassword123!");
 
             when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
             when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -142,7 +156,7 @@ class AuthServiceTest {
         void shouldFailWithLockedAccount() {
             // Given
             String username = "lockeduser";
-            User user = User.create(username, "locked@example.com", "Password123!", "ロックユーザー", Role.USER);
+            User user = createTestUser(username, "locked@example.com", "Password123!");
             // 3回失敗してロック状態にする（イミュータブルなので結果を受け取る）
             User lockedUser = user
                     .recordFailedLoginAttempt()
@@ -168,7 +182,7 @@ class AuthServiceTest {
         void shouldFailWithDeactivatedAccount() {
             // Given
             String username = "deactivateduser";
-            User user = User.create(username, "deactivated@example.com", "Password123!", "無効ユーザー", Role.USER);
+            User user = createTestUser(username, "deactivated@example.com", "Password123!");
             // 無効化する（イミュータブルなので結果を受け取る）
             User deactivatedUser = user.deactivate();
 
@@ -196,7 +210,7 @@ class AuthServiceTest {
         void shouldLockAccountAfterThreeFailedAttempts() {
             // Given
             String username = "testuser";
-            User user = User.create(username, "test@example.com", "CorrectPassword123!", "テストユーザー", Role.USER);
+            User user = createTestUser(username, "test@example.com", "CorrectPassword123!");
 
             // 各呼び出しで更新されたユーザーを返すようにする（lenient を使用してネストスタブを許容）
             lenient().when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));

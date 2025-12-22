@@ -4,11 +4,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.With;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * ユーザーエンティティ
@@ -25,14 +23,11 @@ import java.util.regex.Pattern;
 public class User {
 
     private static final int MAX_FAILED_ATTEMPTS = 3;
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
     UserId id;
-    String username;
-    String email;
-    String password;
+    Username username;
+    Email email;
+    Password password;
     String displayName;
     Role role;
     boolean active;
@@ -45,36 +40,34 @@ public class User {
     /**
      * ファクトリメソッド - 新規作成
      *
-     * <p>新しいユーザーを作成する。ID は自動生成され、パスワードはハッシュ化される。
-     * すべての入力値に対してバリデーションを実行する。</p>
+     * <p>新しいユーザーを作成する。ID は自動生成される。</p>
      *
-     * @param username    ユーザー名（3〜50文字）
+     * @param username    ユーザー名
      * @param email       メールアドレス
-     * @param rawPassword 平文パスワード（8文字以上）
+     * @param password    パスワード
      * @param displayName 表示名
      * @param role        ロール
      * @return 新しい User インスタンス
-     * @throws IllegalArgumentException 入力値が不正な場合
+     * @throws NullPointerException 引数が null の場合
      */
-    public static User create(String username,
-                              String email,
-                              String rawPassword,
+    public static User create(Username username,
+                              Email email,
+                              Password password,
                               String displayName,
                               Role role) {
-        validateUsername(username);
-        validateEmail(email);
-        validatePassword(rawPassword);
+        Objects.requireNonNull(username, "ユーザー名は必須です");
+        Objects.requireNonNull(email, "メールアドレスは必須です");
+        Objects.requireNonNull(password, "パスワードは必須です");
         Objects.requireNonNull(displayName, "表示名は必須です");
         Objects.requireNonNull(role, "ロールは必須です");
 
         LocalDateTime now = LocalDateTime.now();
-        String hashedPassword = PASSWORD_ENCODER.encode(rawPassword);
 
         return new User(
                 UserId.generate(),
                 username,
                 email,
-                hashedPassword,
+                password,
                 displayName,
                 role,
                 true,  // active
@@ -89,13 +82,12 @@ public class User {
     /**
      * 再構築用ファクトリメソッド - DB からの復元
      *
-     * <p>データベースから読み込んだデータを使ってエンティティを再構築する。
-     * バリデーションはスキップされる（DB に保存されているデータは既に検証済みのため）。</p>
+     * <p>データベースから読み込んだデータを使ってエンティティを再構築する。</p>
      *
      * @param id                  ユーザー ID
      * @param username            ユーザー名
      * @param email               メールアドレス
-     * @param hashedPassword      ハッシュ化されたパスワード
+     * @param password            パスワード
      * @param displayName         表示名
      * @param role                ロール
      * @param active              有効フラグ
@@ -107,9 +99,9 @@ public class User {
      * @return 再構築された User インスタンス
      */
     public static User reconstruct(UserId id,
-                                   String username,
-                                   String email,
-                                   String hashedPassword,
+                                   Username username,
+                                   Email email,
+                                   Password password,
                                    String displayName,
                                    Role role,
                                    boolean active,
@@ -118,40 +110,50 @@ public class User {
                                    LocalDateTime lastLoginAt,
                                    LocalDateTime createdAt,
                                    LocalDateTime updatedAt) {
-        return new User(id, username, email, hashedPassword, displayName, role,
-                active, locked, failedLoginAttempts, lastLoginAt, createdAt, updatedAt);
-    }
-
-    // ===== バリデーション =====
-
-    private static void validateUsername(String username) {
-        if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("ユーザー名は必須です");
-        }
-        if (username.length() < 3 || username.length() > 50) {
-            throw new IllegalArgumentException("ユーザー名は3〜50文字で入力してください");
-        }
-    }
-
-    private static void validateEmail(String email) {
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("メールアドレスは必須です");
-        }
-        if (!EMAIL_PATTERN.matcher(email).matches()) {
-            throw new IllegalArgumentException("メールアドレスの形式が不正です");
-        }
-    }
-
-    private static void validatePassword(String password) {
-        if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("パスワードは必須です");
-        }
-        if (password.length() < 8) {
-            throw new IllegalArgumentException("パスワードは8文字以上で入力してください");
-        }
+        return new User(
+                id,
+                username,
+                email,
+                password,
+                displayName,
+                role,
+                active,
+                locked,
+                failedLoginAttempts,
+                lastLoginAt,
+                createdAt,
+                updatedAt
+        );
     }
 
     // ===== クエリメソッド =====
+
+    /**
+     * ユーザー名を文字列で取得する
+     *
+     * @return ユーザー名
+     */
+    public String getUsernameValue() {
+        return username.getValue();
+    }
+
+    /**
+     * メールアドレスを文字列で取得する
+     *
+     * @return メールアドレス
+     */
+    public String getEmailValue() {
+        return email.getValue();
+    }
+
+    /**
+     * ハッシュ化されたパスワードを取得する（DB 保存用）
+     *
+     * @return ハッシュ化されたパスワード
+     */
+    public String getPasswordValue() {
+        return password.getValue();
+    }
 
     /**
      * パスワードを検証する
@@ -160,7 +162,7 @@ public class User {
      * @return 一致する場合 true
      */
     public boolean verifyPassword(String rawPassword) {
-        return PASSWORD_ENCODER.matches(rawPassword, this.password);
+        return password.matches(rawPassword);
     }
 
     /**
@@ -247,9 +249,8 @@ public class User {
      * @throws IllegalArgumentException パスワードが不正な場合
      */
     public User changePassword(String newRawPassword) {
-        validatePassword(newRawPassword);
         return this
-                .withPassword(PASSWORD_ENCODER.encode(newRawPassword))
+                .withPassword(Password.fromRawPassword(newRawPassword))
                 .withUpdatedAt(LocalDateTime.now());
     }
 

@@ -1,8 +1,11 @@
 package com.example.accounting.infrastructure.persistence.entity;
 
+import com.example.accounting.domain.model.user.Email;
+import com.example.accounting.domain.model.user.Password;
 import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
+import com.example.accounting.domain.model.user.Username;
 
 import java.time.LocalDateTime;
 
@@ -33,9 +36,9 @@ public class UserEntity {
     public static UserEntity fromDomain(User user) {
         UserEntity entity = new UserEntity();
         entity.id = user.getId().value();
-        entity.username = user.getUsername();
-        entity.email = user.getEmail();
-        entity.password = user.getPassword();
+        entity.username = user.getUsernameValue();
+        entity.email = user.getEmailValue();
+        entity.password = user.getPasswordValue();
         entity.displayName = user.getDisplayName();
         entity.role = user.getRole().name();
         entity.active = user.isActive();
@@ -53,9 +56,9 @@ public class UserEntity {
     public User toDomain() {
         return User.reconstruct(
                 UserId.of(id),
-                username,
-                email,
-                password,
+                Username.reconstruct(username),
+                Email.reconstruct(email),
+                Password.reconstruct(password),
                 displayName,
                 Role.fromCode(role),
                 active,

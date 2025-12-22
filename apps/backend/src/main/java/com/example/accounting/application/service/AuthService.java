@@ -70,9 +70,9 @@ public class AuthService implements AuthUseCase {
                 "role", user.getRole().name(),
                 "displayName", user.getDisplayName()
         );
-        String accessToken = jwtService.generateToken(user.getUsername(), claims);
-        String refreshToken = jwtService.generateRefreshToken(user.getUsername());
+        String accessToken = jwtService.generateToken(user.getUsernameValue(), claims);
+        String refreshToken = jwtService.generateRefreshToken(user.getUsernameValue());
 
-        return LoginResult.success(accessToken, refreshToken, user.getUsername(), user.getRole());
+        return LoginResult.success(accessToken, refreshToken, user.getUsernameValue(), user.getRole());
     }
 }

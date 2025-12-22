@@ -2,9 +2,12 @@ package com.example.accounting.infrastructure.persistence.repository;
 
 import com.example.accounting.TestcontainersConfiguration;
 import com.example.accounting.application.port.out.UserRepository;
+import com.example.accounting.domain.model.user.Email;
+import com.example.accounting.domain.model.user.Password;
 import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
+import com.example.accounting.domain.model.user.Username;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +34,17 @@ class UserRepositoryImplIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    // テスト用ヘルパーメソッド
+    private User createTestUser(String username, String email, String displayName, Role role) {
+        return User.create(
+                Username.of(username),
+                Email.of(email),
+                Password.fromRawPassword("Password123!"),
+                displayName,
+                role
+        );
+    }
+
     @Nested
     @DisplayName("save メソッド")
     class SaveMethod {
@@ -39,13 +53,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("新規ユーザーを保存できる")
         void shouldSaveNewUser() {
             // Given
-            User user = User.create(
-                    "newuser",
-                    "newuser@example.com",
-                    "Password123!",
-                    "新規ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("newuser", "newuser@example.com", "新規ユーザー", Role.USER);
 
             // When
             User savedUser = userRepository.save(user);
@@ -53,8 +61,8 @@ class UserRepositoryImplIntegrationTest {
             // Then
             assertThat(savedUser).isNotNull();
             assertThat(savedUser.getId()).isEqualTo(user.getId());
-            assertThat(savedUser.getUsername()).isEqualTo("newuser");
-            assertThat(savedUser.getEmail()).isEqualTo("newuser@example.com");
+            assertThat(savedUser.getUsernameValue()).isEqualTo("newuser");
+            assertThat(savedUser.getEmailValue()).isEqualTo("newuser@example.com");
             assertThat(savedUser.getDisplayName()).isEqualTo("新規ユーザー");
             assertThat(savedUser.getRole()).isEqualTo(Role.USER);
             assertThat(savedUser.isActive()).isTrue();
@@ -65,13 +73,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("既存ユーザーを更新できる")
         void shouldUpdateExistingUser() {
             // Given
-            User user = User.create(
-                    "updateuser",
-                    "updateuser@example.com",
-                    "Password123!",
-                    "更新前ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("updateuser", "updateuser@example.com", "更新前ユーザー", Role.USER);
             userRepository.save(user);
 
             // When（イミュータブルなので結果を受け取る）
@@ -86,13 +88,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("ロック状態を保存できる")
         void shouldSaveLockedStatus() {
             // Given
-            User user = User.create(
-                    "lockuser",
-                    "lockuser@example.com",
-                    "Password123!",
-                    "ロックユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("lockuser", "lockuser@example.com", "ロックユーザー", Role.USER);
             // イミュータブルなので結果を受け取る
             User lockedUser = user
                     .recordFailedLoginAttempt()
@@ -116,13 +112,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("既存ユーザーを ID で検索できる")
         void shouldFindExistingUserById() {
             // Given
-            User user = User.create(
-                    "findbyiduser",
-                    "findbyiduser@example.com",
-                    "Password123!",
-                    "ID検索ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("findbyiduser", "findbyiduser@example.com", "ID検索ユーザー", Role.USER);
             userRepository.save(user);
 
             // When
@@ -130,7 +120,7 @@ class UserRepositoryImplIntegrationTest {
 
             // Then
             assertThat(found).isPresent();
-            assertThat(found.get().getUsername()).isEqualTo("findbyiduser");
+            assertThat(found.get().getUsernameValue()).isEqualTo("findbyiduser");
         }
 
         @Test
@@ -155,13 +145,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("既存ユーザーをユーザー名で検索できる")
         void shouldFindExistingUserByUsername() {
             // Given
-            User user = User.create(
-                    "findbyusernameuser",
-                    "findbyusernameuser@example.com",
-                    "Password123!",
-                    "ユーザー名検索ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("findbyusernameuser", "findbyusernameuser@example.com", "ユーザー名検索ユーザー", Role.USER);
             userRepository.save(user);
 
             // When
@@ -169,7 +153,7 @@ class UserRepositoryImplIntegrationTest {
 
             // Then
             assertThat(found).isPresent();
-            assertThat(found.get().getEmail()).isEqualTo("findbyusernameuser@example.com");
+            assertThat(found.get().getEmailValue()).isEqualTo("findbyusernameuser@example.com");
         }
 
         @Test
@@ -191,13 +175,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("既存ユーザーをメールアドレスで検索できる")
         void shouldFindExistingUserByEmail() {
             // Given
-            User user = User.create(
-                    "findbyemailuser",
-                    "findbyemailuser@example.com",
-                    "Password123!",
-                    "メール検索ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("findbyemailuser", "findbyemailuser@example.com", "メール検索ユーザー", Role.USER);
             userRepository.save(user);
 
             // When
@@ -205,7 +183,7 @@ class UserRepositoryImplIntegrationTest {
 
             // Then
             assertThat(found).isPresent();
-            assertThat(found.get().getUsername()).isEqualTo("findbyemailuser");
+            assertThat(found.get().getUsernameValue()).isEqualTo("findbyemailuser");
         }
 
         @Test
@@ -244,13 +222,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("既存ユーザーを削除できる")
         void shouldDeleteExistingUser() {
             // Given
-            User user = User.create(
-                    "deleteuser",
-                    "deleteuser@example.com",
-                    "Password123!",
-                    "削除ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("deleteuser", "deleteuser@example.com", "削除ユーザー", Role.USER);
             userRepository.save(user);
 
             // When
@@ -270,13 +242,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("存在するユーザー名で true を返す")
         void shouldReturnTrueForExistingUsername() {
             // Given
-            User user = User.create(
-                    "existsusernameuser",
-                    "existsusernameuser@example.com",
-                    "Password123!",
-                    "存在確認ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("existsusernameuser", "existsusernameuser@example.com", "存在確認ユーザー", Role.USER);
             userRepository.save(user);
 
             // When
@@ -305,13 +271,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("存在するメールアドレスで true を返す")
         void shouldReturnTrueForExistingEmail() {
             // Given
-            User user = User.create(
-                    "existsemailuser",
-                    "existsemailuser@example.com",
-                    "Password123!",
-                    "メール存在確認ユーザー",
-                    Role.USER
-            );
+            User user = createTestUser("existsemailuser", "existsemailuser@example.com", "メール存在確認ユーザー", Role.USER);
             userRepository.save(user);
 
             // When
@@ -340,13 +300,7 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("全てのフィールドが正しく保存・復元される")
         void shouldPreserveAllFields() {
             // Given
-            User user = User.create(
-                    "fullfieldsuser",
-                    "fullfieldsuser@example.com",
-                    "Password123!",
-                    "全フィールドユーザー",
-                    Role.ADMIN
-            );
+            User user = createTestUser("fullfieldsuser", "fullfieldsuser@example.com", "全フィールドユーザー", Role.ADMIN);
             // イミュータブルなので結果を受け取る
             User loggedInUser = user.recordSuccessfulLogin();
 
@@ -358,8 +312,8 @@ class UserRepositoryImplIntegrationTest {
             assertThat(found).isPresent();
             User restored = found.get();
             assertThat(restored.getId()).isEqualTo(loggedInUser.getId());
-            assertThat(restored.getUsername()).isEqualTo(loggedInUser.getUsername());
-            assertThat(restored.getEmail()).isEqualTo(loggedInUser.getEmail());
+            assertThat(restored.getUsernameValue()).isEqualTo(loggedInUser.getUsernameValue());
+            assertThat(restored.getEmailValue()).isEqualTo(loggedInUser.getEmailValue());
             assertThat(restored.getDisplayName()).isEqualTo(loggedInUser.getDisplayName());
             assertThat(restored.getRole()).isEqualTo(loggedInUser.getRole());
             assertThat(restored.isActive()).isEqualTo(loggedInUser.isActive());
@@ -376,9 +330,9 @@ class UserRepositoryImplIntegrationTest {
             // Given
             String rawPassword = "Password123!";
             User user = User.create(
-                    "passworduser",
-                    "passworduser@example.com",
-                    rawPassword,
+                    Username.of("passworduser"),
+                    Email.of("passworduser@example.com"),
+                    Password.fromRawPassword(rawPassword),
                     "パスワードユーザー",
                     Role.USER
             );

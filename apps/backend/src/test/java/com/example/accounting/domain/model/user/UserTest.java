@@ -5,13 +5,33 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * User エンティティのテスト
  */
 @DisplayName("User エンティティ")
 class UserTest {
+
+    // テスト用ヘルパーメソッド
+    private User createTestUser() {
+        return User.create(
+                Username.of("testuser"),
+                Email.of("test@example.com"),
+                Password.fromRawPassword("Password123!"),
+                "テストユーザー",
+                Role.USER
+        );
+    }
+
+    private User createTestUser(String username, String email, String password) {
+        return User.create(
+                Username.of(username),
+                Email.of(email),
+                Password.fromRawPassword(password),
+                "テストユーザー",
+                Role.USER
+        );
+    }
 
     @Nested
     @DisplayName("ユーザー作成")
@@ -21,9 +41,9 @@ class UserTest {
         @DisplayName("有効な情報でユーザーを作成できる")
         void shouldCreateUserWithValidInfo() {
             // Given
-            String username = "testuser";
-            String email = "test@example.com";
-            String password = "SecurePass123!";
+            Username username = Username.of("testuser");
+            Email email = Email.of("test@example.com");
+            Password password = Password.fromRawPassword("SecurePass123!");
             String displayName = "テストユーザー";
             Role role = Role.USER;
 
@@ -47,38 +67,11 @@ class UserTest {
             String rawPassword = "SecurePass123!";
 
             // When
-            User user = User.create("testuser", "test@example.com", rawPassword, "テスト", Role.USER);
+            User user = createTestUser("testuser", "test@example.com", rawPassword);
 
             // Then
-            assertThat(user.getPassword()).isNotEqualTo(rawPassword);
-            assertThat(user.getPassword()).startsWith("$2a$"); // BCrypt format
-        }
-
-        @Test
-        @DisplayName("ユーザー名が null の場合は例外が発生する")
-        void shouldThrowExceptionWhenUsernameIsNull() {
-            assertThatThrownBy(() ->
-                User.create(null, "test@example.com", "Password123!", "テスト", Role.USER))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("ユーザー名");
-        }
-
-        @Test
-        @DisplayName("ユーザー名が空の場合は例外が発生する")
-        void shouldThrowExceptionWhenUsernameIsEmpty() {
-            assertThatThrownBy(() ->
-                User.create("", "test@example.com", "Password123!", "テスト", Role.USER))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("ユーザー名");
-        }
-
-        @Test
-        @DisplayName("メールアドレスが無効な形式の場合は例外が発生する")
-        void shouldThrowExceptionWhenEmailIsInvalid() {
-            assertThatThrownBy(() ->
-                User.create("testuser", "invalid-email", "Password123!", "テスト", Role.USER))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("メールアドレス");
+            assertThat(user.getPasswordValue()).isNotEqualTo(rawPassword);
+            assertThat(user.getPasswordValue()).startsWith("$2a$"); // BCrypt format
         }
     }
 
@@ -91,7 +84,7 @@ class UserTest {
         void shouldAuthenticateWithCorrectPassword() {
             // Given
             String rawPassword = "SecurePass123!";
-            User user = User.create("testuser", "test@example.com", rawPassword, "テスト", Role.USER);
+            User user = createTestUser("testuser", "test@example.com", rawPassword);
 
             // When & Then
             assertThat(user.verifyPassword(rawPassword)).isTrue();
@@ -101,7 +94,7 @@ class UserTest {
         @DisplayName("間違ったパスワードで認証に失敗する")
         void shouldFailAuthenticationWithWrongPassword() {
             // Given
-            User user = User.create("testuser", "test@example.com", "SecurePass123!", "テスト", Role.USER);
+            User user = createTestUser();
 
             // When & Then
             assertThat(user.verifyPassword("WrongPassword")).isFalse();
@@ -116,7 +109,7 @@ class UserTest {
         @DisplayName("ログイン失敗時に失敗回数がインクリメントされる")
         void shouldIncrementFailedAttemptsOnLoginFailure() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
 
             // When
             User updated = user.recordFailedLoginAttempt();
@@ -131,7 +124,7 @@ class UserTest {
         @DisplayName("3回連続でログイン失敗した場合、アカウントがロックされる")
         void shouldLockAccountAfterThreeFailedAttempts() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
 
             // When
             User updated = user
@@ -148,7 +141,7 @@ class UserTest {
         @DisplayName("ログイン成功時に失敗回数がリセットされる")
         void shouldResetFailedAttemptsOnSuccessfulLogin() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
             User withFailures = user
                     .recordFailedLoginAttempt()
                     .recordFailedLoginAttempt();
@@ -165,7 +158,7 @@ class UserTest {
         @DisplayName("ロックされたアカウントではログインできない")
         void shouldNotAllowLoginWhenLocked() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
             User lockedUser = user
                     .recordFailedLoginAttempt()
                     .recordFailedLoginAttempt()
@@ -184,7 +177,7 @@ class UserTest {
         @DisplayName("アカウントを無効化できる")
         void shouldDeactivateAccount() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
 
             // When
             User deactivated = user.deactivate();
@@ -199,7 +192,7 @@ class UserTest {
         @DisplayName("無効化されたアカウントではログインできない")
         void shouldNotAllowLoginWhenDeactivated() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
             User deactivated = user.deactivate();
 
             // When & Then
@@ -210,7 +203,7 @@ class UserTest {
         @DisplayName("ロックされたアカウントを解除できる")
         void shouldUnlockAccount() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
             User lockedUser = user
                     .recordFailedLoginAttempt()
                     .recordFailedLoginAttempt()
@@ -233,7 +226,7 @@ class UserTest {
         @DisplayName("状態変更メソッドは元のインスタンスを変更しない")
         void shouldNotModifyOriginalInstance() {
             // Given
-            User original = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User original = createTestUser();
 
             // When
             User afterFailedLogin = original.recordFailedLoginAttempt();
@@ -255,7 +248,7 @@ class UserTest {
         @DisplayName("メソッドチェーンで複数の変更を適用できる")
         void shouldSupportMethodChaining() {
             // Given
-            User user = User.create("testuser", "test@example.com", "Password123!", "テスト", Role.USER);
+            User user = createTestUser();
 
             // When
             User updated = user
