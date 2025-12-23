@@ -80,7 +80,7 @@ public class AuthService implements AuthUseCase {
      */
     private Either<String, User> validateAccountNotLocked(User user) {
         return user.isLocked()
-                ? Either.left("アカウントがロックされています")
+                ? Either.left("アカウントがロックされています。ログイン試行が複数回失敗したため、セキュリティ保護のためロックされました。管理者にお問い合わせください。")
                 : Either.right(user);
     }
 
@@ -90,7 +90,7 @@ public class AuthService implements AuthUseCase {
     private Either<String, User> validateAccountActive(User user) {
         return user.isActive()
                 ? Either.right(user)
-                : Either.left("アカウントが無効化されています");
+                : Either.left("アカウントが無効化されています。管理者にお問い合わせください。");
     }
 
     /**

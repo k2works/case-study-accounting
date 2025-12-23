@@ -1,7 +1,9 @@
 import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { login as apiLogin } from '../api/generated/認証/認証';
 import { User, Role, AuthContextType } from '../types/auth';
+import type { LoginResponse } from '../api/model';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -109,29 +111,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [loadAuthFromStorage, clearAuthStorage]);
 
   /**
+   * Axios エラーからエラーメッセージを抽出
+   */
+  const extractErrorMessage = (error: unknown): string | null => {
+    if (error instanceof AxiosError && error.response?.data) {
+      const responseData = error.response.data as LoginResponse;
+      return responseData.errorMessage || null;
+    }
+    return null;
+  };
+
+  /**
+   * ログインレスポンスを検証
+   */
+  const validateLoginResponse = (data: LoginResponse): void => {
+    if (!data.success) {
+      throw new Error(data.errorMessage || '認証に失敗しました');
+    }
+    if (!data.accessToken || !data.refreshToken || !data.username || !data.role) {
+      throw new Error('認証レスポンスが不正です');
+    }
+  };
+
+  /**
    * ログイン
    */
   const login = useCallback(
     async (username: string, password: string) => {
-      const data = await apiLogin({ username, password });
+      try {
+        const data = await apiLogin({ username, password });
+        validateLoginResponse(data);
 
-      if (!data.success) {
-        throw new Error(data.errorMessage || '認証に失敗しました');
+        const userData: User = {
+          username: data.username!,
+          role: data.role as Role,
+        };
+
+        saveAuthToStorage(data.accessToken!, data.refreshToken!, userData);
+        setUser(userData);
+        queryClient.clear();
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        if (errorMessage) {
+          throw new Error(errorMessage);
+        }
+        throw error;
       }
-
-      if (!data.accessToken || !data.refreshToken || !data.username || !data.role) {
-        throw new Error('認証レスポンスが不正です');
-      }
-
-      const userData: User = {
-        username: data.username,
-        role: data.role as Role,
-      };
-
-      saveAuthToStorage(data.accessToken, data.refreshToken, userData);
-      setUser(userData);
-
-      queryClient.clear();
     },
     [saveAuthToStorage, queryClient]
   );
