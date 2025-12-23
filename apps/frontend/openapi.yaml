@@ -133,6 +133,5 @@ components:
     bearerAuth:
       type: http
       description: JWT アクセストークンを入力してください
-      name: bearerAuth
       scheme: bearer
       bearerFormat: JWT
