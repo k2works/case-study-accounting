@@ -14,3 +14,6 @@ Thumbs.db
 /jig-erd-detail.svg
 /jig-erd-overview.svg
 /jig-erd-summary.svg
+/.settings/org.eclipse.buildship.core.prefs
+/.settings/org.eclipse.jdt.apt.core.prefs
+/.settings/org.eclipse.jdt.core.prefs
