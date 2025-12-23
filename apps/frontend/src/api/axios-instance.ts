@@ -39,7 +39,7 @@ const clearAuthAndRedirect = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem('user');
-  window.location.href = '/login';
+  globalThis.location.href = '/login';
 };
 
 /**

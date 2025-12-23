@@ -10,15 +10,15 @@ export interface TableColumn<T> {
 }
 
 interface TableProps<T> {
-  columns: TableColumn<T>[];
-  data: T[];
-  keyField: keyof T;
-  onRowClick?: (row: T, index: number) => void;
-  isLoading?: boolean;
-  emptyMessage?: string;
-  selectable?: boolean;
-  selectedKeys?: Set<string | number>;
-  onSelectionChange?: (selectedKeys: Set<string | number>) => void;
+  readonly columns: TableColumn<T>[];
+  readonly data: T[];
+  readonly keyField: keyof T;
+  readonly onRowClick?: (row: T, index: number) => void;
+  readonly isLoading?: boolean;
+  readonly emptyMessage?: string;
+  readonly selectable?: boolean;
+  readonly selectedKeys?: Set<string | number>;
+  readonly onSelectionChange?: (selectedKeys: Set<string | number>) => void;
 }
 
 interface TableBodyContentProps<T> {
@@ -101,13 +101,19 @@ const buildRowClassName = (isClickable: boolean, isSelected: boolean): string =>
   return classes.join(' ');
 };
 
+const formatCellValue = (value: unknown): string => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+};
+
 const renderCell = <T extends Record<string, unknown>>(
   column: TableColumn<T>,
   row: T,
   rowIndex: number
 ): React.ReactElement => {
   const value = row[column.key];
-  const content = column.render ? column.render(value, row, rowIndex) : String(value ?? '');
+  const content = column.render ? column.render(value, row, rowIndex) : formatCellValue(value);
   return (
     <td key={column.key} className={`table__td table__td--${column.align || 'left'}`}>
       {content}

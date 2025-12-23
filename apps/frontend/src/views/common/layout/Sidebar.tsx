@@ -146,7 +146,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, isOpen, onToggle }) => 
 interface SidebarProps {
   isCollapsed?: boolean;
   isOpen?: boolean;
-  onToggleCollapse?: () => void;
 }
 
 /**

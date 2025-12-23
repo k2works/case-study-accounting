@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { login as apiLogin } from '../api/generated/認証/認証';
@@ -18,7 +18,7 @@ const decodeJwtPayload = (token: string): { exp: number; sub: string } | null =>
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replaceAll('-', '+').replaceAll('_', '/');
-    const payload = JSON.parse(window.atob(base64));
+    const payload = JSON.parse(globalThis.atob(base64));
     return payload;
   } catch {
     return null;
@@ -182,21 +182,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [user]
   );
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        hasRole,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      login,
+      logout,
+      hasRole,
+    }),
+    [user, isLoading, login, logout, hasRole]
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
 export { AuthContext };
-export type { AuthContextType };
+export type { AuthContextType } from '../types/auth';
