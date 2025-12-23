@@ -89,6 +89,21 @@
     top: 8px;
   }
 
+  /* ハンバーガーメニューのアニメーション（開いた状態） */
+  .main-layout__menu-toggle.is-open .main-layout__menu-icon {
+    background-color: transparent;
+  }
+
+  .main-layout__menu-toggle.is-open .main-layout__menu-icon::before {
+    top: 0;
+    transform: rotate(45deg);
+  }
+
+  .main-layout__menu-toggle.is-open .main-layout__menu-icon::after {
+    top: 0;
+    transform: rotate(-45deg);
+  }
+
   .main-layout__page {
     padding: 16px;
   }

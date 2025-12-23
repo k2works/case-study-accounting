@@ -29,7 +29,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, breadcrumbs })
     <div className="main-layout">
       <Header />
       <div className="main-layout__body">
-        <Sidebar isCollapsed={false} />
+        <Sidebar isCollapsed={false} isOpen={isSidebarOpen} />
         <main className="main-layout__content">
           {breadcrumbs && breadcrumbs.length > 0 && <Breadcrumb items={breadcrumbs} />}
           <div className="main-layout__page">{children}</div>
@@ -37,11 +37,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, breadcrumbs })
       </div>
 
       {/* モバイル用オーバーレイ */}
-      {isSidebarOpen && <div className="main-layout__overlay" onClick={handleCloseSidebar} />}
+      <div
+        className={`main-layout__overlay ${isSidebarOpen ? 'is-visible' : ''}`}
+        onClick={handleCloseSidebar}
+      />
 
       {/* モバイル用ハンバーガーメニュー */}
       <button
-        className="main-layout__menu-toggle"
+        className={`main-layout__menu-toggle ${isSidebarOpen ? 'is-open' : ''}`}
         onClick={handleToggleSidebar}
         aria-label="メニュー"
       >

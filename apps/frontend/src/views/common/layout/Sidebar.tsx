@@ -145,6 +145,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, isOpen, onToggle }) => 
 
 interface SidebarProps {
   isCollapsed?: boolean;
+  isOpen?: boolean;
   onToggleCollapse?: () => void;
 }
 
@@ -154,7 +155,7 @@ interface SidebarProps {
  * ナビゲーションメニューを表示する。
  * ユーザーのロールに基づいてメニュー項目をフィルタリングする。
  */
-export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, isOpen = false }) => {
   const { user } = useAuth();
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
 
@@ -173,8 +174,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false }) => {
     });
   };
 
+  const sidebarClasses = ['sidebar', isCollapsed ? 'is-collapsed' : '', isOpen ? 'is-open' : '']
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <aside className={`sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
+    <aside className={sidebarClasses}>
       <nav className="sidebar__nav">
         <ul className="sidebar__menu">
           {filteredMenuItems.map((item) => (
