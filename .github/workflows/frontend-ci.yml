@@ -35,6 +35,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Generate API client
+      run: npm run api:generate
+
     - name: Run ESLint
       run: npm run lint
       continue-on-error: true

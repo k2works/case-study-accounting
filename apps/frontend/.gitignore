@@ -43,4 +43,3 @@ src/api/generated/*
 !src/api/generated/.gitkeep
 src/api/model/*
 !src/api/model/.gitkeep
-openapi.yaml

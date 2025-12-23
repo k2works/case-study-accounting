@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: 財務会計システム API
+  description: |
+    財務会計システムの REST API ドキュメント
+
+    ## 認証
+
+    ほとんどの API は JWT 認証が必要です。
+
+    1. `/api/auth/login` でログインしてアクセストークンを取得
+    2. 取得したトークンを `Authorization: Bearer {token}` ヘッダーに設定
+
+    ## テストユーザー
+
+    | ユーザー名 | パスワード | ロール |
+    |-----------|-----------|-------|
+    | admin | Password123! | ADMIN |
+    | manager | Password123! | MANAGER |
+    | user | Password123! | USER |
+    | viewer | Password123! | VIEWER |
+  contact:
+    name: 開発チーム
+    email: dev@example.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: ローカル開発環境
+- url: http://localhost:8081
+  description: Docker Compose 環境
+security:
+- bearerAuth: []
+tags:
+- name: ヘルスチェック
+  description: システムの稼働状態を確認する API
+- name: 認証
+  description: ユーザー認証に関する API
+paths:
+  /api/auth/login:
+    post:
+      tags:
+      - 認証
+      summary: ログイン
+      description: ユーザー名とパスワードで認証し、JWT トークンを取得します
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: バリデーションエラー
+        "401":
+          description: 認証失敗（ユーザー名またはパスワードが不正）
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /api/health:
+    get:
+      tags:
+      - ヘルスチェック
+      summary: ヘルスチェック
+      description: アプリケーションとデータベースの稼働状態を返します
+      operationId: health
+      responses:
+        "200":
+          description: システム稼働状態
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {}
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      description: ログインリクエスト
+      properties:
+        username:
+          type: string
+          description: ユーザー名
+          example: admin
+          minLength: 1
+        password:
+          type: string
+          description: パスワード
+          example: Password123!
+          minLength: 1
+      required:
+      - password
+      - username
+    LoginResponse:
+      type: object
+      description: ログインレスポンス
+      properties:
+        success:
+          type: boolean
+          description: 認証成功フラグ
+          example: true
+        accessToken:
+          type: string
+          description: JWT アクセストークン（認証成功時のみ）
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          description: JWT リフレッシュトークン（認証成功時のみ）
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        username:
+          type: string
+          description: ユーザー名（認証成功時のみ）
+          example: admin
+        role:
+          type: string
+          description: "ユーザーロール（ADMIN, MANAGER, USER, VIEWER）"
+          example: ADMIN
+        errorMessage:
+          type: string
+          description: エラーメッセージ（認証失敗時のみ）
+          example: ユーザー名またはパスワードが正しくありません
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: JWT アクセストークンを入力してください
+      name: bearerAuth
+      scheme: bearer
+      bearerFormat: JWT

@@ -9,6 +9,7 @@ ENV VITE_DEMO_MODE=${VITE_DEMO_MODE}
 COPY package*.json ./
 RUN npm ci
 COPY . .
+RUN npm run api:generate
 RUN npm run build
 
 # 実行ステージ
