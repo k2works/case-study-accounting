@@ -4,6 +4,8 @@ import com.example.accounting.TestcontainersConfiguration;
 import jig.erd.JigErd;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -24,6 +26,8 @@ import java.nio.file.Path;
 @DisplayName("JIG-ERD ER図生成")
 class JigErdGeneratorTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JigErdGeneratorTest.class);
+
     @Autowired
     private DataSource dataSource;
 
@@ -37,6 +41,6 @@ class JigErdGeneratorTest {
         // 出力先は jig-erd.properties または環境変数で設定可能
         JigErd.run(dataSource);
 
-        System.out.println("ER図を生成しました: " + outputDir.toAbsolutePath());
+        LOGGER.info("ER図を生成しました: {}", outputDir.toAbsolutePath());
     }
 }
