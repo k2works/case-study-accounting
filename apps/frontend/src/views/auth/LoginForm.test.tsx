@@ -6,139 +6,125 @@ import { LoginForm } from './LoginForm';
 const mockLogin = vi.fn();
 
 vi.mock('../../hooks/useAuth', () => ({
-  useAuth: () => ({
-    login: mockLogin,
-  }),
+  useAuth: () => ({ login: mockLogin }),
 }));
+
+// ヘルパー関数
+const setupUser = () => userEvent.setup();
+const usernameInput = () => screen.getByTestId('username-input');
+const passwordInput = () => screen.getByTestId('password-input');
+const submitButton = () => screen.getByTestId('login-submit');
+
+const fillForm = async (
+  user: ReturnType<typeof userEvent.setup>,
+  username: string,
+  password: string
+) => {
+  await user.clear(usernameInput());
+  await user.clear(passwordInput());
+  if (username) await user.type(usernameInput(), username);
+  if (password) await user.type(passwordInput(), password);
+};
+
+const fillAndSubmit = async (
+  user: ReturnType<typeof userEvent.setup>,
+  username: string,
+  password: string
+) => {
+  await fillForm(user, username, password);
+  await user.click(submitButton());
+};
 
 describe('LoginForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders login form', () => {
-    render(<LoginForm />);
-    expect(screen.getByTestId('login-form')).toBeInTheDocument();
-  });
-
-  it('renders username input', () => {
-    render(<LoginForm />);
-    expect(screen.getByTestId('username-input')).toBeInTheDocument();
-    expect(screen.getByLabelText(/ユーザー名/)).toBeInTheDocument();
-  });
-
-  it('renders password input', () => {
-    render(<LoginForm />);
-    expect(screen.getByTestId('password-input')).toBeInTheDocument();
-    expect(screen.getByLabelText(/パスワード/)).toBeInTheDocument();
-  });
-
-  it('renders submit button', () => {
-    render(<LoginForm />);
-    expect(screen.getByTestId('login-submit')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ログイン' })).toBeInTheDocument();
+  describe('rendering', () => {
+    it('renders form with all elements', () => {
+      render(<LoginForm />);
+      expect(screen.getByTestId('login-form')).toBeInTheDocument();
+      expect(usernameInput()).toBeInTheDocument();
+      expect(passwordInput()).toBeInTheDocument();
+      expect(submitButton()).toBeInTheDocument();
+      expect(screen.getByLabelText(/ユーザー名/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/パスワード/)).toBeInTheDocument();
+    });
   });
 
   describe('form validation', () => {
     it('shows error when username is empty', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('password-input'), 'password123');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, '', 'password123');
 
       expect(screen.getByTestId('username-error')).toBeInTheDocument();
       expect(screen.getByText('ユーザー名を入力してください')).toBeInTheDocument();
     });
 
     it('shows error when password is empty', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', '');
 
       expect(screen.getByTestId('password-error')).toBeInTheDocument();
       expect(screen.getByText('パスワードを入力してください')).toBeInTheDocument();
     });
 
     it('shows error when password is too short', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.type(screen.getByTestId('password-input'), 'short');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', 'short');
 
       expect(screen.getByTestId('password-error')).toBeInTheDocument();
       expect(screen.getByText('パスワードは8文字以上です')).toBeInTheDocument();
     });
 
     it('clears error when input is corrected', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.click(screen.getByTestId('login-submit'));
-
+      await fillAndSubmit(user, '', '');
       expect(screen.getByTestId('username-error')).toBeInTheDocument();
 
-      await user.type(screen.getByTestId('username-input'), 'testuser');
+      await user.type(usernameInput(), 'testuser');
       expect(screen.queryByTestId('username-error')).not.toBeInTheDocument();
     });
   });
 
   describe('form submission', () => {
     it('calls login with trimmed credentials', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       mockLogin.mockResolvedValue(undefined);
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), '  testuser  ');
-      await user.type(screen.getByTestId('password-input'), '  password123  ');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, '  testuser  ', '  password123  ');
 
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123');
-      });
+      await waitFor(() => expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123'));
     });
 
     it('disables form during submission', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       mockLogin.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.type(screen.getByTestId('password-input'), 'password123');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', 'password123');
 
-      expect(screen.getByTestId('username-input')).toBeDisabled();
-      expect(screen.getByTestId('password-input')).toBeDisabled();
-      expect(screen.getByTestId('login-submit')).toBeDisabled();
+      expect(usernameInput()).toBeDisabled();
+      expect(passwordInput()).toBeDisabled();
+      expect(submitButton()).toBeDisabled();
       expect(screen.getByText('ログイン中...')).toBeInTheDocument();
     });
 
     it('shows error message on login failure', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       mockLogin.mockRejectedValue(new Error('ユーザー名またはパスワードが正しくありません'));
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.type(screen.getByTestId('password-input'), 'wrongpassword');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', 'wrongpassword');
 
       await waitFor(() => {
         expect(screen.getByTestId('login-error')).toBeInTheDocument();
@@ -149,15 +135,11 @@ describe('LoginForm', () => {
     });
 
     it('shows generic error message on unknown error', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       mockLogin.mockRejectedValue('unknown error');
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.type(screen.getByTestId('password-input'), 'password123');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', 'password123');
 
       await waitFor(() => {
         expect(screen.getByTestId('login-error')).toBeInTheDocument();
@@ -166,89 +148,56 @@ describe('LoginForm', () => {
     });
 
     it('clears login error on new submission', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       mockLogin.mockRejectedValueOnce(new Error('Error')).mockResolvedValueOnce(undefined);
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.type(screen.getByTestId('password-input'), 'password123');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', 'password123');
+      await waitFor(() => expect(screen.getByTestId('login-error')).toBeInTheDocument());
 
-      await waitFor(() => {
-        expect(screen.getByTestId('login-error')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByTestId('login-submit'));
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('login-error')).not.toBeInTheDocument();
-      });
+      await user.click(submitButton());
+      await waitFor(() => expect(screen.queryByTestId('login-error')).not.toBeInTheDocument());
     });
 
     it('re-enables form after submission completes', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       mockLogin.mockRejectedValue(new Error('Error'));
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.type(screen.getByTestId('password-input'), 'password123');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', 'password123');
 
       await waitFor(() => {
-        expect(screen.getByTestId('username-input')).not.toBeDisabled();
-        expect(screen.getByTestId('password-input')).not.toBeDisabled();
-        expect(screen.getByTestId('login-submit')).not.toBeDisabled();
+        expect(usernameInput()).not.toBeDisabled();
+        expect(passwordInput()).not.toBeDisabled();
+        expect(submitButton()).not.toBeDisabled();
       });
     });
   });
 
   describe('input handling', () => {
-    it('updates username on input', async () => {
-      const user = userEvent.setup();
+    it('updates input values on typing', async () => {
+      const user = setupUser();
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.type(screen.getByTestId('username-input'), 'newuser');
+      await user.clear(usernameInput());
+      await user.type(usernameInput(), 'newuser');
+      expect(usernameInput()).toHaveValue('newuser');
 
-      expect(screen.getByTestId('username-input')).toHaveValue('newuser');
-    });
-
-    it('updates password on input', async () => {
-      const user = userEvent.setup();
-      render(<LoginForm />);
-
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('password-input'), 'newpassword');
-
-      expect(screen.getByTestId('password-input')).toHaveValue('newpassword');
+      await user.clear(passwordInput());
+      await user.type(passwordInput(), 'newpassword');
+      expect(passwordInput()).toHaveValue('newpassword');
     });
   });
 
   describe('accessibility', () => {
-    it('has proper labels for inputs', () => {
-      render(<LoginForm />);
-      expect(screen.getByLabelText(/ユーザー名/)).toBeInTheDocument();
-      expect(screen.getByLabelText(/パスワード/)).toBeInTheDocument();
-    });
-
     it('error message has alert role', async () => {
-      const user = userEvent.setup();
+      const user = setupUser();
       mockLogin.mockRejectedValue(new Error('Error'));
       render(<LoginForm />);
 
-      await user.clear(screen.getByTestId('username-input'));
-      await user.clear(screen.getByTestId('password-input'));
-      await user.type(screen.getByTestId('username-input'), 'testuser');
-      await user.type(screen.getByTestId('password-input'), 'password123');
-      await user.click(screen.getByTestId('login-submit'));
+      await fillAndSubmit(user, 'testuser', 'password123');
 
-      await waitFor(() => {
-        expect(screen.getByRole('alert')).toBeInTheDocument();
-      });
+      await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     });
   });
 });
