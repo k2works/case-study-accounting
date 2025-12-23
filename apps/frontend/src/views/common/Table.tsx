@@ -103,8 +103,10 @@ const buildRowClassName = (isClickable: boolean, isSelected: boolean): string =>
 
 const formatCellValue = (value: unknown): string => {
   if (value === null || value === undefined) return '';
-  if (typeof value === 'object') return JSON.stringify(value);
-  return String(value);
+  if (typeof value === 'object' || typeof value === 'function') {
+    return JSON.stringify(value);
+  }
+  return String(value as string | number | boolean | bigint | symbol);
 };
 
 const renderCell = <T extends Record<string, unknown>>(
