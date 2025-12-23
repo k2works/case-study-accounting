@@ -1,11 +1,39 @@
-import { config } from './config';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import { Loading } from './views/common';
+
+/**
+ * 認証が必要なルートのガード
+ */
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <Loading message="認証情報を確認中..." fullScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 export const App = () => {
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>{config.appName}</h1>
-      <p>フロントエンド環境が正常に構築されました。</p>
-      <p>開発モード: {config.isDev ? 'ON' : 'OFF'}</p>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <DashboardPage />
+          </PrivateRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };

@@ -1,0 +1,40 @@
+services:
+  # バックエンド API サーバー（デモモード - H2インメモリ）
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: accounting-backend-demo
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      SPRING_PROFILES_ACTIVE: demo
+      JWT_SECRET: demo-secret-key-for-development-only-32chars
+      CORS_ALLOWED_ORIGINS: http://localhost:3001,http://frontend:80
+    ports:
+      - '8081:8080'
+    networks:
+      - demo_network
+
+  # フロントエンド Web サーバー
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_DEMO_MODE: "true"
+    container_name: accounting-frontend-demo
+    restart: unless-stopped
+    environment:
+      PORT: 80
+      API_URL: http://backend:8080/api
+    ports:
+      - '3001:80'
+    networks:
+      - demo_network
+    depends_on:
+      - backend
+
+networks:
+  demo_network:
+    driver: bridge

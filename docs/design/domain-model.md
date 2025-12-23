@@ -85,17 +85,94 @@ class 金額 <<Value Object>> {
 - デフォルト通貨は "JPY"
 
 **実装例:**
+
+値オブジェクトは `@Value` を使用してイミュータブルに設計します。演算メソッドは新しいインスタンスを返します。
+
 ```java
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Value;
+
+/**
+ * 金額を表現する値オブジェクト
+ *
+ * <p>イミュータブル設計により、すべての演算は新しいインスタンスを返す。
+ * 通貨コードと金額のペアで管理し、異なる通貨間の演算は禁止。</p>
+ */
 @Value
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Money {
     public static final Money ZERO = new Money(BigDecimal.ZERO, "JPY");
 
     BigDecimal amount;
     String currencyCode;
 
+    /**
+     * ファクトリメソッド - JPY 金額を作成
+     */
+    public static Money of(BigDecimal amount) {
+        return new Money(
+            amount.setScale(0, RoundingMode.HALF_UP),
+            "JPY"
+        );
+    }
+
+    /**
+     * ファクトリメソッド - long 値から JPY 金額を作成
+     */
+    public static Money of(long amount) {
+        return of(BigDecimal.valueOf(amount));
+    }
+
+    /**
+     * 加算 - 新しい Money インスタンスを返す
+     */
     public Money add(Money other) {
         validateSameCurrency(other);
         return new Money(this.amount.add(other.amount), this.currencyCode);
+    }
+
+    /**
+     * 減算 - 新しい Money インスタンスを返す
+     */
+    public Money subtract(Money other) {
+        validateSameCurrency(other);
+        return new Money(this.amount.subtract(other.amount), this.currencyCode);
+    }
+
+    /**
+     * 乗算 - 新しい Money インスタンスを返す
+     */
+    public Money multiply(int multiplier) {
+        return new Money(
+            this.amount.multiply(BigDecimal.valueOf(multiplier)),
+            this.currencyCode
+        );
+    }
+
+    public boolean isZero() {
+        return amount.compareTo(BigDecimal.ZERO) == 0;
+    }
+
+    public boolean isPositive() {
+        return amount.compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    public boolean isNegative() {
+        return amount.compareTo(BigDecimal.ZERO) < 0;
+    }
+
+    public Money abs() {
+        return isNegative() ? new Money(amount.abs(), currencyCode) : this;
+    }
+
+    private void validateSameCurrency(Money other) {
+        if (!this.currencyCode.equals(other.currencyCode)) {
+            throw new IllegalArgumentException(
+                "異なる通貨間の演算はできません: " +
+                this.currencyCode + " vs " + other.currencyCode
+            );
+        }
     }
 }
 ```
@@ -246,11 +323,11 @@ enum 勘定科目種別 <<Enumeration>> {
 
 ### 3.1 勘定科目（Account）
 
-勘定科目マスタのエンティティ。
+勘定科目マスタのエンティティ。`@Value` と `@With` を使用してイミュータブルに設計します。
 
 ```plantuml
 @startuml
-class 勘定科目 <<Entity>> {
+class 勘定科目 <<Entity>> <<@Value>> <<@With>> {
   - 勘定科目ID: Integer
   - 勘定科目コード: String
   - 勘定科目名: String
@@ -260,17 +337,43 @@ class 勘定科目 <<Entity>> {
   - 表示順序: Integer
   - 集計対象フラグ: Boolean
   - 残高: BigDecimal
+  - version: int
   --
-  + create(code, name, type): 勘定科目
-  + createSummaryAccount(code, name, type): 勘定科目
+  + {static} create(code, name, type): 勘定科目
+  + {static} reconstruct(...): 勘定科目
+  + {static} createSummaryAccount(code, name, type): 勘定科目
   + addBalance(amount): 勘定科目
   + subtractBalance(amount): 勘定科目
+  + changeName(name): 勘定科目
   + isBalanceSheetAccount(): boolean
   + isProfitAndLossAccount(): boolean
   + isDebitBalance(): boolean
 }
+
+note top of 勘定科目
+  @Value: イミュータブル（全フィールド final）
+  @With: 変更時に新インスタンスを生成
+  create(): 新規作成（バリデーション実行）
+  reconstruct(): DB復元（バリデーションなし）
+end note
 @enduml
 ```
+
+**設計方針:**
+
+| アノテーション | 用途 |
+|--------------|------|
+| `@Value` | すべてのフィールドを `private final` にし、Getter、equals/hashCode、toString を自動生成 |
+| `@With` | フィールドを変更した新しいインスタンスを生成するメソッドを自動生成 |
+| `@AllArgsConstructor(access = AccessLevel.PRIVATE)` | コンストラクタをプライベートにしてファクトリメソッド経由のみで生成 |
+
+**生成法:**
+
+| メソッド | 用途 | 説明 |
+|---------|------|------|
+| `create()` | 新規作成 | ビジネスルールに従って新しいエンティティを生成。ID 自動生成、バリデーション実行 |
+| `reconstruct()` | 再構築 | DB からの復元用。バリデーションをスキップし、既存データをそのまま復元 |
+| `withXxx()` | 更新 | `@With` により自動生成。変更したいフィールドのみ指定して新しいインスタンスを返す |
 
 ### 3.2 勘定科目構成（AccountStructure）
 
@@ -324,21 +427,23 @@ class 課税取引 <<Entity>> {
 
 ### 4.1 仕訳集約（JournalEntry Aggregate）
 
-仕訳は3層構造（仕訳→仕訳明細→仕訳貸借明細）で構成される集約です。
+仕訳は3層構造（仕訳→仕訳明細→仕訳貸借明細）で構成される集約です。すべてのエンティティは `@Value` と `@With` を使用してイミュータブルに設計します。
 
 ```plantuml
 @startuml
 title 仕訳集約
 
 package "仕訳集約" {
-  class 仕訳 <<Aggregate Root>> {
+  class 仕訳 <<Aggregate Root>> <<@Value>> <<@With>> {
     - 仕訳伝票番号: String
     - 起票日: LocalDate
     - 摘要: String
     - ステータス: 仕訳ステータス
     - 仕訳明細リスト: List<仕訳明細>
+    - version: int
     --
-    + create(journalDate, description, details): 仕訳
+    + {static} create(journalDate, description, details): 仕訳
+    + {static} reconstruct(...): 仕訳
     + approve(): 仕訳
     + confirm(): 仕訳
     + cancel(): 仕訳
@@ -348,7 +453,7 @@ package "仕訳集約" {
     + isBalanced(): boolean
   }
 
-  class 仕訳明細 <<Entity>> {
+  class 仕訳明細 <<Entity>> <<@Value>> <<@With>> {
     - 仕訳伝票番号: String
     - 仕訳行番号: Integer
     - 勘定科目コード: String
@@ -356,13 +461,13 @@ package "仕訳集約" {
     - 摘要: String
     - 仕訳貸借明細リスト: List<仕訳貸借明細>
     --
-    + createDebitLine(accountCode, amount): 仕訳明細
-    + createCreditLine(accountCode, amount): 仕訳明細
+    + {static} createDebitLine(accountCode, amount): 仕訳明細
+    + {static} createCreditLine(accountCode, amount): 仕訳明細
     + getDebitAmount(): 金額
     + getCreditAmount(): 金額
   }
 
-  class 仕訳貸借明細 <<Entity>> {
+  class 仕訳貸借明細 <<Entity>> <<@Value>> <<@With>> {
     - 仕訳伝票番号: String
     - 仕訳行番号: Integer
     - 貸借区分: 貸借区分
@@ -379,8 +484,8 @@ package "仕訳集約" {
     - 税計算区分: String
     - 相手勘定科目コード: String
     --
-    + createDebit(accountCode, amount): 仕訳貸借明細
-    + createCredit(accountCode, amount): 仕訳貸借明細
+    + {static} createDebit(accountCode, amount): 仕訳貸借明細
+    + {static} createCredit(accountCode, amount): 仕訳貸借明細
     + isDebit(): boolean
     + isCredit(): boolean
   }
@@ -388,6 +493,12 @@ package "仕訳集約" {
   仕訳 "1" *-- "1..*" 仕訳明細
   仕訳明細 "1" *-- "1..*" 仕訳貸借明細
 }
+
+note bottom of 仕訳
+  イミュータブル設計により、
+  状態変更メソッドは新しいインスタンスを返す
+  例: approve() → 承認済ステータスの新しい仕訳を返す
+end note
 
 @enduml
 ```
@@ -399,73 +510,166 @@ package "仕訳集約" {
 4. 金額は0より大きい正の値
 
 **ファクトリメソッド:**
+
 ```java
-public static JournalEntry create(
-        LocalDate journalDate,
-        String description,
-        List<JournalEntryDetail> details) {
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Value;
+import lombok.With;
 
-    // 不変条件1: 仕訳明細は必須
-    if (details == null || details.isEmpty()) {
-        throw new IllegalArgumentException("仕訳明細が必要です");
+/**
+ * 仕訳エンティティ（集約ルート）
+ *
+ * <p>イミュータブル設計により、状態変更は常に新しいインスタンスを返す。
+ * 不変条件（貸借一致など）は create() で保証する。</p>
+ */
+@Value
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class JournalEntry {
+    JournalEntryNumber journalNumber;
+    LocalDate journalDate;
+    String description;
+    JournalStatus status;
+    List<JournalEntryDetail> details;
+    int version;
+
+    /**
+     * ファクトリメソッド - 新規作成
+     *
+     * <p>不変条件を検証し、新しい仕訳を作成する。</p>
+     */
+    public static JournalEntry create(
+            LocalDate journalDate,
+            String description,
+            List<JournalEntryDetail> details) {
+
+        // 不変条件1: 仕訳明細は必須
+        if (details == null || details.isEmpty()) {
+            throw new IllegalArgumentException("仕訳明細が必要です");
+        }
+
+        // 不変条件2: 借方と貸方の両方が必要
+        boolean hasDebit = details.stream().anyMatch(JournalEntryDetail::isDebit);
+        boolean hasCredit = details.stream().anyMatch(JournalEntryDetail::isCredit);
+        if (!hasDebit || !hasCredit) {
+            throw new IllegalArgumentException("借方と貸方の両方が必要です");
+        }
+
+        // 不変条件3: 貸借一致
+        Money totalDebit = calculateTotalDebit(details);
+        Money totalCredit = calculateTotalCredit(details);
+        if (!totalDebit.equals(totalCredit)) {
+            throw new IllegalArgumentException(
+                String.format("借方と貸方が一致しません: 借方=%s, 貸方=%s",
+                    totalDebit, totalCredit));
+        }
+
+        return new JournalEntry(
+            JournalEntryNumber.generate(journalDate),
+            journalDate,
+            description,
+            JournalStatus.DRAFT,
+            List.copyOf(details),  // イミュータブルリストにコピー
+            0  // 新規作成時は version = 0
+        );
     }
 
-    // 不変条件2: 借方と貸方の両方が必要
-    boolean hasDebit = details.stream().anyMatch(d -> d.isDebit());
-    boolean hasCredit = details.stream().anyMatch(d -> d.isCredit());
-    if (!hasDebit || !hasCredit) {
-        throw new IllegalArgumentException("借方と貸方の両方が必要です");
+    /**
+     * 再構築用ファクトリメソッド - DB からの復元
+     */
+    public static JournalEntry reconstruct(
+            JournalEntryNumber journalNumber,
+            LocalDate journalDate,
+            String description,
+            JournalStatus status,
+            List<JournalEntryDetail> details,
+            int version) {
+        return new JournalEntry(journalNumber, journalDate, description,
+                               status, List.copyOf(details), version);
     }
 
-    // 不変条件3: 貸借一致
-    Money totalDebit = calculateTotalDebit(details);
-    Money totalCredit = calculateTotalCredit(details);
-    if (!totalDebit.equals(totalCredit)) {
-        throw new IllegalArgumentException(
-            String.format("借方と貸方が一致しません: 借方=%s, 貸方=%s",
-                totalDebit, totalCredit));
+    // ===== 状態変更メソッド（新しいインスタンスを返す） =====
+
+    /**
+     * 承認する - 承認済ステータスの新しい仕訳を返す
+     */
+    public JournalEntry approve() {
+        if (!status.canApprove()) {
+            throw new IllegalStateException("この仕訳は承認できません: " + status);
+        }
+        return this.withStatus(JournalStatus.APPROVED);
     }
 
-    return new JournalEntry(...);
+    /**
+     * 確定する - 確定済ステータスの新しい仕訳を返す
+     */
+    public JournalEntry confirm() {
+        if (!status.canConfirm()) {
+            throw new IllegalStateException("この仕訳は確定できません: " + status);
+        }
+        return this.withStatus(JournalStatus.CONFIRMED);
+    }
+
+    /**
+     * 差し戻す - 差戻しステータスの新しい仕訳を返す
+     */
+    public JournalEntry reject() {
+        return this.withStatus(JournalStatus.REJECTED);
+    }
+
+    /**
+     * 取り消す - 取消済ステータスの新しい仕訳を返す
+     */
+    public JournalEntry cancel() {
+        return this.withStatus(JournalStatus.CANCELLED);
+    }
 }
 ```
 
 ### 4.2 自動仕訳パターン集約
 
-自動仕訳の設定パターンを管理する集約。
+自動仕訳の設定パターンを管理する集約。`@Value` と `@With` を使用してイミュータブルに設計します。
 
 ```plantuml
 @startuml
 title 自動仕訳パターン集約
 
 package "自動仕訳パターン集約" {
-  class 自動仕訳パターン <<Aggregate Root>> {
+  class 自動仕訳パターン <<Aggregate Root>> <<@Value>> <<@With>> {
     - 自動仕訳パターンID: Integer
     - パターン名: String
     - トリガーイベント: String
     - 有効フラグ: Boolean
     - 明細リスト: List<自動仕訳パターン明細>
+    - version: int
     --
-    + create(name, triggerEvent): 自動仕訳パターン
-    + addDetail(detail): void
+    + {static} create(name, triggerEvent): 自動仕訳パターン
+    + {static} reconstruct(...): 自動仕訳パターン
+    + addDetail(detail): 自動仕訳パターン
     + execute(triggerData): 仕訳
     + activate(): 自動仕訳パターン
     + deactivate(): 自動仕訳パターン
   }
 
-  class 自動仕訳パターン明細 <<Entity>> {
+  class 自動仕訳パターン明細 <<Entity>> <<@Value>> <<@With>> {
     - 自動仕訳パターン明細ID: Integer
     - 行番号: Integer
     - 勘定科目コード: String
     - 貸借区分: 貸借区分
     - 金額計算式: String
     --
-    + create(accountCode, debitCreditType, formula): 自動仕訳パターン明細
+    + {static} create(accountCode, debitCreditType, formula): 自動仕訳パターン明細
     + calculateAmount(context): 金額
   }
 
   自動仕訳パターン "1" *-- "1..*" 自動仕訳パターン明細
 }
+
+note bottom of 自動仕訳パターン
+  addDetail() は明細を追加した新しいパターンを返す
+  activate()/deactivate() は有効フラグを変更した新しいインスタンスを返す
+end note
 
 @enduml
 ```
@@ -631,9 +835,11 @@ interface 月次勘定科目残高リポジトリ <<Repository>> {
 
 ### 7.1 貸借対照表（BalanceSheet）
 
+貸借対照表は `@Value` を使用してイミュータブルに設計します。
+
 ```plantuml
 @startuml
-class 貸借対照表 <<Entity>> {
+class 貸借対照表 <<Entity>> <<@Value>> {
   - asOfDate: LocalDate
   - assets: List<貸借対照表項目>
   - liabilities: List<貸借対照表項目>
@@ -643,7 +849,7 @@ class 貸借対照表 <<Entity>> {
   - totalEquity: BigDecimal
   - totalLiabilitiesAndEquity: BigDecimal
   --
-  + create(asOfDate, assets, liabilities, equity): 貸借対照表
+  + {static} create(asOfDate, assets, liabilities, equity): 貸借対照表
   + isBalanced(): boolean
   + getCurrentAssets(): BigDecimal
   + getFixedAssets(): BigDecimal
@@ -651,14 +857,14 @@ class 貸借対照表 <<Entity>> {
   + getLongTermLiabilities(): BigDecimal
 }
 
-class 貸借対照表項目 <<Value Object>> {
+class 貸借対照表項目 <<Value Object>> <<@Value>> {
   - accountCode: String
   - accountName: String
   - category: 勘定科目区分
   - balance: BigDecimal
   - percentage: BigDecimal
   --
-  + of(accountCode, accountName, category, balance): 貸借対照表項目
+  + {static} of(accountCode, accountName, category, balance): 貸借対照表項目
   + withCalculatedPercentage(total): 貸借対照表項目
   + isCurrentAsset(): boolean
   + isFixedAsset(): boolean
@@ -667,6 +873,11 @@ class 貸借対照表項目 <<Value Object>> {
 }
 
 貸借対照表 "1" *-- "*" 貸借対照表項目
+
+note top of 貸借対照表
+  財務諸表は参照専用のため
+  @With は不要（変更しない）
+end note
 
 @enduml
 ```
@@ -678,9 +889,11 @@ class 貸借対照表項目 <<Value Object>> {
 
 ### 7.2 損益計算書（IncomeStatement）
 
+損益計算書は `@Value` を使用してイミュータブルに設計します。
+
 ```plantuml
 @startuml
-class 損益計算書 <<Entity>> {
+class 損益計算書 <<Entity>> <<@Value>> {
   - startDate: LocalDate
   - endDate: LocalDate
   - revenues: List<損益計算書項目>
@@ -689,21 +902,21 @@ class 損益計算書 <<Entity>> {
   - totalExpense: BigDecimal
   - netIncome: BigDecimal
   --
-  + create(startDate, endDate, revenues, expenses): 損益計算書
+  + {static} create(startDate, endDate, revenues, expenses): 損益計算書
   + getGrossProfit(): BigDecimal
   + getOperatingProfit(): BigDecimal
   + getOrdinaryProfit(): BigDecimal
   + getNetIncome(): BigDecimal
 }
 
-class 損益計算書項目 <<Value Object>> {
+class 損益計算書項目 <<Value Object>> <<@Value>> {
   - accountCode: String
   - accountName: String
   - category: 勘定科目区分
   - amount: BigDecimal
   - percentage: BigDecimal
   --
-  + of(accountCode, accountName, category, amount): 損益計算書項目
+  + {static} of(accountCode, accountName, category, amount): 損益計算書項目
   + withCalculatedPercentage(total): 損益計算書項目
   + isSalesRevenue(): boolean
   + isCostOfSales(): boolean
@@ -711,6 +924,11 @@ class 損益計算書項目 <<Value Object>> {
 }
 
 損益計算書 "1" *-- "*" 損益計算書項目
+
+note top of 損益計算書
+  財務諸表は参照専用のため
+  @With は不要（変更しない）
+end note
 
 @enduml
 ```
@@ -725,17 +943,19 @@ class 損益計算書項目 <<Value Object>> {
 
 ### 7.3 財務指標（FinancialRatios）
 
+財務指標は値オブジェクトとして `@Value` を使用してイミュータブルに設計します。
+
 ```plantuml
 @startuml
-class 財務指標 <<Value Object>> {
+class 財務指標 <<Value Object>> <<@Value>> {
   - 収益性指標: 収益性指標
   - 効率性指標: 効率性指標
   - 安全性指標: 安全性指標
   --
-  + calculate(bs: 貸借対照表, pl: 損益計算書): 財務指標
+  + {static} calculate(bs: 貸借対照表, pl: 損益計算書): 財務指標
 }
 
-class 収益性指標 <<Value Object>> {
+class 収益性指標 <<Value Object>> <<@Value>> {
   - 売上高総利益率: BigDecimal
   - 売上高営業利益率: BigDecimal
   - 売上高経常利益率: BigDecimal
@@ -743,14 +963,14 @@ class 収益性指標 <<Value Object>> {
   - 自己資本利益率（ROE）: BigDecimal
 }
 
-class 効率性指標 <<Value Object>> {
+class 効率性指標 <<Value Object>> <<@Value>> {
   - 総資本回転率: BigDecimal
   - 売上債権回転率: BigDecimal
   - 棚卸資産回転率: BigDecimal
   - 固定資産回転率: BigDecimal
 }
 
-class 安全性指標 <<Value Object>> {
+class 安全性指標 <<Value Object>> <<@Value>> {
   - 流動比率: BigDecimal
   - 当座比率: BigDecimal
   - 自己資本比率: BigDecimal
@@ -761,6 +981,11 @@ class 安全性指標 <<Value Object>> {
 財務指標 *-- 収益性指標
 財務指標 *-- 効率性指標
 財務指標 *-- 安全性指標
+
+note top of 財務指標
+  値オブジェクトはすべて @Value で
+  イミュータブルに設計
+end note
 
 @enduml
 ```
@@ -955,21 +1180,62 @@ com.example.accounting/
 | ドメインサービス | 複数エンティティにまたがる操作、外部情報が必要な計算、複数エンティティの整合性チェック |
 | アプリケーションサービス | トランザクション管理、ユースケースの調整、リポジトリ呼び出し |
 
-### 10.2 不変条件の保証
+### 10.2 イミュータブル設計
+
+すべてのドメインオブジェクト（エンティティ、値オブジェクト）は `@Value` と `@With` を使用してイミュータブルに設計します。
+
+**使用するアノテーション:**
+
+| アノテーション | 用途 |
+|--------------|------|
+| `@Value` | すべてのフィールドを `private final` にし、Getter、equals/hashCode、toString を自動生成 |
+| `@With` | フィールドを変更した新しいインスタンスを生成するメソッドを自動生成 |
+| `@AllArgsConstructor(access = AccessLevel.PRIVATE)` | コンストラクタをプライベートにしてファクトリメソッド経由のみで生成 |
+
+**生成法（ファクトリメソッド）:**
+
+| メソッド | 用途 | バリデーション |
+|---------|------|---------------|
+| `create()` | 新規作成 | 実行する |
+| `reconstruct()` | DB からの復元 | スキップ |
+| `withXxx()` | フィールド変更 | 必要に応じてラップ |
+
+**イミュータブル設計のメリット:**
+- スレッドセーフ（並行処理で安全）
+- 副作用がない（予測可能な動作）
+- テストしやすい
+- 変更履歴の追跡が容易
+
+### 10.3 不変条件の保証
 
 コンストラクタおよびファクトリメソッドで不変条件を保証します。
 
 ```java
-public static JournalEntry create(...) {
-    // 不変条件の検証
-    if (!isBalanced()) {
-        throw new IllegalArgumentException("借方と貸方が一致しません");
+@Value
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class JournalEntry {
+    // ... フィールド定義 ...
+
+    public static JournalEntry create(...) {
+        // 不変条件の検証
+        if (!isBalanced(details)) {
+            throw new IllegalArgumentException("借方と貸方が一致しません");
+        }
+        return new JournalEntry(...);
     }
-    return new JournalEntry(...);
+
+    // 状態変更は新しいインスタンスを返す
+    public JournalEntry approve() {
+        if (!status.canApprove()) {
+            throw new IllegalStateException("承認できません");
+        }
+        return this.withStatus(JournalStatus.APPROVED);
+    }
 }
 ```
 
-### 10.3 値オブジェクトの活用
+### 10.4 値オブジェクトの活用
 
 プリミティブ型の代わりに値オブジェクトを使用し、型安全性とドメイン知識の表現を向上させます。
 
@@ -979,7 +1245,7 @@ public static JournalEntry create(...) {
 | BigDecimal | Money | 通貨コード管理、丸め処理、演算 |
 | String | JournalEntryNumber | 形式バリデーション、日付・連番抽出 |
 
-### 10.4 依存性逆転の原則
+### 10.5 依存性逆転の原則
 
 リポジトリインターフェースは Application 層に配置し、実装は Infrastructure 層に配置します。
 

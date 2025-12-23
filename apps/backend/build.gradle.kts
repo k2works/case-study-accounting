@@ -23,50 +23,64 @@ repositories {
     mavenCentral()
 }
 
+// バージョン管理
+val mybatisVersion = "4.0.0"
+val jjwtVersion = "0.12.6"
+val vavrVersion = "0.10.4"
+val springdocVersion = "2.8.8"
+val testcontainersVersion = "1.20.4"
+val archunitVersion = "1.3.0"
+val jigErdVersion = "0.2.1"
+
 dependencies {
+    // === implementation ===
+    // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-
-    // Database
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
-    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4")
-    runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2") // Demo環境用
-    runtimeOnly("org.springframework.boot:spring-boot-h2console") // H2 Console (Spring Boot 4.0+)
-
-    // Migration
+    // Database
+    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:$mybatisVersion")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
-
     // JWT
-    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    // Functional Programming
+    implementation("io.vavr:vavr:$vavrVersion")
+    // OpenAPI / Swagger UI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
-    // Vavr (関数型プログラミング)
-    implementation("io.vavr:vavr:0.10.4")
+    // === runtimeOnly ===
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.springframework.boot:spring-boot-h2console")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
-    // Lombok
+    // === compileOnly ===
     compileOnly("org.projectlombok:lombok")
+
+    // === annotationProcessor ===
     annotationProcessor("org.projectlombok:lombok")
-    testCompileOnly("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
 
+    // === testImplementation ===
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // Testcontainers
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
+    testImplementation(platform("org.testcontainers:testcontainers-bom:$testcontainersVersion"))
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
+    testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
+    testImplementation("com.github.irof:jig-erd:$jigErdVersion")
 
-    // ArchUnit
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    // === testCompileOnly ===
+    testCompileOnly("org.projectlombok:lombok")
 
-    // JIG-ERD (ER図生成)
-    testImplementation("com.github.irof:jig-erd:0.2.1")
+    // === testAnnotationProcessor ===
+    testAnnotationProcessor("org.projectlombok:lombok")
+
+    // === testRuntimeOnly ===
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {
@@ -85,6 +99,16 @@ tasks.jacocoTestReport {
         xml.required = true
         html.required = true
     }
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/Application.class",
+                    "**/Application$*.class"
+                )
+            }
+        })
+    )
 }
 
 tasks.jacocoTestCoverageVerification {
@@ -101,12 +125,12 @@ tasks.jacocoTestCoverageVerification {
 checkstyle {
     toolVersion = "10.20.2"
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
-    isIgnoreFailures = true // 初期は警告のみ
+    isIgnoreFailures = false
 }
 
 // SpotBugs (Java 25 対応: 4.9.7+)
 spotbugs {
-    ignoreFailures = true // 初期は警告のみ
+    ignoreFailures = false
     excludeFilter = file("${rootDir}/config/spotbugs/exclude.xml")
     toolVersion = "4.9.8"
 }
@@ -126,7 +150,7 @@ pmd {
     isConsoleOutput = true
     ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml")
     ruleSets = listOf() // ruleSetFilesを使用するため空に
-    isIgnoreFailures = true // 初期は警告のみ
+    isIgnoreFailures = false
 }
 
 // JIG (ドキュメント生成)

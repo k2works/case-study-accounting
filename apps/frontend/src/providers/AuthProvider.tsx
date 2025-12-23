@@ -1,20 +1,43 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import { login as apiLogin } from '../api/generated/認証/認証';
+import { User, Role, AuthContextType } from '../types/auth';
+import type { LoginResponse } from '../api/model';
 
-interface User {
-  id: number;
-  username: string;
-  role: 'ADMIN' | 'MANAGER' | 'USER';
-}
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
-}
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
+const USER_KEY = 'user';
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+/**
+ * JWT ペイロードのデコード
+ */
+const decodeJwtPayload = (token: string): { exp: number; sub: string } | null => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replaceAll('-', '+').replaceAll('_', '/');
+    const payload = JSON.parse(globalThis.atob(base64));
+    return payload;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * トークンの有効期限チェック
+ */
+const isTokenExpired = (token: string, bufferSeconds = 60): boolean => {
+  const payload = decodeJwtPayload(token);
+  if (!payload) return true;
+
+  const expirationTime = payload.exp * 1000;
+  const currentTime = Date.now();
+  const bufferTime = bufferSeconds * 1000;
+
+  return currentTime >= expirationTime - bufferTime;
+};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -23,52 +46,156 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    // 初期化時にトークンを確認
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      // TODO: トークンの検証 API を呼び出す
-      // 現在はダミー実装
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
+  /**
+   * ストレージからの認証情報読み込み
+   */
+  const loadAuthFromStorage = useCallback((): User | null => {
+    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const savedUser = localStorage.getItem(USER_KEY);
+
+    if (!accessToken || !savedUser) {
+      return null;
+    }
+
+    if (isTokenExpired(accessToken)) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(savedUser) as User;
+    } catch {
+      return null;
     }
   }, []);
 
-  const login = async (username: string, password: string) => {
-    // TODO: 実際の認証 API を呼び出す
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (!response.ok) {
-      throw new Error('認証に失敗しました');
-    }
-
-    const data = await response.json();
-    localStorage.setItem('accessToken', data.accessToken);
-    setUser(data.user);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    setUser(null);
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  /**
+   * 認証情報の保存
+   */
+  const saveAuthToStorage = useCallback(
+    (accessToken: string, refreshToken: string, userData: User) => {
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(userData));
+    },
+    []
   );
+
+  /**
+   * 認証情報のクリア
+   */
+  const clearAuthStorage = useCallback(() => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }, []);
+
+  /**
+   * 初期化
+   */
+  useEffect(() => {
+    const initialize = () => {
+      const savedUser = loadAuthFromStorage();
+
+      if (savedUser) {
+        setUser(savedUser);
+      } else {
+        clearAuthStorage();
+      }
+
+      setIsLoading(false);
+    };
+
+    initialize();
+  }, [loadAuthFromStorage, clearAuthStorage]);
+
+  /**
+   * Axios エラーからエラーメッセージを抽出
+   */
+  const extractErrorMessage = (error: unknown): string | null => {
+    if (error instanceof AxiosError && error.response?.data) {
+      const responseData = error.response.data as LoginResponse;
+      return responseData.errorMessage || null;
+    }
+    return null;
+  };
+
+  /**
+   * ログインレスポンスを検証
+   */
+  const validateLoginResponse = (data: LoginResponse): void => {
+    if (!data.success) {
+      throw new Error(data.errorMessage || '認証に失敗しました');
+    }
+    if (!data.accessToken || !data.refreshToken || !data.username || !data.role) {
+      throw new Error('認証レスポンスが不正です');
+    }
+  };
+
+  /**
+   * ログイン
+   */
+  const login = useCallback(
+    async (username: string, password: string) => {
+      try {
+        const data = await apiLogin({ username, password });
+        validateLoginResponse(data);
+
+        const userData: User = {
+          username: data.username!,
+          role: data.role as Role,
+        };
+
+        saveAuthToStorage(data.accessToken!, data.refreshToken!, userData);
+        setUser(userData);
+        queryClient.clear();
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        if (errorMessage) {
+          throw new Error(errorMessage);
+        }
+        throw error;
+      }
+    },
+    [saveAuthToStorage, queryClient]
+  );
+
+  /**
+   * ログアウト
+   */
+  const logout = useCallback(() => {
+    clearAuthStorage();
+    setUser(null);
+    queryClient.clear();
+  }, [clearAuthStorage, queryClient]);
+
+  /**
+   * ロールチェック
+   */
+  const hasRole = useCallback(
+    (role: Role): boolean => {
+      if (!user) return false;
+      if (user.role === 'ADMIN') return true;
+      return user.role === role;
+    },
+    [user]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      login,
+      logout,
+      hasRole,
+    }),
+    [user, isLoading, login, logout, hasRole]
+  );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
+
+export { AuthContext };
+export type { AuthContextType } from '../types/auth';

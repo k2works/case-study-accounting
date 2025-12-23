@@ -18,6 +18,26 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
 
+    <!-- Spring DI のコンストラクタインジェクションパターン (Service, Repository, Controller) -->
+    <Match>
+        <Class name="~.*Service"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="~.*RepositoryImpl"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="~.*Controller"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- JwtService のコンストラクタ例外スローを許可 (初期化時の設定検証) -->
+    <Match>
+        <Class name="com.example.accounting.infrastructure.security.JwtService"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
     <!-- Record クラスのコンストラクタ警告を除外 -->
     <Match>
         <Bug pattern="EI_EXPOSE_REP"/>
@@ -27,6 +47,10 @@
     <!-- Record クラスの getter 警告を除外 -->
     <Match>
         <Bug pattern="EI_EXPOSE_REP"/>
+        <Class name="~.*Response"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
         <Class name="~.*Response"/>
     </Match>
 

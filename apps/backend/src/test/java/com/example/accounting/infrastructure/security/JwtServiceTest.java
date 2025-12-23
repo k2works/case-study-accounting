@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,7 +24,7 @@ class JwtServiceTest {
     @BeforeEach
     void setUp() {
         JwtProperties properties = new JwtProperties(SECRET, EXPIRATION, REFRESH_EXPIRATION);
-        jwtService = new JwtService(properties);
+        jwtService = new JwtService(properties, Clock.systemDefaultZone());
     }
 
     @Nested
@@ -50,9 +51,10 @@ class JwtServiceTest {
             String token = jwtService.generateToken(subject, claims);
 
             Optional<Claims> extractedClaims = jwtService.extractClaims(token);
-            assertThat(extractedClaims).isPresent();
-            assertThat(extractedClaims.get().get("role")).isEqualTo("ADMIN");
-            assertThat(extractedClaims.get().get("userId")).isEqualTo(123);
+            assertThat(extractedClaims).isPresent()
+                    .hasValueSatisfying(c -> assertThat(c)
+                            .containsEntry("role", "ADMIN")
+                            .containsEntry("userId", 123));
         }
 
         @Test

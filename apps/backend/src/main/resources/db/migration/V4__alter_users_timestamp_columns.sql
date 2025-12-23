@@ -1,0 +1,7 @@
+-- TIMESTAMP WITH TIME ZONE を TIMESTAMP に変更
+-- LocalDateTime と互換性を持たせるため
+
+ALTER TABLE users
+    ALTER COLUMN last_login_at TYPE TIMESTAMP,
+    ALTER COLUMN created_at TYPE TIMESTAMP,
+    ALTER COLUMN updated_at TYPE TIMESTAMP;

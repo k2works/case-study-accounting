@@ -28,11 +28,12 @@ class HealthControllerIntegrationTest {
                 .retrieve()
                 .body(Map.class);
 
-        assertThat(response).isNotNull();
-        assertThat(response.get("status")).isEqualTo("UP");
+        assertThat(response).isNotNull()
+                .containsEntry("status", "UP");
 
+        @SuppressWarnings("unchecked")
         Map<String, Object> database = (Map<String, Object>) response.get("database");
-        assertThat(database.get("status")).isEqualTo("UP");
-        assertThat(database.get("product")).isEqualTo("PostgreSQL");
+        assertThat(database).containsEntry("status", "UP")
+                .containsEntry("product", "PostgreSQL");
     }
 }

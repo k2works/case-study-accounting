@@ -1,7 +1,8 @@
 # プロジェクトポータル
 
-## 開発ツール
-
+- [フロントエンド](http://localhost:3001){:target="_blank"} - React アプリケーション
+- [バックエンド API](http://localhost:8081){:target="_blank"} - Spring Boot API サーバー
+- [Swagger UI](http://localhost:8081/swagger-ui.html){:target="_blank"} - API ドキュメント
 - [Adminer](http://localhost:8888){:target="_blank"} - データベース管理ツール
 - [SonarQube](http://localhost:9000){:target="_blank"} - コード品質分析ツール
 - [SchemaSpy ER 図](./assets/schemaspy-output/index.html){:target="_blank"} - データベース ER 図
@@ -45,8 +46,12 @@
 - [バックエンド構築手順書](./operation/backend_setup.md) - バックエンド環境のセットアップ手順
 - [バックエンドデモ環境](./operation/backend_demo_env.md) - H2 インメモリデータベースを使用したデモ環境
 - [フロントエンド構築手順書](./operation/frontend_setup.md) - フロントエンド環境のセットアップ手順
+- [フロントエンド開発手順](./operation/frontend_dev.md) - フロントエンド開発の日常的な手順
+- [フロントエンド共通 UI](./operation/frontend_common_ui.md) - 共通レイアウト・UI コンポーネント
 - [フロントエンドデモ環境](./operation/frontend_demo_env.md) - nginx を使用したデモ環境
 - [SonarQube セットアップガイド](./operation/sonarqube_setup.md) - コード品質分析環境の構築
+- [E2E テスト実行手順書](./operation/e2e_test.md) - Cypress と MSW を使った E2E テストの実行方法
+- [GitHub Project 運用ガイド](./operation/github_project.md) - GitHub Projects V2 によるプロジェクト管理
 
 ## リファレンス
 

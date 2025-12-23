@@ -107,14 +107,14 @@ export default function (gulp) {
     ));
 
     /**
-     * フロントエンドの Docker イメージをビルドする
+     * フロントエンドの Docker イメージをビルドする（デモモード有効）
      */
     gulp.task('deploy:frontend:build', (done) => {
         try {
-            console.log('Building frontend Docker image...');
+            console.log('Building frontend Docker image (demo mode enabled)...');
             console.log(`Context: ${FRONTEND_DIR}`);
 
-            execSync(`docker build -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
+            execSync(`docker build --build-arg VITE_DEMO_MODE=true -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });

@@ -8,7 +8,14 @@
     "docs:serve": "gulp mkdocs:serve",
     "docs:stop": "gulp mkdocs:stop",
     "docs:build": "gulp mkdocs:build",
-    "claude:yol": "claude --dangerously-skip-permissions"
+    "claude:yol": "claude --dangerously-skip-permissions",
+    "prepare": "husky",
+    "frontend:lint": "cd apps/frontend && npm run lint",
+    "frontend:format": "cd apps/frontend && npm run format:check",
+    "frontend:test": "cd apps/frontend && npm run test:run",
+    "frontend:check": "cd apps/frontend && npm run lint && npm run format:check",
+    "frontend:build": "cd apps/frontend && npm run build",
+    "backend:check": "apps\\backend\\gradlew.bat -p apps/backend check"
   },
   "repository": {
     "type": "git",
@@ -28,5 +35,13 @@
   "type": "module",
   "dependencies": {
     "gulp": "^5.0.0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+    "apps/frontend/src/**/*.{ts,tsx}": "npm run frontend:check",
+    "apps/frontend/src/**/*.css": "npm run frontend:format"
   }
 }

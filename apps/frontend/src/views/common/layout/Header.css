@@ -1,0 +1,61 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  padding: 0 20px;
+  background-color: #1a237e;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+}
+
+.header__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header__username {
+  font-size: 0.875rem;
+}
+
+.header__logout-btn {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  color: #1a237e;
+  background-color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.header__logout-btn:hover {
+  background-color: #e3f2fd;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 767px) {
+  .header {
+    padding: 0 12px;
+  }
+
+  .header__title {
+    font-size: 1rem;
+  }
+
+  .header__username {
+    display: none;
+  }
+}

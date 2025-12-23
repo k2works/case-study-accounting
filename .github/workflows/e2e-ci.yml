@@ -1,0 +1,64 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/frontend/**'
+      - '.github/workflows/e2e-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/frontend/**'
+      - '.github/workflows/e2e-ci.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: apps/frontend
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: apps/frontend/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Generate API client
+      run: npm run api:generate
+
+    - name: Start dev server with MSW
+      run: npm run dev:e2e &
+
+    - name: Wait for server
+      run: npx wait-on http://localhost:3000 --timeout 60000
+
+    - name: Run Cypress tests
+      run: npm run e2e
+
+    - name: Upload screenshots on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: cypress-screenshots
+        path: apps/frontend/cypress/screenshots
+        if-no-files-found: ignore
+
+    - name: Upload videos on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: cypress-videos
+        path: apps/frontend/cypress/videos
+        if-no-files-found: ignore
