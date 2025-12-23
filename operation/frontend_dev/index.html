@@ -1,0 +1,6145 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="財務会計システムの設計・開発ドキュメント">
+      
+      
+        <meta name="author" content="Project Team">
+      
+      
+      
+        <link rel="prev" href="../frontend_setup/">
+      
+      
+        <link rel="next" href="../frontend_common_ui/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>フロントエンド開発手順 - 財務会計システム ケーススタディ</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="財務会計システム ケーススタディ" class="md-header__button md-logo" aria-label="財務会計システム ケーススタディ" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            財務会計システム ケーススタディ
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              フロントエンド開発手順
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/k2works/case-study-accounting" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    case-study-accounting
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../requirements/requirements_definition/" class="md-tabs__link">
+          
+  
+  
+  要件定義
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../design/architecture_backend/" class="md-tabs__link">
+          
+  
+  
+  設計
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/release_plan/" class="md-tabs__link">
+          
+  
+  
+  開発
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../dev_env/" class="md-tabs__link">
+          
+  
+  
+  運用
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/%E9%96%8B%E7%99%BA%E3%82%AC%E3%82%A4%E3%83%89/" class="md-tabs__link">
+          
+  
+  
+  リファレンス
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../template/ADR/" class="md-tabs__link">
+          
+  
+  
+  テンプレート
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../article/" class="md-tabs__link">
+          
+  
+  
+  実践ガイド
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../article/functional-java/" class="md-tabs__link">
+          
+  
+  
+  関数型プログラミング実践ガイド
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="財務会計システム ケーススタディ" class="md-nav__button md-logo" aria-label="財務会計システム ケーススタディ" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    財務会計システム ケーススタディ
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/k2works/case-study-accounting" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    case-study-accounting
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    要件定義
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    要件定義
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../requirements/requirements_definition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    要件定義書
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../requirements/business_usecase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ビジネスユースケース
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../requirements/system_usecase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    システムユースケース
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../requirements/user_story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ユーザーストーリー
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    設計
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    設計
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    アーキテクチャ
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    アーキテクチャ
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/architecture_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    バックエンド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/architecture_frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    フロントエンド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/architecture_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    インフラストラクチャ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    モデル設計
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    モデル設計
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    データモデル
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/domain-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ドメインモデル
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/ui-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI 設計
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/test_strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト戦略
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/non_functional/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    非機能要件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/operation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    運用要件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/tech_stack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    技術スタック選定
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    開発
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    開発
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/release_plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    リリース計画
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション計画
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    イテレーション計画
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/iteration_plan-1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    運用
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    運用
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    開発環境解説
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    開発コンテナ構築手順書
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend_setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    バックエンド構築手順書
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend_demo_env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    バックエンドデモ環境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend_setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    フロントエンド構築手順書
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    フロントエンド開発手順
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    フロントエンド開発手順
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        前提条件
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        開発フロー概要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 開発サーバーの起動
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 開発サーバーの起動">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        通常の開発
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guard モード（推奨）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. API クライアントの生成
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. API クライアントの生成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        バックエンドから OpenAPI 仕様を取得
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        生成されるファイル
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        生成コードの使用例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 新規ページの追加
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 新規ページの追加">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 ページコンポーネントの作成
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 ルーティングの追加
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 サイドバーへの追加
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Container コンポーネントの実装
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Container コンポーネントの実装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 基本構造
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Container の責務
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. View コンポーネントの実装
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. View コンポーネントの実装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 一覧表示（Collection）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 テーブル表示
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 フォーム
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 View の責務
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. テストの作成
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. テストの作成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 View コンポーネントのテスト
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Container コンポーネントのテスト
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-msw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 MSW ハンドラーの追加
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 テストの実行
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 品質チェック
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 品質チェック">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 全体チェック
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 個別チェック
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. デバッグ
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. デバッグ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-react-developer-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 React Developer Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-tanstack-query-devtools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 TanStack Query Devtools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 API リクエストの確認
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-msw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 MSW の確認
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. よくあるパターン
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. よくあるパターン">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 ページネーション
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 検索・フィルター
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 確認ダイアログ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 成功通知
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. コーディング規約
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. コーディング規約">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 命名規則
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 ファイル配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 インポート順序
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        関連ドキュメント
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend_common_ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    フロントエンド共通 UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend_demo_env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    フロントエンドデモ環境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    デモ環境デプロイ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../third_party_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    外部サービス連携
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sonarqube_setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SonarQube セットアップガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../e2e_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E2E テスト実行手順書
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../github_project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Project 運用ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    リファレンス
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    リファレンス
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E9%96%8B%E7%99%BA%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    開発ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%82%88%E3%81%84%E3%82%BD%E3%83%95%E3%83%88%E3%82%A6%E3%82%A7%E3%82%A2%E3%81%A8%E3%81%AF/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    よいソフトウェアとは
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%82%B3%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E3%81%A8%E3%83%86%E3%82%B9%E3%83%88%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    コーディングとテストガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E8%A8%AD%E8%A8%88%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    アーキテクチャ設計ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%83%87%E3%83%BC%E3%82%BF%E3%83%A2%E3%83%87%E3%83%AB%E8%A8%AD%E8%A8%88%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    データモデル設計ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%83%89%E3%83%A1%E3%82%A4%E3%83%B3%E3%83%A2%E3%83%87%E3%83%AB%E8%A8%AD%E8%A8%88%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ドメインモデル設計ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/UI%E8%A8%AD%E8%A8%88%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI設計ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%83%86%E3%82%B9%E3%83%88%E6%88%A6%E7%95%A5%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト戦略ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E9%9D%9E%E6%A9%9F%E8%83%BD%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    非機能要件定義ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E9%81%8B%E7%94%A8%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    運用要件定義ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    要件定義ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9%E4%BD%9C%E6%88%90%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ユースケース作成ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E3%83%BB%E3%82%A4%E3%83%86%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E8%A8%88%E7%94%BB%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    リリース・イテレーション計画ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%88%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    エクストリームプログラミング
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E8%A8%AD%E8%A8%88%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    インフラ設計ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/Java%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E7%92%B0%E5%A2%83%E6%A7%8B%E7%AF%89%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Javaアプリケーション環境構築ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/TypeScript%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E7%92%B0%E5%A2%83%E6%A7%8B%E7%AF%89%E3%82%AC%E3%82%A4%E3%83%89/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TypeScriptアプリケーション環境構築ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テンプレート
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    テンプレート
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../template/ADR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../template/%E3%82%A4%E3%83%86%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E5%AE%8C%E4%BA%86%E5%A0%B1%E5%91%8A%E6%9B%B8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション完了報告書
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../template/%E3%82%A4%E3%83%B3%E3%82%BB%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3%E3%83%87%E3%83%83%E3%82%AD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    インセプションデッキ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../template/%E3%81%BE%E3%81%9A%E3%81%93%E3%82%8C%E3%82%92%E8%AA%AD%E3%82%82%E3%81%86%E3%83%AA%E3%82%B9%E3%83%88/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    まずこれを読もうリスト
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../template/%E5%AE%8C%E5%85%A8%E5%BD%A2%E5%BC%8F%E3%81%AE%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    完全形式のユースケース
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../template/%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    要件定義
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../template/%E8%A8%AD%E8%A8%88/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    設計
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    実践ガイド
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    実践ガイド
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概要
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_2" id="__nav_8_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    バックエンド編（Java版）
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    バックエンド編（Java版）
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter00/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    はじめに
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter03/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter04/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter08/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter09/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter12/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter13/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter14/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第14章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter15/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第15章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter16/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第16章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter17/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第17章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter18/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第18章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter19/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第19章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter20/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第20章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter21/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第21章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter22/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第22章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter23/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第23章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter24/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第24章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter25/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第25章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第26章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter27/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第27章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter28/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第28章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第29章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter30/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第30章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter31/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第31章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/backend/chapter32/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第32章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_3" id="__nav_8_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    フロントエンド編（React版）
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    フロントエンド編（React版）
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter00/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    はじめに
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter03/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter04/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter08/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter09/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter12/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter13/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter14/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第14章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter15/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第15章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter16/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第16章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter17/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第17章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter18/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第18章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter19/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第19章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter20/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第20章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter21/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第21章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter22/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第22章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter23/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第23章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/frontend/chapter24/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第24章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    関数型プログラミング実践ガイド
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    関数型プログラミング実践ガイド
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_1" id="__nav_9_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    関数型プログラミング（Java版）
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    関数型プログラミング（Java版）
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/functional-java/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    はじめに
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/functional-java/part-1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part I 基礎
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/functional-java/part-2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part II 関数型スタイル
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/functional-java/part-3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part III エラーハンドリング
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/functional-java/part-4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part IV IO と副作用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/functional-java/part-5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part V 並行処理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../article/functional-java/part-6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part VI 実践
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="_1">フロントエンド開発手順解説<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">概要<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>本ドキュメントは、財務会計システムのフロントエンド開発における日常的な開発手順を解説します。
+Container / View パターンに基づいた機能追加・修正の具体的な手順を示します。</p>
+<h2 id="_3">前提条件<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../frontend_setup/">フロントエンド構築手順書</a> に従って環境構築が完了していること</li>
+<li><a href="../frontend_common_ui/">フロントエンド共通 UI コンポーネント</a> を理解していること</li>
+</ul>
+<h2 id="_4">開発フロー概要<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>1. API 仕様の確認・生成
+   ↓
+2. ページコンポーネントの作成
+   ↓
+3. Container コンポーネントの実装
+   ↓
+4. View コンポーネントの実装
+   ↓
+5. テストの作成・実行
+   ↓
+6. 品質チェック・コミット
+</code></pre></div>
+<hr />
+<h2 id="1">1. 開発サーバーの起動<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<h3 id="_5">通常の開発<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>apps/frontend
+npm<span class="w"> </span>run<span class="w"> </span>dev
+</code></pre></div>
+<p>ブラウザで http://localhost:3000 が自動的に開きます。</p>
+<h3 id="guard">Guard モード（推奨）<a class="headerlink" href="#guard" title="Permanent link">&para;</a></h3>
+<p>ファイル変更時に自動で lint、format、test を実行:</p>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>run<span class="w"> </span>guard
+</code></pre></div>
+<hr />
+<h2 id="2-api">2. API クライアントの生成<a class="headerlink" href="#2-api" title="Permanent link">&para;</a></h2>
+<h3 id="openapi">バックエンドから OpenAPI 仕様を取得<a class="headerlink" href="#openapi" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># バックエンドが http://localhost:8080 で起動している状態で</span>
+npm<span class="w"> </span>run<span class="w"> </span>api:fetch
+</code></pre></div>
+<p>このコマンドは以下を実行します:
+1. バックエンドから <code>openapi.yaml</code> を取得
+2. Orval で API クライアントを自動生成</p>
+<h3 id="_6">生成されるファイル<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>src/api/
+├── generated/        # API クライアント（編集禁止）
+│   ├── 認証/
+│   │   └── 認証.ts
+│   ├── 勘定科目/
+│   │   └── 勘定科目.ts
+│   └── ...
+├── model/            # 型定義（編集禁止）
+│   ├── loginRequest.ts
+│   ├── loginResponse.ts
+│   └── index.ts
+└── axios-instance.ts # カスタム設定（編集可）
+</code></pre></div>
+<h3 id="_7">生成コードの使用例<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useGetAccounts</span><span class="p">,</span><span class="w"> </span><span class="nx">useCreateAccount</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/generated/勘定科目/勘定科目&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountResponse</span><span class="p">,</span><span class="w"> </span><span class="nx">AccountRequest</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/model&#39;</span><span class="p">;</span>
+
+<span class="c1">// データ取得</span>
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">accounts</span><span class="p">,</span><span class="w"> </span><span class="nx">isLoading</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useGetAccounts</span><span class="p">();</span>
+
+<span class="c1">// データ作成</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">createMutation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useCreateAccount</span><span class="p">();</span>
+<span class="nx">createMutation</span><span class="p">.</span><span class="nx">mutate</span><span class="p">({</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">newAccount</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+<hr />
+<h2 id="3">3. 新規ページの追加<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1 ページコンポーネントの作成<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p>ページコンポーネントはルーティングのエントリポイントです。</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/pages/master/AccountPage.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">MainLayout</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/layout/MainLayout&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountContainer</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/components/master/account/AccountContainer&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">AccountPage</span><span class="o">:</span><span class="w"> </span><span class="kt">React.FC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">breadcrumbs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;ホーム&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">path</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;/&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;マスタ管理&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;勘定科目&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">];</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="nx">MainLayout</span><span class="w"> </span><span class="nx">breadcrumbs</span><span class="o">=</span><span class="p">{</span><span class="nx">breadcrumbs</span><span class="p">}</span><span class="o">&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">AccountContainer</span><span class="w"> </span><span class="o">/&gt;</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="err">/MainLayout&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">AccountPage</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="32">3.2 ルーティングの追加<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/App.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">lazy</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Routes</span><span class="p">,</span><span class="w"> </span><span class="nx">Route</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react-router-dom&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">AccountPage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">lazy</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="k">import</span><span class="p">(</span><span class="s1">&#39;./pages/master/AccountPage&#39;</span><span class="p">));</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">App</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="nx">Routes</span><span class="o">&gt;</span>
+<span class="w">      </span><span class="p">{</span><span class="cm">/* 既存のルート */</span><span class="p">}</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">Route</span><span class="w"> </span><span class="nx">path</span><span class="o">=</span><span class="s2">&quot;/master/accounts&quot;</span><span class="w"> </span><span class="nx">element</span><span class="o">=</span><span class="p">{</span><span class="o">&lt;</span><span class="nx">AccountPage</span><span class="w"> </span><span class="o">/&gt;</span><span class="p">}</span><span class="w"> </span><span class="o">/&gt;</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="err">/Routes&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="33">3.3 サイドバーへの追加<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/views/common/layout/Sidebar.tsx</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">MENU_ITEMS</span><span class="o">:</span><span class="w"> </span><span class="kt">MenuItem</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;master&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;マスタ管理&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">icon</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;settings&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">children</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;master-accounts&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;勘定科目&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">path</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;/master/accounts&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="c1">// 新しいメニュー項目を追加</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">];</span>
+</code></pre></div>
+<hr />
+<h2 id="4-container">4. Container コンポーネントの実装<a class="headerlink" href="#4-container" title="Permanent link">&para;</a></h2>
+<p>Container はデータ取得・状態管理を担当します。</p>
+<h3 id="41">4.1 基本構造<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/components/master/account/AccountContainer.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useState</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useQueryClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@tanstack/react-query&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">useGetAccounts</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">useCreateAccount</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">useUpdateAccount</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">useDeleteAccount</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">getGetAccountsQueryKey</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/generated/勘定科目/勘定科目&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountResponse</span><span class="p">,</span><span class="w"> </span><span class="nx">AccountRequest</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/model&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountCollection</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/master/account/AccountCollection&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountEditModal</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/master/account/AccountEditModal&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Loading</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/Loading&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">ErrorMessage</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/ErrorMessage&#39;</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">AccountContainer</span><span class="o">:</span><span class="w"> </span><span class="kt">React.FC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">queryClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useQueryClient</span><span class="p">();</span>
+
+<span class="w">  </span><span class="c1">// 1. サーバー状態（TanStack Query）</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">accounts</span><span class="p">,</span><span class="w"> </span><span class="nx">isLoading</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">,</span><span class="w"> </span><span class="nx">refetch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useGetAccounts</span><span class="p">();</span>
+
+<span class="w">  </span><span class="c1">// 2. クライアント状態（useState）</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">isModalOpen</span><span class="p">,</span><span class="w"> </span><span class="nx">setIsModalOpen</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">editingAccount</span><span class="p">,</span><span class="w"> </span><span class="nx">setEditingAccount</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="o">&lt;</span><span class="nx">AccountResponse</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="o">&gt;</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// 3. Mutations</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">createMutation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useCreateAccount</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">onSuccess</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">queryClient</span><span class="p">.</span><span class="nx">invalidateQueries</span><span class="p">({</span><span class="w"> </span><span class="nx">queryKey</span><span class="o">:</span><span class="w"> </span><span class="kt">getGetAccountsQueryKey</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+<span class="w">      </span><span class="nx">handleCloseModal</span><span class="p">();</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">updateMutation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useUpdateAccount</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">onSuccess</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">queryClient</span><span class="p">.</span><span class="nx">invalidateQueries</span><span class="p">({</span><span class="w"> </span><span class="nx">queryKey</span><span class="o">:</span><span class="w"> </span><span class="kt">getGetAccountsQueryKey</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+<span class="w">      </span><span class="nx">handleCloseModal</span><span class="p">();</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">deleteMutation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useDeleteAccount</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">onSuccess</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">queryClient</span><span class="p">.</span><span class="nx">invalidateQueries</span><span class="p">({</span><span class="w"> </span><span class="nx">queryKey</span><span class="o">:</span><span class="w"> </span><span class="kt">getGetAccountsQueryKey</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="c1">// 4. イベントハンドラ</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleCreateClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">setEditingAccount</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">setIsModalOpen</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleEditClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">account</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">setEditingAccount</span><span class="p">(</span><span class="nx">account</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">setIsModalOpen</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleDeleteClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">account</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">deleteMutation</span><span class="p">.</span><span class="nx">mutate</span><span class="p">({</span><span class="w"> </span><span class="nx">accountCode</span><span class="o">:</span><span class="w"> </span><span class="kt">account.accountCode</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleSave</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountRequest</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">editingAccount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">updateMutation</span><span class="p">.</span><span class="nx">mutate</span><span class="p">({</span><span class="w"> </span><span class="nx">accountCode</span><span class="o">:</span><span class="w"> </span><span class="kt">editingAccount.accountCode</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">createMutation</span><span class="p">.</span><span class="nx">mutate</span><span class="p">({</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleCloseModal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">setIsModalOpen</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">setEditingAccount</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="c1">// 5. 条件分岐レンダリング</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">isLoading</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">&lt;</span><span class="nx">Loading</span><span class="w"> </span><span class="nx">message</span><span class="o">=</span><span class="s2">&quot;勘定科目を読み込み中...&quot;</span><span class="w"> </span><span class="o">/&gt;</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">&lt;</span><span class="nx">ErrorMessage</span><span class="w"> </span><span class="nx">message</span><span class="o">=</span><span class="s2">&quot;データの取得に失敗しました&quot;</span><span class="w"> </span><span class="nx">onRetry</span><span class="o">=</span><span class="p">{</span><span class="nx">refetch</span><span class="p">}</span><span class="w"> </span><span class="o">/&gt;</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// 6. 正常表示</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">AccountCollection</span>
+<span class="w">        </span><span class="nx">accounts</span><span class="o">=</span><span class="p">{</span><span class="nx">accounts</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="p">[]}</span>
+<span class="w">        </span><span class="nx">onCreateClick</span><span class="o">=</span><span class="p">{</span><span class="nx">handleCreateClick</span><span class="p">}</span>
+<span class="w">        </span><span class="nx">onEditClick</span><span class="o">=</span><span class="p">{</span><span class="nx">handleEditClick</span><span class="p">}</span>
+<span class="w">        </span><span class="nx">onDeleteClick</span><span class="o">=</span><span class="p">{</span><span class="nx">handleDeleteClick</span><span class="p">}</span>
+<span class="w">      </span><span class="o">/&gt;</span>
+<span class="w">      </span><span class="p">{</span><span class="nx">isModalOpen</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">AccountEditModal</span>
+<span class="w">          </span><span class="nx">account</span><span class="o">=</span><span class="p">{</span><span class="nx">editingAccount</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">onSave</span><span class="o">=</span><span class="p">{</span><span class="nx">handleSave</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">onCancel</span><span class="o">=</span><span class="p">{</span><span class="nx">handleCloseModal</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">isSubmitting</span><span class="o">=</span><span class="p">{</span><span class="nx">createMutation</span><span class="p">.</span><span class="nx">isPending</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">updateMutation</span><span class="p">.</span><span class="nx">isPending</span><span class="p">}</span>
+<span class="w">        </span><span class="o">/&gt;</span>
+<span class="w">      </span><span class="p">)}</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="err">/&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="42-container">4.2 Container の責務<a class="headerlink" href="#42-container" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>責務</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>データ取得</td>
+<td>TanStack Query でサーバーからデータを取得</td>
+</tr>
+<tr>
+<td>状態管理</td>
+<td>useState でモーダル開閉などの UI 状態を管理</td>
+</tr>
+<tr>
+<td>Mutation</td>
+<td>作成・更新・削除の API 呼び出し</td>
+</tr>
+<tr>
+<td>イベントハンドラ</td>
+<td>View から受け取ったイベントを処理</td>
+</tr>
+<tr>
+<td>キャッシュ更新</td>
+<td>Mutation 成功時にクエリを無効化</td>
+</tr>
+<tr>
+<td>条件分岐</td>
+<td>ローディング・エラー・正常状態の表示制御</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-view">5. View コンポーネントの実装<a class="headerlink" href="#5-view" title="Permanent link">&para;</a></h2>
+<p>View は純粋な UI 描画を担当します。</p>
+<h3 id="51-collection">5.1 一覧表示（Collection）<a class="headerlink" href="#51-collection" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/views/master/account/AccountCollection.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountResponse</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/model&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountTable</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./AccountTable&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Button</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/Button&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="s1">&#39;./AccountCollection.css&#39;</span><span class="p">;</span>
+
+<span class="kd">interface</span><span class="w"> </span><span class="nx">AccountCollectionProps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">accounts</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">[];</span>
+<span class="w">  </span><span class="nx">onCreateClick</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">onEditClick</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">account</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">onDeleteClick</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">account</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">AccountCollection</span><span class="o">:</span><span class="w"> </span><span class="kt">React.FC</span><span class="o">&lt;</span><span class="nx">AccountCollectionProps</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">({</span>
+<span class="w">  </span><span class="nx">accounts</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onCreateClick</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onEditClick</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onDeleteClick</span><span class="p">,</span>
+<span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="nx">div</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-collection&quot;</span><span class="o">&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">div</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-collection__header&quot;</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">勘定科目一覧</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">Button</span><span class="w"> </span><span class="nx">variant</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="w"> </span><span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onCreateClick</span><span class="p">}</span><span class="o">&gt;</span>
+<span class="w">          </span><span class="nx">新規登録</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="err">/Button&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">AccountTable</span>
+<span class="w">        </span><span class="nx">accounts</span><span class="o">=</span><span class="p">{</span><span class="nx">accounts</span><span class="p">}</span>
+<span class="w">        </span><span class="nx">onEdit</span><span class="o">=</span><span class="p">{</span><span class="nx">onEditClick</span><span class="p">}</span>
+<span class="w">        </span><span class="nx">onDelete</span><span class="o">=</span><span class="p">{</span><span class="nx">onDeleteClick</span><span class="p">}</span>
+<span class="w">      </span><span class="o">/&gt;</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="52">5.2 テーブル表示<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/views/master/account/AccountTable.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountResponse</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/model&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Table</span><span class="p">,</span><span class="w"> </span><span class="nx">TableColumn</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/Table&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Button</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/Button&#39;</span><span class="p">;</span>
+
+<span class="kd">interface</span><span class="w"> </span><span class="nx">AccountTableProps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">accounts</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">[];</span>
+<span class="w">  </span><span class="nx">onEdit</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">account</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">onDelete</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">account</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountResponse</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">AccountTable</span><span class="o">:</span><span class="w"> </span><span class="kt">React.FC</span><span class="o">&lt;</span><span class="nx">AccountTableProps</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">({</span>
+<span class="w">  </span><span class="nx">accounts</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onEdit</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onDelete</span><span class="p">,</span>
+<span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">columns</span><span class="o">:</span><span class="w"> </span><span class="kt">TableColumn</span><span class="o">&lt;</span><span class="nx">AccountResponse</span><span class="o">&gt;</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;accountCode&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">header</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;コード&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">width</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;100px&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;accountName&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">header</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;勘定科目名&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;bsplType&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">header</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;区分&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">render</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">value</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="nx">value</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">&#39;B&#39;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;B/S&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;P/L&#39;</span><span class="p">),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;elementType&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">header</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;要素&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;accountCode&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">header</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;操作&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">render</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">_</span><span class="p">,</span><span class="w"> </span><span class="nx">row</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">div</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-table__actions&quot;</span><span class="o">&gt;</span>
+<span class="w">          </span><span class="o">&lt;</span><span class="nx">Button</span><span class="w"> </span><span class="nx">size</span><span class="o">=</span><span class="s2">&quot;small&quot;</span><span class="w"> </span><span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">onEdit</span><span class="p">(</span><span class="nx">row</span><span class="p">)}</span><span class="o">&gt;</span>
+<span class="w">            </span><span class="nx">編集</span>
+<span class="w">          </span><span class="o">&lt;</span><span class="err">/Button&gt;</span>
+<span class="w">          </span><span class="o">&lt;</span><span class="nx">Button</span><span class="w"> </span><span class="nx">size</span><span class="o">=</span><span class="s2">&quot;small&quot;</span><span class="w"> </span><span class="nx">variant</span><span class="o">=</span><span class="s2">&quot;danger&quot;</span><span class="w"> </span><span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">onDelete</span><span class="p">(</span><span class="nx">row</span><span class="p">)}</span><span class="o">&gt;</span>
+<span class="w">            </span><span class="nx">削除</span>
+<span class="w">          </span><span class="o">&lt;</span><span class="err">/Button&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+<span class="w">      </span><span class="p">),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">];</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="nx">Table</span>
+<span class="w">      </span><span class="nx">columns</span><span class="o">=</span><span class="p">{</span><span class="nx">columns</span><span class="p">}</span>
+<span class="w">      </span><span class="nx">data</span><span class="o">=</span><span class="p">{</span><span class="nx">accounts</span><span class="p">}</span>
+<span class="w">      </span><span class="nx">keyField</span><span class="o">=</span><span class="s2">&quot;accountCode&quot;</span>
+<span class="w">      </span><span class="nx">emptyMessage</span><span class="o">=</span><span class="s2">&quot;勘定科目が登録されていません&quot;</span>
+<span class="w">    </span><span class="o">/&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="53">5.3 フォーム<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/views/master/account/AccountForm.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useState</span><span class="p">,</span><span class="w"> </span><span class="nx">FormEvent</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountRequest</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/model&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Button</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/Button&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="s1">&#39;./AccountForm.css&#39;</span><span class="p">;</span>
+
+<span class="kd">interface</span><span class="w"> </span><span class="nx">AccountFormProps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">initialData?</span><span class="o">:</span><span class="w"> </span><span class="kt">Partial</span><span class="o">&lt;</span><span class="nx">AccountRequest</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">onSubmit</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">AccountRequest</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">onCancel</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">void</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">isSubmitting?</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">AccountForm</span><span class="o">:</span><span class="w"> </span><span class="kt">React.FC</span><span class="o">&lt;</span><span class="nx">AccountFormProps</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">({</span>
+<span class="w">  </span><span class="nx">initialData</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onSubmit</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">onCancel</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">isSubmitting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">formData</span><span class="p">,</span><span class="w"> </span><span class="nx">setFormData</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="o">&lt;</span><span class="nx">AccountRequest</span><span class="o">&gt;</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">accountCode</span><span class="o">:</span><span class="w"> </span><span class="kt">initialData?.accountCode</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">accountName</span><span class="o">:</span><span class="w"> </span><span class="kt">initialData?.accountName</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">bsplType</span><span class="o">:</span><span class="w"> </span><span class="kt">initialData?.bsplType</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">debitCreditType</span><span class="o">:</span><span class="w"> </span><span class="kt">initialData?.debitCreditType</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">&#39;借&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">elementType</span><span class="o">:</span><span class="w"> </span><span class="kt">initialData?.elementType</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">&#39;資産&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">displayOrder</span><span class="o">:</span><span class="w"> </span><span class="kt">initialData?.displayOrder</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleSubmit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">e</span><span class="o">:</span><span class="w"> </span><span class="kt">FormEvent</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+<span class="w">    </span><span class="nx">onSubmit</span><span class="p">(</span><span class="nx">formData</span><span class="p">);</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="nx">e</span><span class="o">:</span><span class="w"> </span><span class="kt">React.ChangeEvent</span><span class="o">&lt;</span><span class="nx">HTMLInputElement</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nx">HTMLSelectElement</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">setFormData</span><span class="p">((</span><span class="nx">prev</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="p">...</span><span class="nx">prev</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nx">name</span><span class="p">]</span><span class="o">:</span><span class="w"> </span><span class="nx">value</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="nx">form</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-form&quot;</span><span class="w"> </span><span class="nx">onSubmit</span><span class="o">=</span><span class="p">{</span><span class="nx">handleSubmit</span><span class="p">}</span><span class="o">&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">div</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-form__field&quot;</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">label</span><span class="w"> </span><span class="nx">htmlFor</span><span class="o">=</span><span class="s2">&quot;accountCode&quot;</span><span class="o">&gt;</span><span class="nx">勘定科目コード</span><span class="o">&lt;</span><span class="err">/label&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">input</span>
+<span class="w">          </span><span class="nx">id</span><span class="o">=</span><span class="s2">&quot;accountCode&quot;</span>
+<span class="w">          </span><span class="nx">name</span><span class="o">=</span><span class="s2">&quot;accountCode&quot;</span>
+<span class="w">          </span><span class="kr">type</span><span class="o">=</span><span class="s2">&quot;text&quot;</span>
+<span class="w">          </span><span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">formData</span><span class="p">.</span><span class="nx">accountCode</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">handleChange</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">required</span>
+<span class="w">          </span><span class="nx">disabled</span><span class="o">=</span><span class="p">{</span><span class="o">!!</span><span class="nx">initialData</span><span class="o">?</span><span class="p">.</span><span class="nx">accountCode</span><span class="p">}</span>
+<span class="w">        </span><span class="o">/&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">div</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-form__field&quot;</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">label</span><span class="w"> </span><span class="nx">htmlFor</span><span class="o">=</span><span class="s2">&quot;accountName&quot;</span><span class="o">&gt;</span><span class="nx">勘定科目名</span><span class="o">&lt;</span><span class="err">/label&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">input</span>
+<span class="w">          </span><span class="nx">id</span><span class="o">=</span><span class="s2">&quot;accountName&quot;</span>
+<span class="w">          </span><span class="nx">name</span><span class="o">=</span><span class="s2">&quot;accountName&quot;</span>
+<span class="w">          </span><span class="kr">type</span><span class="o">=</span><span class="s2">&quot;text&quot;</span>
+<span class="w">          </span><span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">formData</span><span class="p">.</span><span class="nx">accountName</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">handleChange</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">required</span>
+<span class="w">        </span><span class="o">/&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">div</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-form__field&quot;</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">label</span><span class="w"> </span><span class="nx">htmlFor</span><span class="o">=</span><span class="s2">&quot;bsplType&quot;</span><span class="o">&gt;</span><span class="nx">B</span><span class="o">/</span><span class="nx">S</span><span class="err">・</span><span class="nx">P</span><span class="o">/</span><span class="nx">L</span><span class="w"> </span><span class="nx">区分</span><span class="o">&lt;</span><span class="err">/label&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">select</span>
+<span class="w">          </span><span class="nx">id</span><span class="o">=</span><span class="s2">&quot;bsplType&quot;</span>
+<span class="w">          </span><span class="nx">name</span><span class="o">=</span><span class="s2">&quot;bsplType&quot;</span>
+<span class="w">          </span><span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">formData</span><span class="p">.</span><span class="nx">bsplType</span><span class="p">}</span>
+<span class="w">          </span><span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">handleChange</span><span class="p">}</span>
+<span class="w">        </span><span class="o">&gt;</span>
+<span class="w">          </span><span class="o">&lt;</span><span class="nx">option</span><span class="w"> </span><span class="nx">value</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="o">&gt;</span><span class="nx">B</span><span class="o">/</span><span class="nx">S</span><span class="err">（</span><span class="nx">貸借対照表</span><span class="err">）</span><span class="o">&lt;</span><span class="err">/option&gt;</span>
+<span class="w">          </span><span class="o">&lt;</span><span class="nx">option</span><span class="w"> </span><span class="nx">value</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="o">&gt;</span><span class="nx">P</span><span class="o">/</span><span class="nx">L</span><span class="err">（</span><span class="nx">損益計算書</span><span class="err">）</span><span class="o">&lt;</span><span class="err">/option&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="err">/select&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">div</span><span class="w"> </span><span class="nx">className</span><span class="o">=</span><span class="s2">&quot;account-form__actions&quot;</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">Button</span><span class="w"> </span><span class="kr">type</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="w"> </span><span class="nx">variant</span><span class="o">=</span><span class="s2">&quot;secondary&quot;</span><span class="w"> </span><span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onCancel</span><span class="p">}</span><span class="o">&gt;</span>
+<span class="w">          </span><span class="nx">キャンセル</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="err">/Button&gt;</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="nx">Button</span><span class="w"> </span><span class="kr">type</span><span class="o">=</span><span class="s2">&quot;submit&quot;</span><span class="w"> </span><span class="nx">variant</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="w"> </span><span class="nx">isLoading</span><span class="o">=</span><span class="p">{</span><span class="nx">isSubmitting</span><span class="p">}</span><span class="o">&gt;</span>
+<span class="w">          </span><span class="nx">保存</span>
+<span class="w">        </span><span class="o">&lt;</span><span class="err">/Button&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="err">/form&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="54-view">5.4 View の責務<a class="headerlink" href="#54-view" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>責務</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI 描画</td>
+<td>props に基づいた表示</td>
+</tr>
+<tr>
+<td>イベント発火</td>
+<td>ユーザー操作を親に通知</td>
+</tr>
+<tr>
+<td>スタイリング</td>
+<td>CSS によるデザイン</td>
+</tr>
+<tr>
+<td>バリデーション表示</td>
+<td>エラーメッセージの表示</td>
+</tr>
+</tbody>
+</table>
+<p><strong>View がやってはいけないこと:</strong>
+- API 呼び出し
+- グローバル状態へのアクセス
+- 副作用（useEffect での API コール等）</p>
+<hr />
+<h2 id="6">6. テストの作成<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<h3 id="61-view">6.1 View コンポーネントのテスト<a class="headerlink" href="#61-view" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/views/master/account/AccountCollection.test.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">render</span><span class="p">,</span><span class="w"> </span><span class="nx">screen</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@testing-library/react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">userEvent</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@testing-library/user-event&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountCollection</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./AccountCollection&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">mockAccounts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">accountCode</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;111&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">accountName</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;現金預金&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">bsplType</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">debitCreditType</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;借&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">elementType</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;資産&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">displayOrder</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">];</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;AccountCollection&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;勘定科目一覧が表示される&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">render</span><span class="p">(</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">AccountCollection</span>
+<span class="w">        </span><span class="nx">accounts</span><span class="o">=</span><span class="p">{</span><span class="nx">mockAccounts</span><span class="p">}</span>
+<span class="w">        </span><span class="nx">onCreateClick</span><span class="o">=</span><span class="p">{</span><span class="nx">vi</span><span class="p">.</span><span class="nx">fn</span><span class="p">()}</span>
+<span class="w">        </span><span class="nx">onEditClick</span><span class="o">=</span><span class="p">{</span><span class="nx">vi</span><span class="p">.</span><span class="nx">fn</span><span class="p">()}</span>
+<span class="w">        </span><span class="nx">onDeleteClick</span><span class="o">=</span><span class="p">{</span><span class="nx">vi</span><span class="p">.</span><span class="nx">fn</span><span class="p">()}</span>
+<span class="w">      </span><span class="o">/&gt;</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="nx">expect</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByText</span><span class="p">(</span><span class="s1">&#39;現金預金&#39;</span><span class="p">)).</span><span class="nx">toBeInTheDocument</span><span class="p">();</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;新規登録ボタンをクリックするとonCreateClickが呼ばれる&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">userEvent</span><span class="p">.</span><span class="nx">setup</span><span class="p">();</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">onCreateClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">vi</span><span class="p">.</span><span class="nx">fn</span><span class="p">();</span>
+
+<span class="w">    </span><span class="nx">render</span><span class="p">(</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">AccountCollection</span>
+<span class="w">        </span><span class="nx">accounts</span><span class="o">=</span><span class="p">{</span><span class="nx">mockAccounts</span><span class="p">}</span>
+<span class="w">        </span><span class="nx">onCreateClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onCreateClick</span><span class="p">}</span>
+<span class="w">        </span><span class="nx">onEditClick</span><span class="o">=</span><span class="p">{</span><span class="nx">vi</span><span class="p">.</span><span class="nx">fn</span><span class="p">()}</span>
+<span class="w">        </span><span class="nx">onDeleteClick</span><span class="o">=</span><span class="p">{</span><span class="nx">vi</span><span class="p">.</span><span class="nx">fn</span><span class="p">()}</span>
+<span class="w">      </span><span class="o">/&gt;</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByText</span><span class="p">(</span><span class="s1">&#39;新規登録&#39;</span><span class="p">));</span>
+<span class="w">    </span><span class="nx">expect</span><span class="p">(</span><span class="nx">onCreateClick</span><span class="p">).</span><span class="nx">toHaveBeenCalled</span><span class="p">();</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="62-container">6.2 Container コンポーネントのテスト<a class="headerlink" href="#62-container" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/components/master/account/AccountContainer.test.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">render</span><span class="p">,</span><span class="w"> </span><span class="nx">screen</span><span class="p">,</span><span class="w"> </span><span class="nx">waitFor</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@testing-library/react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">userEvent</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@testing-library/user-event&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">QueryClientProvider</span><span class="p">,</span><span class="w"> </span><span class="nx">QueryClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@tanstack/react-query&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountContainer</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./AccountContainer&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">createWrapper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">queryClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">QueryClient</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">defaultOptions</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">queries</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">retry</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">children</span><span class="w"> </span><span class="p">}</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">children</span><span class="o">:</span><span class="w"> </span><span class="kt">React.ReactNode</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="nx">QueryClientProvider</span><span class="w"> </span><span class="nx">client</span><span class="o">=</span><span class="p">{</span><span class="nx">queryClient</span><span class="p">}</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">children</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/QueryClientProvider&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;AccountContainer&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;勘定科目一覧が表示される&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">AccountContainer</span><span class="w"> </span><span class="o">/&gt;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">wrapper</span><span class="o">:</span><span class="w"> </span><span class="kt">createWrapper</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">waitFor</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">expect</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByText</span><span class="p">(</span><span class="s1">&#39;現金預金&#39;</span><span class="p">)).</span><span class="nx">toBeInTheDocument</span><span class="p">();</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;新規登録ボタンでモーダルが開く&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">userEvent</span><span class="p">.</span><span class="nx">setup</span><span class="p">();</span>
+<span class="w">    </span><span class="nx">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">AccountContainer</span><span class="w"> </span><span class="o">/&gt;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">wrapper</span><span class="o">:</span><span class="w"> </span><span class="kt">createWrapper</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">waitFor</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">expect</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByText</span><span class="p">(</span><span class="s1">&#39;新規登録&#39;</span><span class="p">)).</span><span class="nx">toBeInTheDocument</span><span class="p">();</span>
+<span class="w">    </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">user</span><span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByText</span><span class="p">(</span><span class="s1">&#39;新規登録&#39;</span><span class="p">));</span>
+<span class="w">    </span><span class="nx">expect</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByRole</span><span class="p">(</span><span class="s1">&#39;dialog&#39;</span><span class="p">)).</span><span class="nx">toBeInTheDocument</span><span class="p">();</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="63-msw">6.3 MSW ハンドラーの追加<a class="headerlink" href="#63-msw" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/mocks/handlers.ts</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">http</span><span class="p">,</span><span class="w"> </span><span class="nx">HttpResponse</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;msw&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountResponse</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/model&#39;</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">accountHandlers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nx">http</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;*/accounts&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">HttpResponse</span><span class="p">.</span><span class="nx">json</span><span class="o">&lt;</span><span class="nx">AccountResponse</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">([</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">accountCode</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;111&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">accountName</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;現金預金&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">bsplType</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">debitCreditType</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;借&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">elementType</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;資産&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">displayOrder</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">]);</span>
+<span class="w">  </span><span class="p">}),</span>
+
+<span class="w">  </span><span class="nx">http</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;*/accounts&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">request</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">request</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">HttpResponse</span><span class="p">.</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="p">...</span><span class="nx">body</span><span class="p">,</span><span class="w"> </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="kt">201</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}),</span>
+<span class="p">];</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">handlers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[...</span><span class="nx">authHandlers</span><span class="p">,</span><span class="w"> </span><span class="p">...</span><span class="nx">accountHandlers</span><span class="p">];</span>
+</code></pre></div>
+<h3 id="64">6.4 テストの実行<a class="headerlink" href="#64" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 単発実行</span>
+npm<span class="w"> </span>run<span class="w"> </span>test:run
+
+<span class="c1"># ウォッチモード</span>
+npm<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
+
+<span class="c1"># カバレッジ付き</span>
+npm<span class="w"> </span>run<span class="w"> </span>test:coverage
+</code></pre></div>
+<hr />
+<h2 id="7">7. 品質チェック<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<h3 id="71">7.1 全体チェック<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>run<span class="w"> </span>checkAndFix
+</code></pre></div>
+<p>以下を順番に実行:
+1. ESLint（自動修正）
+2. Prettier（フォーマット）
+3. 循環参照チェック
+4. テスト</p>
+<h3 id="72">7.2 個別チェック<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># ESLint</span>
+npm<span class="w"> </span>run<span class="w"> </span>lint
+npm<span class="w"> </span>run<span class="w"> </span>lint:fix
+
+<span class="c1"># フォーマット</span>
+npm<span class="w"> </span>run<span class="w"> </span>format
+npm<span class="w"> </span>run<span class="w"> </span>format:check
+
+<span class="c1"># 循環参照</span>
+npm<span class="w"> </span>run<span class="w"> </span>depcruise
+
+<span class="c1"># ビルド確認</span>
+npm<span class="w"> </span>run<span class="w"> </span>build
+</code></pre></div>
+<hr />
+<h2 id="8">8. デバッグ<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<h3 id="81-react-developer-tools">8.1 React Developer Tools<a class="headerlink" href="#81-react-developer-tools" title="Permanent link">&para;</a></h3>
+<p>ブラウザ拡張機能をインストールして、コンポーネントの状態を確認。</p>
+<h3 id="82-tanstack-query-devtools">8.2 TanStack Query Devtools<a class="headerlink" href="#82-tanstack-query-devtools" title="Permanent link">&para;</a></h3>
+<p>開発環境では自動的に有効化されています。画面右下のアイコンから開けます。</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// src/main.tsx</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">ReactQueryDevtools</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@tanstack/react-query-devtools&#39;</span><span class="p">;</span>
+
+<span class="o">&lt;</span><span class="nx">QueryClientProvider</span><span class="w"> </span><span class="nx">client</span><span class="o">=</span><span class="p">{</span><span class="nx">queryClient</span><span class="p">}</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="nx">App</span><span class="w"> </span><span class="o">/&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="nx">ReactQueryDevtools</span><span class="w"> </span><span class="nx">initialIsOpen</span><span class="o">=</span><span class="p">{</span><span class="kc">false</span><span class="p">}</span><span class="w"> </span><span class="o">/&gt;</span>
+<span class="o">&lt;</span><span class="err">/QueryClientProvider&gt;</span>
+</code></pre></div>
+<h3 id="83-api">8.3 API リクエストの確認<a class="headerlink" href="#83-api" title="Permanent link">&para;</a></h3>
+<p>ブラウザの開発者ツール → Network タブで API リクエストを確認。</p>
+<h3 id="84-msw">8.4 MSW の確認<a class="headerlink" href="#84-msw" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// コンソールでモックが適用されているか確認</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;MSW enabled:&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">import</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">VITE_ENABLE_MSW</span><span class="p">);</span>
+</code></pre></div>
+<hr />
+<h2 id="9">9. よくあるパターン<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<h3 id="91">9.1 ページネーション<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">page</span><span class="p">,</span><span class="w"> </span><span class="nx">setPage</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">itemsPerPage</span><span class="p">,</span><span class="w"> </span><span class="nx">setItemsPerPage</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="mf">20</span><span class="p">);</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useGetAccounts</span><span class="p">({</span><span class="w"> </span><span class="nx">page</span><span class="p">,</span><span class="w"> </span><span class="nx">size</span><span class="o">:</span><span class="w"> </span><span class="kt">itemsPerPage</span><span class="w"> </span><span class="p">});</span>
+
+<span class="o">&lt;</span><span class="nx">Pagination</span>
+<span class="w">  </span><span class="nx">currentPage</span><span class="o">=</span><span class="p">{</span><span class="nx">page</span><span class="p">}</span>
+<span class="w">  </span><span class="nx">totalPages</span><span class="o">=</span><span class="p">{</span><span class="nx">data</span><span class="o">?</span><span class="p">.</span><span class="nx">totalPages</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">}</span>
+<span class="w">  </span><span class="nx">totalItems</span><span class="o">=</span><span class="p">{</span><span class="nx">data</span><span class="o">?</span><span class="p">.</span><span class="nx">totalElements</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">0</span><span class="p">}</span>
+<span class="w">  </span><span class="nx">itemsPerPage</span><span class="o">=</span><span class="p">{</span><span class="nx">itemsPerPage</span><span class="p">}</span>
+<span class="w">  </span><span class="nx">onPageChange</span><span class="o">=</span><span class="p">{</span><span class="nx">setPage</span><span class="p">}</span>
+<span class="w">  </span><span class="nx">onItemsPerPageChange</span><span class="o">=</span><span class="p">{</span><span class="nx">setItemsPerPage</span><span class="p">}</span>
+<span class="err">/&gt;</span>
+</code></pre></div>
+<h3 id="92">9.2 検索・フィルター<a class="headerlink" href="#92" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">searchTerm</span><span class="p">,</span><span class="w"> </span><span class="nx">setSearchTerm</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">debouncedSearch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useDebounce</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">,</span><span class="w"> </span><span class="mf">300</span><span class="p">);</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useGetAccounts</span><span class="p">({</span><span class="w"> </span><span class="nx">keyword</span><span class="o">:</span><span class="w"> </span><span class="kt">debouncedSearch</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+<h3 id="93">9.3 確認ダイアログ<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">deleteTarget</span><span class="p">,</span><span class="w"> </span><span class="nx">setDeleteTarget</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="o">&lt;</span><span class="nx">AccountResponse</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="o">&gt;</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+
+<span class="o">&lt;</span><span class="nx">ConfirmModal</span>
+<span class="w">  </span><span class="nx">isOpen</span><span class="o">=</span><span class="p">{</span><span class="o">!!</span><span class="nx">deleteTarget</span><span class="p">}</span>
+<span class="w">  </span><span class="nx">onClose</span><span class="o">=</span><span class="p">{()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setDeleteTarget</span><span class="p">(</span><span class="kc">null</span><span class="p">)}</span>
+<span class="w">  </span><span class="nx">onConfirm</span><span class="o">=</span><span class="p">{()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">deleteMutation</span><span class="p">.</span><span class="nx">mutate</span><span class="p">({</span><span class="w"> </span><span class="nx">accountCode</span><span class="o">:</span><span class="w"> </span><span class="kt">deleteTarget</span><span class="o">!</span><span class="p">.</span><span class="nx">accountCode</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="nx">setDeleteTarget</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}}</span>
+<span class="w">  </span><span class="nx">title</span><span class="o">=</span><span class="s2">&quot;削除確認&quot;</span>
+<span class="w">  </span><span class="nx">message</span><span class="o">=</span><span class="p">{</span><span class="sb">`「</span><span class="si">${</span><span class="nx">deleteTarget</span><span class="o">?</span><span class="p">.</span><span class="nx">accountName</span><span class="si">}</span><span class="sb">」を削除しますか？`</span><span class="p">}</span>
+<span class="w">  </span><span class="nx">isDestructive</span>
+<span class="err">/&gt;</span>
+</code></pre></div>
+<h3 id="94">9.4 成功通知<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">showSuccess</span><span class="p">,</span><span class="w"> </span><span class="nx">setShowSuccess</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">createMutation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useCreateAccount</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">onSuccess</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">setShowSuccess</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">queryClient</span><span class="p">.</span><span class="nx">invalidateQueries</span><span class="p">({</span><span class="w"> </span><span class="nx">queryKey</span><span class="o">:</span><span class="w"> </span><span class="kt">getGetAccountsQueryKey</span><span class="p">()</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">});</span>
+
+<span class="p">{</span><span class="nx">showSuccess</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="nx">SuccessNotification</span>
+<span class="w">    </span><span class="nx">message</span><span class="o">=</span><span class="s2">&quot;保存が完了しました&quot;</span>
+<span class="w">    </span><span class="nx">onDismiss</span><span class="o">=</span><span class="p">{()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">setShowSuccess</span><span class="p">(</span><span class="kc">false</span><span class="p">)}</span>
+<span class="w">  </span><span class="o">/&gt;</span>
+<span class="p">)}</span>
+</code></pre></div>
+<hr />
+<h2 id="10">10. コーディング規約<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<h3 id="101">10.1 命名規則<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>対象</th>
+<th>規則</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ページ</td>
+<td>〜Page</td>
+<td>AccountPage</td>
+</tr>
+<tr>
+<td>Container</td>
+<td>〜Container</td>
+<td>AccountContainer</td>
+</tr>
+<tr>
+<td>View（一覧）</td>
+<td>〜Collection</td>
+<td>AccountCollection</td>
+</tr>
+<tr>
+<td>View（詳細）</td>
+<td>〜Single / 〜Detail</td>
+<td>AccountDetail</td>
+</tr>
+<tr>
+<td>View（フォーム）</td>
+<td>〜Form</td>
+<td>AccountForm</td>
+</tr>
+<tr>
+<td>View（テーブル）</td>
+<td>〜Table</td>
+<td>AccountTable</td>
+</tr>
+<tr>
+<td>Hook</td>
+<td>use〜</td>
+<td>useAuth</td>
+</tr>
+<tr>
+<td>CSS</td>
+<td>BEM 記法</td>
+<td>.account-form__field</td>
+</tr>
+</tbody>
+</table>
+<h3 id="102">10.2 ファイル配置<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>機能追加時のファイル作成順序:
+
+1. src/pages/xxx/XxxPage.tsx           # ページ
+2. src/components/xxx/XxxContainer.tsx # Container
+3. src/views/xxx/XxxCollection.tsx     # 一覧 View
+4. src/views/xxx/XxxTable.tsx          # テーブル View
+5. src/views/xxx/XxxForm.tsx           # フォーム View
+6. src/views/xxx/Xxx.css               # スタイル
+7. src/mocks/handlers.ts               # モック追加
+8. テストファイル                       # テスト
+</code></pre></div>
+<h3 id="103">10.3 インポート順序<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// 1. React</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useState</span><span class="p">,</span><span class="w"> </span><span class="nx">useEffect</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+
+<span class="c1">// 2. 外部ライブラリ</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useQueryClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@tanstack/react-query&#39;</span><span class="p">;</span>
+
+<span class="c1">// 3. API（生成コード）</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useGetAccounts</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/generated/勘定科目/勘定科目&#39;</span><span class="p">;</span>
+
+<span class="c1">// 4. 型定義</span>
+<span class="k">import</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountResponse</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/api/model&#39;</span><span class="p">;</span>
+
+<span class="c1">// 5. コンポーネント</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">AccountCollection</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/master/account/AccountCollection&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Loading</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/views/common/Loading&#39;</span><span class="p">;</span>
+
+<span class="c1">// 6. フック・ユーティリティ</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useAuth</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@/hooks/useAuth&#39;</span><span class="p">;</span>
+
+<span class="c1">// 7. スタイル</span>
+<span class="k">import</span><span class="w"> </span><span class="s1">&#39;./AccountContainer.css&#39;</span><span class="p">;</span>
+</code></pre></div>
+<hr />
+<h2 id="_8">関連ドキュメント<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../frontend_setup/">フロントエンド構築手順書</a> - 環境構築</li>
+<li><a href="../frontend_common_ui/">フロントエンド共通 UI コンポーネント</a> - 共通コンポーネント</li>
+<li><a href="../../design/architecture_frontend/">フロントエンドアーキテクチャ</a> - 設計思想</li>
+<li><a href="../../design/ui-design/">UI 設計</a> - UI 設計</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/k2works/case-study-accounting" target="_blank" rel="noopener" title="財務会計システム ケーススタディ" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+      
+        <script src="../../assets/js/extra.js"></script>
+      
+    
+  </body>
+</html>
