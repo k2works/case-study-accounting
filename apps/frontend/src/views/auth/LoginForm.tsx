@@ -12,21 +12,24 @@ interface FormErrors {
   password?: string;
 }
 
-// デフォルト認証情報（開発/デモ環境用）
-const DEFAULT_CREDENTIALS = {
-  username: 'admin',
-  password: 'Password123!',
-};
-
 // 開発環境またはデモモードの場合はデフォルト値を設定
 const shouldUseDefaultCredentials = (): boolean => {
   return import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true';
 };
 
-const getInitialFormData = (): FormData => ({
-  username: shouldUseDefaultCredentials() ? DEFAULT_CREDENTIALS.username : '',
-  password: shouldUseDefaultCredentials() ? DEFAULT_CREDENTIALS.password : '',
+// デモ用認証情報を環境変数から取得（開発環境のみ）
+const getDemoCredentials = (): { username: string; password: string } => ({
+  username: import.meta.env.VITE_DEMO_USERNAME || '',
+  password: import.meta.env.VITE_DEMO_PASSWORD || '',
 });
+
+const getInitialFormData = (): FormData => {
+  if (shouldUseDefaultCredentials()) {
+    const demo = getDemoCredentials();
+    return { username: demo.username, password: demo.password };
+  }
+  return { username: '', password: '' };
+};
 
 const validateFormData = (formData: FormData): FormErrors => {
   const newErrors: FormErrors = {};
