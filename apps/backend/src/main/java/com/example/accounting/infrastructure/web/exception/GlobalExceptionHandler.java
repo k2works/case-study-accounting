@@ -97,12 +97,13 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         LOG.warn("Type mismatch for parameter '{}': {}", ex.getName(), ex.getValue());
 
+        Class<?> requiredType = ex.getRequiredType();
+        String typeName = requiredType != null ? requiredType.getSimpleName() : "unknown";
+
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Type Mismatch",
-                String.format("Parameter '%s' should be of type %s",
-                        ex.getName(),
-                        ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown"),
+                String.format("Parameter '%s' should be of type %s", ex.getName(), typeName),
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
