@@ -31,6 +31,7 @@ public class Application {
     /**
      * DB コンテナが起動していない場合は自動起動する
      */
+    @SuppressWarnings("PMD.DoNotUseThreads") // InterruptedException 処理で Thread.currentThread().interrupt() は標準的
     private static void ensureDatabaseContainerRunning() {
         try {
             if (!isContainerRunning()) {
@@ -39,7 +40,10 @@ public class Application {
                 waitForContainerHealthy();
                 LOGGER.info("DB コンテナが正常に起動しました。");
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            LOGGER.error("DB コンテナの起動確認が中断されました: {}", e.getMessage());
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
             LOGGER.error("DB コンテナの起動確認に失敗しました: {}", e.getMessage());
             // 起動確認に失敗しても Spring Boot の起動は試行する
         }
