@@ -176,8 +176,13 @@ describe('AuthProvider', () => {
 
       expect(screen.getByTestId('username').textContent).toBe('admin');
       expect(screen.getByTestId('role').textContent).toBe('ADMIN');
-      expect(localStorageMock.getItem('accessToken')).toBe('mock-access-token-admin');
-      expect(localStorageMock.getItem('refreshToken')).toBe('mock-refresh-token-admin');
+      // JWT形式のトークンが保存されていることを確認
+      const accessToken = localStorageMock.getItem('accessToken');
+      const refreshToken = localStorageMock.getItem('refreshToken');
+      expect(accessToken).not.toBeNull();
+      expect(refreshToken).not.toBeNull();
+      expect(accessToken?.split('.')).toHaveLength(3);
+      expect(refreshToken?.split('.')).toHaveLength(3);
     });
 
     it('一般ユーザーとしてログインに成功する', async () => {

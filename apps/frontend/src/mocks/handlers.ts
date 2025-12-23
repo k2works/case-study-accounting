@@ -1,6 +1,23 @@
 import { http, HttpResponse } from 'msw';
 import type { LoginRequest, LoginResponse } from '../api/model';
 
+/**
+ * 有効な JWT 形式のモックトークンを生成
+ * AuthProvider の isTokenExpired で正しく解析できる形式
+ */
+const createMockJwt = (sub: string, expiresInSeconds = 3600): string => {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(
+    JSON.stringify({
+      sub,
+      exp: Math.floor(Date.now() / 1000) + expiresInSeconds,
+      iat: Math.floor(Date.now() / 1000),
+    })
+  );
+  const signature = 'mock-signature';
+  return `${header}.${payload}.${signature}`;
+};
+
 // Account type definition (will be replaced by generated types)
 interface Account {
   accountCode: string;
@@ -26,8 +43,8 @@ export const authHandlers = [
     if (body.username === 'admin' && body.password === 'Password123!') {
       return HttpResponse.json<LoginResponse>({
         success: true,
-        accessToken: 'mock-access-token-admin',
-        refreshToken: 'mock-refresh-token-admin',
+        accessToken: createMockJwt('admin'),
+        refreshToken: createMockJwt('admin-refresh', 86400),
         username: 'admin',
         role: 'ADMIN',
       });
@@ -37,10 +54,27 @@ export const authHandlers = [
     if (body.username === 'user' && body.password === 'Password123!') {
       return HttpResponse.json<LoginResponse>({
         success: true,
-        accessToken: 'mock-access-token-user',
-        refreshToken: 'mock-refresh-token-user',
+        accessToken: createMockJwt('user'),
+        refreshToken: createMockJwt('user-refresh', 86400),
         username: 'user',
         role: 'USER',
+      });
+    }
+
+    // 失敗ケース: ロックされたアカウント
+    if (body.username === 'locked') {
+      return HttpResponse.json<LoginResponse>({
+        success: false,
+        errorMessage:
+          'アカウントがロックされています。ログイン試行が複数回失敗したため、セキュリティ保護のためロックされました。管理者にお問い合わせください。',
+      });
+    }
+
+    // 失敗ケース: 無効化されたアカウント
+    if (body.username === 'inactive') {
+      return HttpResponse.json<LoginResponse>({
+        success: false,
+        errorMessage: 'アカウントが無効化されています。管理者にお問い合わせください。',
       });
     }
 
@@ -55,10 +89,21 @@ export const authHandlers = [
   http.post('*/auth/refresh', async ({ request }) => {
     const body = (await request.json()) as { refreshToken: string };
 
-    if (body.refreshToken?.startsWith('mock-refresh-token')) {
-      return HttpResponse.json({
-        accessToken: 'mock-new-access-token',
-      });
+    // JWT 形式のリフレッシュトークンをチェック（ペイロード部分を検証）
+    if (body.refreshToken) {
+      try {
+        const payloadPart = body.refreshToken.split('.')[1];
+        if (payloadPart) {
+          const payload = JSON.parse(atob(payloadPart));
+          if (payload.sub && payload.exp > Date.now() / 1000) {
+            return HttpResponse.json({
+              accessToken: createMockJwt(payload.sub.replace('-refresh', '')),
+            });
+          }
+        }
+      } catch {
+        // パース失敗は無視
+      }
     }
 
     return HttpResponse.json({ message: 'Invalid refresh token' }, { status: 401 });
