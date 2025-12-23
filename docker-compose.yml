@@ -10,9 +10,9 @@ services:
       PORT: 8080
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-for-development-only}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-accounting}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-accounting}
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - '${BACKEND_PORT:-8081}:8080'
     networks:
