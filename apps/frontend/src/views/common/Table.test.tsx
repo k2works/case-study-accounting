@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Table, TableColumn } from './Table';
 
-interface TestData {
+interface TestData extends Record<string, unknown> {
   id: number;
   name: string;
   amount: number;
