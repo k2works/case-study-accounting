@@ -55,8 +55,8 @@ npm run preview
 #### .env.production
 
 ```
-# API ベース URL（本番）
-VITE_API_BASE_URL=/api
+# API ベース URL（本番）- OpenAPI spec のパスに /api が含まれているため空
+VITE_API_BASE_URL=
 
 # アプリケーション名
 VITE_APP_NAME=財務会計システム

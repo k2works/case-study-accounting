@@ -37,3 +37,10 @@ public/mockServiceWorker.js
 # SonarQube
 .scannerwork
 eslint-report.json
+
+# Orval 自動生成ファイル
+src/api/generated/*
+!src/api/generated/.gitkeep
+src/api/model/*
+!src/api/model/.gitkeep
+openapi.yaml

@@ -441,6 +441,7 @@ npm run api:fetch
 ### .env.development
 
 ```
+# OpenAPI spec のパスに /api が含まれているため、baseURL には /api を含めない
 VITE_API_BASE_URL=http://localhost:8080
 VITE_ENABLE_MSW=true
 ```
@@ -448,7 +449,8 @@ VITE_ENABLE_MSW=true
 ### .env.production
 
 ```
-VITE_API_BASE_URL=/api
+# OpenAPI spec のパスに /api が含まれているため空
+VITE_API_BASE_URL=
 VITE_ENABLE_MSW=false
 ```
 
@@ -457,7 +459,8 @@ VITE_ENABLE_MSW=false
 ```typescript
 // src/config.ts
 export const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
+  // OpenAPI spec のパスに /api が含まれているため、baseURL は空
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
   enableMsw: import.meta.env.VITE_ENABLE_MSW === 'true',
 };
 ```

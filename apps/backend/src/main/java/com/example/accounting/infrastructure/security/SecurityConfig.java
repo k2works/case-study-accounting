@@ -80,6 +80,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/v3/api-docs.yaml").permitAll()
                         .requestMatchers("/api-docs/**").permitAll()
 
                         // ユーザー管理は ADMIN のみ

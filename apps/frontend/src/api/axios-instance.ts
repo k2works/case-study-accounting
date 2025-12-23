@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import { config } from '../config';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
@@ -51,7 +51,7 @@ const refreshAccessToken = async (): Promise<string> => {
     throw new Error('No refresh token');
   }
 
-  const response = await axios.post(`${config.apiBaseUrl}/auth/refresh`, {
+  const response = await axios.post('/api/auth/refresh', {
     refreshToken,
   });
 
@@ -107,4 +107,31 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+/**
+ * Orval 用カスタムインスタンス
+ *
+ * Orval が生成する API クライアントから呼び出される。
+ * AxiosRequestConfig を受け取り、レスポンスデータを返す。
+ *
+ * @param config - Axios リクエスト設定
+ * @param options - 追加のリクエストオプション
+ * @returns レスポンスデータ
+ */
+export const customInstance = <T>(
+  config: AxiosRequestConfig,
+  options?: AxiosRequestConfig
+): Promise<T> => {
+  const source = axios.CancelToken.source();
+  const promise = axiosInstance({
+    ...config,
+    ...options,
+    cancelToken: source.token,
+  }).then(({ data }) => data);
+
+  // @ts-expect-error - Orval が cancel メソッドを使用するため
+  promise.cancel = () => {
+    source.cancel('Query was cancelled');
+  };
+
+  return promise;
+};

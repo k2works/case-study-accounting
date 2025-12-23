@@ -91,6 +91,8 @@ nav:
       - バックエンド構築手順書: operation/backend_setup.md
       - バックエンドデモ環境: operation/backend_demo_env.md
       - フロントエンド構築手順書: operation/frontend_setup.md
+      - フロントエンド開発手順: operation/frontend_dev.md
+      - フロントエンド共通 UI: operation/frontend_common_ui.md
       - フロントエンドデモ環境: operation/frontend_demo_env.md
       - デモ環境デプロイ: operation/deploy_demo.md
       - 外部サービス連携: operation/third_party_service.md

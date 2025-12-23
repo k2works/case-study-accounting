@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw';
+import type { LoginRequest, LoginResponse } from '../api/model';
 
 // Account type definition (will be replaced by generated types)
 interface Account {
@@ -11,9 +12,70 @@ interface Account {
   version: number;
 }
 
-export const handlers = [
+/**
+ * 認証関連のハンドラー
+ * Note: Orval 生成コードの URL が /api/auth/login で、
+ * axios の baseURL が /api のため、実際のリクエスト先は /api/api/auth/login になる
+ */
+export const authHandlers = [
+  // ログイン（Orval 生成コード対応: baseURL + /api/auth/login = /api/api/auth/login）
+  http.post('*/auth/login', async ({ request }) => {
+    const body = (await request.json()) as LoginRequest;
+
+    // 成功ケース: admin/password
+    if (body.username === 'admin' && body.password === 'password') {
+      return HttpResponse.json<LoginResponse>({
+        success: true,
+        accessToken: 'mock-access-token-admin',
+        refreshToken: 'mock-refresh-token-admin',
+        username: 'admin',
+        role: 'ADMIN',
+      });
+    }
+
+    // 成功ケース: user/password
+    if (body.username === 'user' && body.password === 'password') {
+      return HttpResponse.json<LoginResponse>({
+        success: true,
+        accessToken: 'mock-access-token-user',
+        refreshToken: 'mock-refresh-token-user',
+        username: 'user',
+        role: 'USER',
+      });
+    }
+
+    // 失敗ケース: 認証エラー
+    return HttpResponse.json<LoginResponse>({
+      success: false,
+      errorMessage: 'ユーザーIDまたはパスワードが正しくありません',
+    });
+  }),
+
+  // トークンリフレッシュ
+  http.post('*/auth/refresh', async ({ request }) => {
+    const body = (await request.json()) as { refreshToken: string };
+
+    if (body.refreshToken?.startsWith('mock-refresh-token')) {
+      return HttpResponse.json({
+        accessToken: 'mock-new-access-token',
+      });
+    }
+
+    return HttpResponse.json({ message: 'Invalid refresh token' }, { status: 401 });
+  }),
+
+  // ログアウト
+  http.post('*/auth/logout', () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+];
+
+/**
+ * 勘定科目関連のハンドラー
+ */
+export const accountHandlers = [
   // 勘定科目一覧取得
-  http.get('/api/accounts', () => {
+  http.get('*/accounts', () => {
     return HttpResponse.json<Account[]>([
       {
         accountCode: '111',
@@ -37,7 +99,7 @@ export const handlers = [
   }),
 
   // 勘定科目詳細取得
-  http.get('/api/accounts/:code', ({ params }) => {
+  http.get('*/accounts/:code', ({ params }) => {
     const { code } = params;
     return HttpResponse.json<Account>({
       accountCode: code as string,
@@ -49,21 +111,9 @@ export const handlers = [
       version: 1,
     });
   }),
-
-  // 認証
-  http.post('/api/auth/login', async ({ request }) => {
-    const body = (await request.json()) as { username: string; password: string };
-    if (body.username === 'admin' && body.password === 'password') {
-      return HttpResponse.json({
-        accessToken: 'mock-access-token',
-        refreshToken: 'mock-refresh-token',
-        user: {
-          id: 1,
-          username: 'admin',
-          role: 'ADMIN',
-        },
-      });
-    }
-    return new HttpResponse(null, { status: 401 });
-  }),
 ];
+
+/**
+ * すべてのハンドラー
+ */
+export const handlers = [...authHandlers, ...accountHandlers];

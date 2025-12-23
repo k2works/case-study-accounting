@@ -1,3 +1,6 @@
+// Orval 生成型を再エクスポート
+export type { LoginRequest, LoginResponse } from '../api/model';
+
 /**
  * ユーザーロール
  */
@@ -9,26 +12,6 @@ export type Role = 'ADMIN' | 'MANAGER' | 'USER' | 'VIEWER';
 export interface User {
   username: string;
   role: Role;
-}
-
-/**
- * ログインリクエスト
- */
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-/**
- * ログインレスポンス
- */
-export interface LoginResponse {
-  success: boolean;
-  accessToken: string | null;
-  refreshToken: string | null;
-  username: string | null;
-  role: string | null;
-  errorMessage: string | null;
 }
 
 /**

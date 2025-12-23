@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { axiosInstance } from '../api/axios-instance';
-import { User, Role, LoginResponse, AuthContextType } from '../types/auth';
+import { login as apiLogin } from '../api/generated/認証/認証';
+import { User, Role, AuthContextType } from '../types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -113,12 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const login = useCallback(
     async (username: string, password: string) => {
-      const response = await axiosInstance.post<LoginResponse>('/auth/login', {
-        username,
-        password,
-      });
-
-      const data = response.data;
+      const data = await apiLogin({ username, password });
 
       if (!data.success) {
         throw new Error(data.errorMessage || '認証に失敗しました');
