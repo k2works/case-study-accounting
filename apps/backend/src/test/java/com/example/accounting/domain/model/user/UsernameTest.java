@@ -105,7 +105,7 @@ class UsernameTest {
         void shouldReturnValue() {
             Username username = Username.of("testuser");
 
-            assertThat(username.toString()).isEqualTo("testuser");
+            assertThat(username).hasToString("testuser");
         }
     }
 }

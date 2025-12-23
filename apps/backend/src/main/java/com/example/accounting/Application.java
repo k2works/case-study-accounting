@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -74,7 +75,7 @@ public class Application {
     /**
      * コンテナが起動しているか確認
      */
-    private static boolean isContainerRunning() throws Exception {
+    private static boolean isContainerRunning() throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(
                 DOCKER_PATH, "inspect", "-f", "{{.State.Running}}", CONTAINER_NAME);
         pb.redirectErrorStream(true);
@@ -91,7 +92,7 @@ public class Application {
     /**
      * コンテナを起動
      */
-    private static void startContainer() throws Exception {
+    private static void startContainer() throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(DOCKER_PATH, "start", CONTAINER_NAME);
         pb.redirectErrorStream(true);
         Process process = pb.start();
@@ -107,7 +108,7 @@ public class Application {
         }
     }
 
-    private static void readProcessOutput(BufferedReader reader) throws Exception {
+    private static void readProcessOutput(BufferedReader reader) throws IOException {
         String line = reader.readLine();
         while (line != null) {
             LOGGER.debug("Docker output: {}", line);
@@ -118,7 +119,7 @@ public class Application {
     /**
      * コンテナがヘルシーになるまで待機
      */
-    private static void waitForContainerHealthy() throws Exception {
+    private static void waitForContainerHealthy() throws IOException, InterruptedException {
         LOGGER.info("DB コンテナのヘルスチェックを待機中...");
 
         for (int i = 0; i < MAX_WAIT_SECONDS; i++) {
@@ -134,7 +135,7 @@ public class Application {
     /**
      * コンテナがヘルシーか確認
      */
-    private static boolean isContainerHealthy() throws Exception {
+    private static boolean isContainerHealthy() throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(
                 DOCKER_PATH, "inspect", "-f", "{{.State.Health.Status}}", CONTAINER_NAME);
         pb.redirectErrorStream(true);

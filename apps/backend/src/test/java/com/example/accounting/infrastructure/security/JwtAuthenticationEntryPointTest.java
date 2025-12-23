@@ -52,10 +52,10 @@ class JwtAuthenticationEntryPointTest {
         Map<String, Object> errorDetails = objectMapper.readValue(
                 response.getContentAsString(), Map.class);
 
-        assertThat(errorDetails).containsKey("timestamp");
-        assertThat(errorDetails.get("status")).isEqualTo(401);
-        assertThat(errorDetails.get("error")).isEqualTo("Unauthorized");
-        assertThat(errorDetails.get("message")).isEqualTo("認証が必要です");
-        assertThat(errorDetails.get("path")).isEqualTo("/api/users");
+        assertThat(errorDetails).containsKey("timestamp")
+                .containsEntry("status", 401)
+                .containsEntry("error", "Unauthorized")
+                .containsEntry("message", "認証が必要です")
+                .containsEntry("path", "/api/users");
     }
 }

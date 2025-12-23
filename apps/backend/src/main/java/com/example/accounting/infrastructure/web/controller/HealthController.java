@@ -26,6 +26,9 @@ import java.util.Map;
 public class HealthController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HealthController.class);
+    private static final String STATUS_KEY = "status";
+    private static final String STATUS_UP = "UP";
+    private static final String STATUS_DOWN = "DOWN";
     private final DataSource dataSource;
 
     public HealthController(DataSource dataSource) {
@@ -40,19 +43,19 @@ public class HealthController {
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put("status", "UP");
+        response.put(STATUS_KEY, STATUS_UP);
         response.put("timestamp", Instant.now().toString());
 
         try (Connection connection = dataSource.getConnection()) {
             response.put("database", Map.of(
-                    "status", "UP",
+                    STATUS_KEY, STATUS_UP,
                     "product", connection.getMetaData().getDatabaseProductName(),
                     "version", connection.getMetaData().getDatabaseProductVersion()
             ));
         } catch (SQLException e) {
             LOGGER.warn("Database health check failed", e);
             response.put("database", Map.of(
-                    "status", "DOWN",
+                    STATUS_KEY, STATUS_DOWN,
                     "error", e.getMessage()
             ));
         }

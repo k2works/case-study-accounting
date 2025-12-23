@@ -109,7 +109,7 @@ class PasswordTest {
         void shouldReturnMaskedString() {
             Password password = Password.fromRawPassword("password123");
 
-            assertThat(password.toString()).isEqualTo("********");
+            assertThat(password).hasToString("********");
         }
     }
 }

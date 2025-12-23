@@ -109,7 +109,7 @@ class EmailTest {
         void shouldReturnValue() {
             Email email = Email.of("test@example.com");
 
-            assertThat(email.toString()).isEqualTo("test@example.com");
+            assertThat(email).hasToString("test@example.com");
         }
     }
 }
