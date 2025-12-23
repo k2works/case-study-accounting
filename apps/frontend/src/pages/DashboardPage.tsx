@@ -62,7 +62,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <MainLayout breadcrumbs={breadcrumbs}>
-      <div className="dashboard">
+      <div className="dashboard" data-testid="dashboard">
         <h1 className="dashboard__title">ダッシュボード</h1>
 
         {/* お知らせエリア */}

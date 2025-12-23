@@ -26,7 +26,7 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="login-page">
+    <div className="login-page" data-testid="login-page">
       <div className="login-page__container">
         <div className="login-page__header">
           <h1 className="login-page__title">財務会計システム</h1>

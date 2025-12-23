@@ -92,9 +92,9 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
+    <form className="login-form" onSubmit={handleSubmit} data-testid="login-form">
       {loginError && (
-        <div className="login-form__error">
+        <div className="login-form__error" data-testid="login-error">
           <span>{loginError}</span>
         </div>
       )}
@@ -113,8 +113,13 @@ export const LoginForm: React.FC = () => {
           placeholder="ユーザー名を入力"
           autoComplete="username"
           disabled={isSubmitting}
+          data-testid="username-input"
         />
-        {errors.username && <span className="login-form__field-error">{errors.username}</span>}
+        {errors.username && (
+          <span className="login-form__field-error" data-testid="username-error">
+            {errors.username}
+          </span>
+        )}
       </div>
 
       <div className="login-form__field">
@@ -131,11 +136,21 @@ export const LoginForm: React.FC = () => {
           placeholder="パスワードを入力"
           autoComplete="current-password"
           disabled={isSubmitting}
+          data-testid="password-input"
         />
-        {errors.password && <span className="login-form__field-error">{errors.password}</span>}
+        {errors.password && (
+          <span className="login-form__field-error" data-testid="password-error">
+            {errors.password}
+          </span>
+        )}
       </div>
 
-      <button type="submit" className="login-form__submit" disabled={isSubmitting}>
+      <button
+        type="submit"
+        className="login-form__submit"
+        disabled={isSubmitting}
+        data-testid="login-submit"
+      >
         {isSubmitting ? 'ログイン中...' : 'ログイン'}
       </button>
     </form>
