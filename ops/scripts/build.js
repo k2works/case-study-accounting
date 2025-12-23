@@ -1,6 +1,6 @@
 'use strict';
 
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 /**
  * Docker Compose ビルド関連の Gulp タスクを登録する
@@ -9,9 +9,21 @@ import { execSync } from 'child_process';
 export default function (gulp) {
     const PROJECT_ROOT = process.cwd();
 
-    // Docker Compose ファイル
+    // Docker Compose ファイル（ハードコードされた定数、ユーザー入力なし）
     const COMPOSE_FILE = 'docker-compose.yml';
     const COMPOSE_DEMO_FILE = 'docker-compose-demo.yml';
+
+    /**
+     * Docker Compose コマンドを安全に実行する
+     * execFileSync を使用してシェルインジェクションを防止
+     * @param {string[]} args - docker compose に渡す引数
+     */
+    const runDockerCompose = (args) => {
+        execFileSync('docker', ['compose', ...args], {
+            stdio: 'inherit',
+            cwd: PROJECT_ROOT
+        });
+    };
 
     /**
      * 開発環境をビルドする
@@ -21,10 +33,7 @@ export default function (gulp) {
             console.log('Building development environment...');
             console.log(`Using: ${COMPOSE_FILE}`);
 
-            execSync(`docker compose -f ${COMPOSE_FILE} build`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_FILE, 'build']);
 
             console.log('\nDevelopment environment built successfully!');
 
@@ -43,10 +52,7 @@ export default function (gulp) {
             console.log('Building demo environment...');
             console.log(`Using: ${COMPOSE_DEMO_FILE}`);
 
-            execSync(`docker compose -f ${COMPOSE_DEMO_FILE} build`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_DEMO_FILE, 'build']);
 
             console.log('\nDemo environment built successfully!');
 
@@ -64,10 +70,7 @@ export default function (gulp) {
         try {
             console.log('Starting development environment...');
 
-            execSync(`docker compose -f ${COMPOSE_FILE} up -d`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_FILE, 'up', '-d']);
 
             console.log('\nDevelopment environment started!');
             console.log('Frontend: http://localhost:3001');
@@ -88,10 +91,7 @@ export default function (gulp) {
         try {
             console.log('Starting demo environment...');
 
-            execSync(`docker compose -f ${COMPOSE_DEMO_FILE} up -d`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_DEMO_FILE, 'up', '-d']);
 
             console.log('\nDemo environment started!');
             console.log('Frontend: http://localhost:3001');
@@ -112,10 +112,7 @@ export default function (gulp) {
         try {
             console.log('Stopping development environment...');
 
-            execSync(`docker compose -f ${COMPOSE_FILE} down`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_FILE, 'down']);
 
             console.log('\nDevelopment environment stopped!');
 
@@ -133,10 +130,7 @@ export default function (gulp) {
         try {
             console.log('Stopping demo environment...');
 
-            execSync(`docker compose -f ${COMPOSE_DEMO_FILE} down`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_DEMO_FILE, 'down']);
 
             console.log('\nDemo environment stopped!');
 
@@ -154,10 +148,7 @@ export default function (gulp) {
         try {
             console.log('Showing development environment logs...');
 
-            execSync(`docker compose -f ${COMPOSE_FILE} logs -f`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_FILE, 'logs', '-f']);
 
             done();
         } catch (error) {
@@ -173,10 +164,7 @@ export default function (gulp) {
         try {
             console.log('Showing demo environment logs...');
 
-            execSync(`docker compose -f ${COMPOSE_DEMO_FILE} logs -f`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_DEMO_FILE, 'logs', '-f']);
 
             done();
         } catch (error) {
@@ -202,10 +190,7 @@ export default function (gulp) {
         try {
             console.log('Checking development environment status...\n');
 
-            execSync(`docker compose -f ${COMPOSE_FILE} ps`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_FILE, 'ps']);
 
             done();
         } catch (error) {
@@ -221,10 +206,7 @@ export default function (gulp) {
         try {
             console.log('Checking demo environment status...\n');
 
-            execSync(`docker compose -f ${COMPOSE_DEMO_FILE} ps`, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT
-            });
+            runDockerCompose(['-f', COMPOSE_DEMO_FILE, 'ps']);
 
             done();
         } catch (error) {
