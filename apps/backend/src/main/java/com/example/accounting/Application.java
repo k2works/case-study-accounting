@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
@@ -50,7 +51,7 @@ public class Application {
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))) {
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
             String output = reader.readLine();
             process.waitFor(5, TimeUnit.SECONDS);
             return "true".equals(output);
@@ -66,16 +67,21 @@ public class Application {
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                LOGGER.debug("Docker output: {}", line);
-            }
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            readProcessOutput(reader);
         }
 
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            throw new RuntimeException("docker start failed with exit code: " + exitCode);
+            throw new IllegalStateException("docker start failed with exit code: " + exitCode);
+        }
+    }
+
+    private static void readProcessOutput(BufferedReader reader) throws Exception {
+        String line = reader.readLine();
+        while (line != null) {
+            LOGGER.debug("Docker output: {}", line);
+            line = reader.readLine();
         }
     }
 
@@ -92,7 +98,7 @@ public class Application {
             TimeUnit.SECONDS.sleep(1);
         }
 
-        throw new RuntimeException("DB コンテナが " + MAX_WAIT_SECONDS + " 秒以内にヘルシーになりませんでした");
+        throw new IllegalStateException("DB コンテナが " + MAX_WAIT_SECONDS + " 秒以内にヘルシーになりませんでした");
     }
 
     /**
@@ -105,7 +111,7 @@ public class Application {
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))) {
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
             String output = reader.readLine();
             process.waitFor(5, TimeUnit.SECONDS);
             return "healthy".equals(output);

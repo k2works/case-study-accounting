@@ -115,12 +115,12 @@ tasks.jacocoTestCoverageVerification {
 checkstyle {
     toolVersion = "10.20.2"
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
-    isIgnoreFailures = true // 初期は警告のみ
+    isIgnoreFailures = false
 }
 
 // SpotBugs (Java 25 対応: 4.9.7+)
 spotbugs {
-    ignoreFailures = true // 初期は警告のみ
+    ignoreFailures = false
     excludeFilter = file("${rootDir}/config/spotbugs/exclude.xml")
     toolVersion = "4.9.8"
 }
@@ -140,7 +140,7 @@ pmd {
     isConsoleOutput = true
     ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml")
     ruleSets = listOf() // ruleSetFilesを使用するため空に
-    isIgnoreFailures = true // 初期は警告のみ
+    isIgnoreFailures = false
 }
 
 // JIG (ドキュメント生成)
