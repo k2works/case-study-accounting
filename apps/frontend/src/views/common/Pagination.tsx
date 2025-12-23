@@ -107,7 +107,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <div className="pagination__pages">
           {pageNumbers.map((page, index) => (
             <PageButton
-              key={index}
+              key={typeof page === 'number' ? page : `ellipsis-${index}`}
               page={page}
               currentPage={currentPage}
               onPageChange={onPageChange}

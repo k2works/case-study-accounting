@@ -25,7 +25,7 @@ export const SuccessNotification: React.FC<SuccessNotificationProps> = ({
   }, [onDismiss, autoHideDuration]);
 
   return (
-    <div className="success-notification" role="status">
+    <output className="success-notification">
       <span className="success-notification__icon">✓</span>
       <span className="success-notification__text">{message}</span>
       {onDismiss && (
@@ -33,6 +33,6 @@ export const SuccessNotification: React.FC<SuccessNotificationProps> = ({
           ×
         </button>
       )}
-    </div>
+    </output>
   );
 };

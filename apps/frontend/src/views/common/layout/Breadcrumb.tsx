@@ -28,7 +28,10 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
           const isLast = index === items.length - 1;
 
           return (
-            <li key={index} className={`breadcrumb__item ${isLast ? 'is-current' : ''}`}>
+            <li
+              key={item.path || item.label}
+              className={`breadcrumb__item ${isLast ? 'is-current' : ''}`}
+            >
               {isLast || !item.path ? (
                 <span className="breadcrumb__text">{item.label}</span>
               ) : (

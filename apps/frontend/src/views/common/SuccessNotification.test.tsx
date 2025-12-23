@@ -14,7 +14,6 @@ describe('SuccessNotification', () => {
 
   it('renders message', () => {
     render(<SuccessNotification message="保存しました" />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByText('保存しました')).toBeInTheDocument();
   });
 

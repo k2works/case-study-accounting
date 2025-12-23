@@ -28,7 +28,7 @@ describe('Modal', () => {
 
   it('does not render when closed', () => {
     render(<Modal {...defaultProps} isOpen={false} />);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByText('テストモーダル')).not.toBeInTheDocument();
   });
 
   it('renders close button', () => {

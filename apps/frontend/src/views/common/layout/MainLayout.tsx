@@ -38,16 +38,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, breadcrumbs })
 
       {/* モバイル用オーバーレイ */}
       {isSidebarOpen && (
-        <div
+        <button
+          type="button"
           className="main-layout__overlay is-visible"
           onClick={handleCloseSidebar}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              handleCloseSidebar();
-            }
-          }}
-          role="button"
-          tabIndex={0}
           aria-label="メニューを閉じる"
         />
       )}

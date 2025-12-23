@@ -64,7 +64,7 @@
 }
 
 .dashboard__notice-badge--warning {
-  background-color: #f57c00;
+  background-color: #e65100;
   color: #fff;
 }
 
@@ -189,7 +189,7 @@
 
 .dashboard__status--pending {
   background-color: #fff3e0;
-  color: #e65100;
+  color: #bf360c;
 }
 
 .dashboard__status--draft {

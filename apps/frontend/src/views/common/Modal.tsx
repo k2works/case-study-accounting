@@ -43,22 +43,9 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     }
   };
 
-  const handleOverlayKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      onClose();
-    }
-  };
-
   return (
-    <div
-      className="modal__overlay"
-      onClick={handleOverlayClick}
-      onKeyDown={handleOverlayKeyDown}
-      role="button"
-      tabIndex={0}
-      aria-label="モーダルを閉じる"
-    >
-      <div className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div className="modal__overlay" onClick={handleOverlayClick}>
+      <dialog className="modal" open aria-modal="true" aria-labelledby="modal-title">
         <div className="modal__header">
           <h2 id="modal-title" className="modal__title">
             {title}
@@ -69,7 +56,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
         </div>
         <div className="modal__content">{children}</div>
         {actions && <div className="modal__actions">{actions}</div>}
-      </div>
+      </dialog>
     </div>
   );
 };
