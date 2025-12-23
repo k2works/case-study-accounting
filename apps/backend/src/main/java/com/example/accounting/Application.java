@@ -1,5 +1,7 @@
 package com.example.accounting;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -12,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 @ConfigurationPropertiesScan
 public class Application {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
     private static final String CONTAINER_NAME = "accounting-postgres";
     private static final int MAX_WAIT_SECONDS = 30;
 
@@ -26,13 +29,13 @@ public class Application {
     private static void ensureDatabaseContainerRunning() {
         try {
             if (!isContainerRunning()) {
-                System.out.println("[Application] DB コンテナが停止しています。起動します...");
+                LOGGER.info("DB コンテナが停止しています。起動します...");
                 startContainer();
                 waitForContainerHealthy();
-                System.out.println("[Application] DB コンテナが正常に起動しました。");
+                LOGGER.info("DB コンテナが正常に起動しました。");
             }
         } catch (Exception e) {
-            System.err.println("[Application] DB コンテナの起動確認に失敗しました: " + e.getMessage());
+            LOGGER.error("DB コンテナの起動確認に失敗しました: {}", e.getMessage());
             // 起動確認に失敗しても Spring Boot の起動は試行する
         }
     }
@@ -66,7 +69,7 @@ public class Application {
                 new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                System.out.println("[Docker] " + line);
+                LOGGER.debug("Docker output: {}", line);
             }
         }
 
@@ -80,7 +83,7 @@ public class Application {
      * コンテナがヘルシーになるまで待機
      */
     private static void waitForContainerHealthy() throws Exception {
-        System.out.println("[Application] DB コンテナのヘルスチェックを待機中...");
+        LOGGER.info("DB コンテナのヘルスチェックを待機中...");
 
         for (int i = 0; i < MAX_WAIT_SECONDS; i++) {
             if (isContainerHealthy()) {
