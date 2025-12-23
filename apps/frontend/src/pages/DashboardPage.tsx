@@ -7,8 +7,40 @@ import './DashboardPage.css';
  *
  * システムの概要と重要な情報を表示する。
  */
+interface Notice {
+  id: string;
+  type: 'info' | 'warning' | 'important';
+  title: string;
+  content: string;
+  date: string;
+}
+
 const DashboardPage: React.FC = () => {
   // ダミーデータ（将来的に API から取得）
+  const notices: Notice[] = [
+    {
+      id: 'N-001',
+      type: 'important',
+      title: '決算期末のお知らせ',
+      content: '3月31日は決算期末です。すべての仕訳を確定してください。',
+      date: '2024/03/01',
+    },
+    {
+      id: 'N-002',
+      type: 'warning',
+      title: 'システムメンテナンス',
+      content: '3月15日 22:00〜24:00 にシステムメンテナンスを実施します。',
+      date: '2024/03/05',
+    },
+    {
+      id: 'N-003',
+      type: 'info',
+      title: '新機能リリース',
+      content: '仕訳一括インポート機能が追加されました。',
+      date: '2024/03/10',
+    },
+  ];
+
   const stats = {
     todayJournalCount: 25,
     pendingApprovalCount: 5,
@@ -32,6 +64,34 @@ const DashboardPage: React.FC = () => {
     <MainLayout breadcrumbs={breadcrumbs}>
       <div className="dashboard">
         <h1 className="dashboard__title">ダッシュボード</h1>
+
+        {/* お知らせエリア */}
+        {notices.length > 0 && (
+          <div className="dashboard__notices">
+            <h2 className="dashboard__section-title">お知らせ</h2>
+            <div className="dashboard__notice-list">
+              {notices.map((notice) => (
+                <div
+                  key={notice.id}
+                  className={`dashboard__notice dashboard__notice--${notice.type}`}
+                >
+                  <div className="dashboard__notice-header">
+                    <span
+                      className={`dashboard__notice-badge dashboard__notice-badge--${notice.type}`}
+                    >
+                      {notice.type === 'important' && '重要'}
+                      {notice.type === 'warning' && '注意'}
+                      {notice.type === 'info' && 'お知らせ'}
+                    </span>
+                    <span className="dashboard__notice-date">{notice.date}</span>
+                  </div>
+                  <h3 className="dashboard__notice-title">{notice.title}</h3>
+                  <p className="dashboard__notice-content">{notice.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="dashboard__stats">
           <div className="dashboard__stat-card">
