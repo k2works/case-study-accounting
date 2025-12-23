@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
@@ -18,6 +20,7 @@ public class Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
     private static final String CONTAINER_NAME = "accounting-postgres";
     private static final int MAX_WAIT_SECONDS = 30;
+    private static final String DOCKER_PATH = resolveDockerPath();
 
     public static void main(String[] args) {
         ensureDatabaseContainerRunning();
@@ -42,11 +45,38 @@ public class Application {
     }
 
     /**
+     * Docker コマンドの絶対パスを解決する
+     * 環境変数 DOCKER_PATH が設定されている場合はそれを使用し、
+     * なければ一般的なインストールパスから検索する
+     */
+    private static String resolveDockerPath() {
+        String envPath = System.getenv("DOCKER_PATH");
+        if (envPath != null && Files.isExecutable(Path.of(envPath))) {
+            return envPath;
+        }
+
+        String[] candidates = {
+            "/usr/bin/docker",
+            "/usr/local/bin/docker",
+            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
+        };
+
+        for (String candidate : candidates) {
+            if (Files.isExecutable(Path.of(candidate))) {
+                return candidate;
+            }
+        }
+
+        LOGGER.warn("Docker の絶対パスが見つかりません。PATH から docker を使用します。");
+        return "docker";
+    }
+
+    /**
      * コンテナが起動しているか確認
      */
     private static boolean isContainerRunning() throws Exception {
         ProcessBuilder pb = new ProcessBuilder(
-                "docker", "inspect", "-f", "{{.State.Running}}", CONTAINER_NAME);
+                DOCKER_PATH, "inspect", "-f", "{{.State.Running}}", CONTAINER_NAME);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
@@ -62,7 +92,7 @@ public class Application {
      * コンテナを起動
      */
     private static void startContainer() throws Exception {
-        ProcessBuilder pb = new ProcessBuilder("docker", "start", CONTAINER_NAME);
+        ProcessBuilder pb = new ProcessBuilder(DOCKER_PATH, "start", CONTAINER_NAME);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
@@ -106,7 +136,7 @@ public class Application {
      */
     private static boolean isContainerHealthy() throws Exception {
         ProcessBuilder pb = new ProcessBuilder(
-                "docker", "inspect", "-f", "{{.State.Health.Status}}", CONTAINER_NAME);
+                DOCKER_PATH, "inspect", "-f", "{{.State.Health.Status}}", CONTAINER_NAME);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
