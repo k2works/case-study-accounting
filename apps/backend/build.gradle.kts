@@ -99,6 +99,16 @@ tasks.jacocoTestReport {
         xml.required = true
         html.required = true
     }
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/Application.class",
+                    "**/Application$*.class"
+                )
+            }
+        })
+    )
 }
 
 tasks.jacocoTestCoverageVerification {
