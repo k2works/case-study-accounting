@@ -1,6 +1,37 @@
 'use strict';
 
 import { execFileSync } from 'child_process';
+import { existsSync } from 'fs';
+
+/**
+ * Docker の絶対パスを解決する
+ * 既知の安全なディレクトリから docker 実行ファイルを探す
+ * @returns {string} docker の絶対パス
+ */
+function resolveDockerPath() {
+    // 環境変数 DOCKER_PATH が設定されている場合はそれを使用
+    const envPath = process.env.DOCKER_PATH;
+    if (envPath && existsSync(envPath)) {
+        return envPath;
+    }
+
+    // 既知の安全なインストールパス（書き込み不可ディレクトリ）
+    const candidates = [
+        '/usr/bin/docker',
+        '/usr/local/bin/docker',
+        'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
+    ];
+
+    for (const candidate of candidates) {
+        if (existsSync(candidate)) {
+            return candidate;
+        }
+    }
+
+    // 見つからない場合は PATH から検索（開発環境での利便性のため）
+    console.warn('Warning: Docker absolute path not found. Using PATH lookup.');
+    return 'docker';
+}
 
 /**
  * Docker Compose ビルド関連の Gulp タスクを登録する
@@ -8,6 +39,7 @@ import { execFileSync } from 'child_process';
  */
 export default function (gulp) {
     const PROJECT_ROOT = process.cwd();
+    const DOCKER_PATH = resolveDockerPath();
 
     // Docker Compose ファイル（ハードコードされた定数、ユーザー入力なし）
     const COMPOSE_FILE = 'docker-compose.yml';
@@ -19,7 +51,7 @@ export default function (gulp) {
      * @param {string[]} args - docker compose に渡す引数
      */
     const runDockerCompose = (args) => {
-        execFileSync('docker', ['compose', ...args], {
+        execFileSync(DOCKER_PATH, ['compose', ...args], {
             stdio: 'inherit',
             cwd: PROJECT_ROOT
         });
