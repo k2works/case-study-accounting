@@ -97,6 +97,7 @@ nav:
       - デモ環境デプロイ: operation/deploy_demo.md
       - 外部サービス連携: operation/third_party_service.md
       - SonarQube セットアップガイド: operation/sonarqube_setup.md
+      - E2E テスト実行手順書: operation/e2e_test.md
   - リファレンス:
       - 開発ガイド: reference/開発ガイド.md
       - よいソフトウェアとは: reference/よいソフトウェアとは.md

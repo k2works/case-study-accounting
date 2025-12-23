@@ -50,6 +50,7 @@
 - [フロントエンド共通 UI](./operation/frontend_common_ui.md) - 共通レイアウト・UI コンポーネント
 - [フロントエンドデモ環境](./operation/frontend_demo_env.md) - nginx を使用したデモ環境
 - [SonarQube セットアップガイド](./operation/sonarqube_setup.md) - コード品質分析環境の構築
+- [E2E テスト実行手順書](./operation/e2e_test.md) - Cypress と MSW を使った E2E テストの実行方法
 
 ## リファレンス
 
