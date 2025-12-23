@@ -14,6 +14,7 @@ const setupUser = () => userEvent.setup();
 const usernameInput = () => screen.getByTestId('username-input');
 const passwordInput = () => screen.getByTestId('password-input');
 const submitButton = () => screen.getByTestId('login-submit');
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const fillForm = async (
   user: ReturnType<typeof userEvent.setup>,
@@ -108,7 +109,7 @@ describe('LoginForm', () => {
 
     it('disables form during submission', async () => {
       const user = setupUser();
-      mockLogin.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
+      mockLogin.mockImplementation(() => delay(100));
       render(<LoginForm />);
 
       await fillAndSubmit(user, 'testuser', 'password123');
