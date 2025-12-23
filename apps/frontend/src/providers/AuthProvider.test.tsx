@@ -36,10 +36,10 @@ const TestConsumer: React.FC = () => {
       <div data-testid="is-loading">{auth.isLoading.toString()}</div>
       <div data-testid="username">{auth.user?.username || 'null'}</div>
       <div data-testid="role">{auth.user?.role || 'null'}</div>
-      <button data-testid="login-admin" onClick={() => auth.login('admin', 'password')}>
+      <button data-testid="login-admin" onClick={() => auth.login('admin', 'Password123!')}>
         Login Admin
       </button>
-      <button data-testid="login-user" onClick={() => auth.login('user', 'password')}>
+      <button data-testid="login-user" onClick={() => auth.login('user', 'Password123!')}>
         Login User
       </button>
       <button data-testid="login-fail" onClick={() => auth.login('admin', 'wrong')}>

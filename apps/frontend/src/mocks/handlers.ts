@@ -22,8 +22,8 @@ export const authHandlers = [
   http.post('*/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
 
-    // 成功ケース: admin/password
-    if (body.username === 'admin' && body.password === 'password') {
+    // 成功ケース: admin/Password123!
+    if (body.username === 'admin' && body.password === 'Password123!') {
       return HttpResponse.json<LoginResponse>({
         success: true,
         accessToken: 'mock-access-token-admin',
@@ -33,8 +33,8 @@ export const authHandlers = [
       });
     }
 
-    // 成功ケース: user/password
-    if (body.username === 'user' && body.password === 'password') {
+    // 成功ケース: user/Password123!
+    if (body.username === 'user' && body.password === 'Password123!') {
       return HttpResponse.json<LoginResponse>({
         success: true,
         accessToken: 'mock-access-token-user',

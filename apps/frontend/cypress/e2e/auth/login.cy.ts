@@ -18,7 +18,7 @@ describe('認証機能', () => {
 
       // When: 正しい認証情報を入力してログイン
       cy.get('[data-testid="username-input"]').clear().type('admin');
-      cy.get('[data-testid="password-input"]').clear().type('password');
+      cy.get('[data-testid="password-input"]').clear().type('Password123!');
       cy.get('[data-testid="login-submit"]').click();
 
       // Then: ダッシュボードに遷移し、ユーザー名が表示される
@@ -33,7 +33,7 @@ describe('認証機能', () => {
 
       // When: 間違った認証情報を入力してログイン
       cy.get('[data-testid="username-input"]').clear().type('admin');
-      cy.get('[data-testid="password-input"]').clear().type('wrongpassword');
+      cy.get('[data-testid="password-input"]').clear().type('WrongPassword123!');
       cy.get('[data-testid="login-submit"]').click();
 
       // Then: エラーメッセージが表示され、ログインページに留まる
@@ -48,7 +48,7 @@ describe('認証機能', () => {
 
       // When: ユーザー名を空にしてログイン
       cy.get('[data-testid="username-input"]').clear();
-      cy.get('[data-testid="password-input"]').clear().type('password');
+      cy.get('[data-testid="password-input"]').clear().type('Password123!');
       cy.get('[data-testid="login-submit"]').click();
 
       // Then: バリデーションエラーが表示される
@@ -110,7 +110,7 @@ describe('認証機能', () => {
 
       // When: 正しい認証情報でログイン
       cy.get('[data-testid="username-input"]').clear().type('admin');
-      cy.get('[data-testid="password-input"]').clear().type('password');
+      cy.get('[data-testid="password-input"]').clear().type('Password123!');
       cy.get('[data-testid="login-submit"]').click();
 
       // Then: トークンがローカルストレージに保存される
@@ -127,7 +127,7 @@ describe('認証機能', () => {
 
       // When: 一般ユーザーの認証情報でログイン
       cy.get('[data-testid="username-input"]').clear().type('user');
-      cy.get('[data-testid="password-input"]').clear().type('password');
+      cy.get('[data-testid="password-input"]').clear().type('Password123!');
       cy.get('[data-testid="login-submit"]').click();
 
       // Then: ダッシュボードに遷移し、ユーザー名が表示される
@@ -140,7 +140,7 @@ describe('認証機能', () => {
   describe('US-AUTH-002: ログアウト', () => {
     beforeEach(() => {
       // 各テスト前にログイン
-      cy.login('admin', 'password');
+      cy.login('admin', 'Password123!');
       cy.url().should('not.include', '/login');
     });
 
@@ -191,7 +191,7 @@ describe('認証機能', () => {
   describe('認証状態の維持', () => {
     it('ログイン後、ページをリロードしても認証状態が維持される', () => {
       // Given: ログイン済み状態
-      cy.login('admin', 'password');
+      cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
       // When: ページをリロード
@@ -204,7 +204,7 @@ describe('認証機能', () => {
 
     it('ログイン済みの状態でログインページにアクセスするとダッシュボードにリダイレクトされる', () => {
       // Given: ログイン済み状態
-      cy.login('admin', 'password');
+      cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
       // When: ログインページにアクセス
