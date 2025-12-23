@@ -16,7 +16,7 @@ async function enableMocking() {
       onUnhandledRequest: 'bypass',
     });
   }
-  return Promise.resolve();
+  return;
 }
 
 enableMocking().then(() => {

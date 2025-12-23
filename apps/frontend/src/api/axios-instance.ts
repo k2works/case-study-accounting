@@ -28,7 +28,7 @@ axiosInstance.interceptors.request.use(
     return requestConfig;
   },
   (error) => {
-    return Promise.reject(error);
+    throw error;
   }
 );
 
@@ -91,7 +91,7 @@ axiosInstance.interceptors.response.use(
       !isLoginEndpoint(originalRequest.url);
 
     if (!shouldRetry) {
-      return Promise.reject(error);
+      throw error;
     }
 
     originalRequest._retry = true;
@@ -102,7 +102,7 @@ axiosInstance.interceptors.response.use(
       return axiosInstance(originalRequest);
     } catch {
       clearAuthAndRedirect();
-      return Promise.reject(error);
+      throw error;
     }
   }
 );
