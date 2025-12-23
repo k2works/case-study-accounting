@@ -17,7 +17,7 @@ const USER_KEY = 'user';
 const decodeJwtPayload = (token: string): { exp: number; sub: string } | null => {
   try {
     const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = base64Url.replaceAll('-', '+').replaceAll('_', '/');
     const payload = JSON.parse(window.atob(base64));
     return payload;
   } catch {

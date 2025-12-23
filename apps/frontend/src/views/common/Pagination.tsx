@@ -127,7 +127,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <div className="pagination__info">
         {onItemsPerPageChange && (
           <div className="pagination__per-page">
-            表示件数:
+            <span>表示件数:</span>
             <select
               className="pagination__select"
               value={itemsPerPage}
