@@ -51,6 +51,7 @@
 - [フロントエンドデモ環境](./operation/frontend_demo_env.md) - nginx を使用したデモ環境
 - [SonarQube セットアップガイド](./operation/sonarqube_setup.md) - コード品質分析環境の構築
 - [E2E テスト実行手順書](./operation/e2e_test.md) - Cypress と MSW を使った E2E テストの実行方法
+- [GitHub Project 運用ガイド](./operation/github_project.md) - GitHub Projects V2 によるプロジェクト管理
 
 ## リファレンス
 
