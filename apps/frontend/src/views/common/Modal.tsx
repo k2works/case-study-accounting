@@ -44,7 +44,13 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
   };
 
   return (
-    <div className="modal__overlay" onClick={handleOverlayClick}>
+    <div className="modal__overlay">
+      <button
+        type="button"
+        className="modal__overlay-button"
+        onClick={handleOverlayClick}
+        aria-label="モーダルを閉じる"
+      />
       <dialog className="modal" open aria-modal="true" aria-labelledby="modal-title">
         <div className="modal__header">
           <h2 id="modal-title" className="modal__title">

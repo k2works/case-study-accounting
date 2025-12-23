@@ -48,10 +48,9 @@ describe('Modal', () => {
   it('calls onClose when overlay is clicked', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
-    const { container } = render(<Modal {...defaultProps} onClose={onClose} />);
+    render(<Modal {...defaultProps} onClose={onClose} />);
 
-    const overlay = container.querySelector('.modal__overlay');
-    await user.click(overlay!);
+    await user.click(screen.getByRole('button', { name: 'モーダルを閉じる' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
