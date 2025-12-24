@@ -45,7 +45,7 @@ export default function (gulp) {
             console.log('Building backend Docker image...');
             console.log(`Context: ${BACKEND_DIR}`);
 
-            execSync(`docker build --platform linux/amd64 -t registry.heroku.com/${BACKEND_APP}/web ${BACKEND_DIR}`, {
+            execSync(`docker build --platform linux/amd64 --provenance=false -t registry.heroku.com/${BACKEND_APP}/web ${BACKEND_DIR}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
@@ -121,7 +121,7 @@ export default function (gulp) {
             const demoUsername = process.env.VITE_DEMO_USERNAME || 'admin';
             const demoPassword = process.env.VITE_DEMO_PASSWORD || 'Password123!';
 
-            execSync(`docker build --platform linux/amd64 --build-arg VITE_DEMO_MODE=true --build-arg VITE_DEMO_USERNAME=${demoUsername} --build-arg VITE_DEMO_PASSWORD=${demoPassword} -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
+            execSync(`docker build --platform linux/amd64 --provenance=false --build-arg VITE_DEMO_MODE=true --build-arg VITE_DEMO_USERNAME=${demoUsername} --build-arg VITE_DEMO_PASSWORD=${demoPassword} -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
