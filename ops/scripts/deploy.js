@@ -45,7 +45,7 @@ export default function (gulp) {
             console.log('Building backend Docker image...');
             console.log(`Context: ${BACKEND_DIR}`);
 
-            execSync(`docker build -t registry.heroku.com/${BACKEND_APP}/web ${BACKEND_DIR}`, {
+            execSync(`docker build --platform linux/amd64 -t registry.heroku.com/${BACKEND_APP}/web ${BACKEND_DIR}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
@@ -66,7 +66,10 @@ export default function (gulp) {
         try {
             console.log('Pushing backend Docker image to Heroku...');
 
-            execSync(`docker push registry.heroku.com/${BACKEND_APP}/web`, { stdio: 'inherit' });
+            execSync(`heroku container:push web -a ${BACKEND_APP}`, {
+                stdio: 'inherit',
+                cwd: BACKEND_DIR
+            });
 
             console.log('\nBackend Docker image pushed successfully!');
 
@@ -114,7 +117,7 @@ export default function (gulp) {
             console.log('Building frontend Docker image (demo mode enabled)...');
             console.log(`Context: ${FRONTEND_DIR}`);
 
-            execSync(`docker build --build-arg VITE_DEMO_MODE=true -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
+            execSync(`docker build --platform linux/amd64 --build-arg VITE_DEMO_MODE=true -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
@@ -135,7 +138,10 @@ export default function (gulp) {
         try {
             console.log('Pushing frontend Docker image to Heroku...');
 
-            execSync(`docker push registry.heroku.com/${FRONTEND_APP}/web`, { stdio: 'inherit' });
+            execSync(`heroku container:push web -a ${FRONTEND_APP}`, {
+                stdio: 'inherit',
+                cwd: FRONTEND_DIR
+            });
 
             console.log('\nFrontend Docker image pushed successfully!');
 
