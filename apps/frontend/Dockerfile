@@ -4,11 +4,18 @@ WORKDIR /app
 
 # ビルド時の環境変数
 ARG VITE_DEMO_MODE=false
-ENV VITE_DEMO_MODE=${VITE_DEMO_MODE}
+ARG VITE_DEMO_USERNAME=
+ARG VITE_DEMO_PASSWORD=
 
 COPY package*.json ./
 RUN npm ci
 COPY . .
+
+# ビルド時に環境変数ファイルを生成（.env.production.local は .env.production より優先される）
+RUN echo "VITE_DEMO_MODE=${VITE_DEMO_MODE}" >> .env.production.local && \
+    echo "VITE_DEMO_USERNAME=${VITE_DEMO_USERNAME}" >> .env.production.local && \
+    echo "VITE_DEMO_PASSWORD=${VITE_DEMO_PASSWORD}" >> .env.production.local
+
 RUN npm run api:generate
 RUN npm run build
 
