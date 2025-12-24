@@ -22,6 +22,7 @@ public class Application {
     private static final String CONTAINER_NAME = "accounting-postgres";
     private static final int MAX_WAIT_SECONDS = 30;
     private static final String DOCKER_PATH = resolveDockerPath();
+    private static final String DOCKER_COMPOSE_PATH = resolveDockerComposePath();
 
     public static void main(String[] args) {
         ensureDatabaseContainerRunning();
@@ -34,6 +35,14 @@ public class Application {
     @SuppressWarnings("PMD.DoNotUseThreads") // InterruptedException 処理で Thread.currentThread().interrupt() は標準的
     private static void ensureDatabaseContainerRunning() {
         try {
+            if (!containerExists()) {
+                LOGGER.info("DB コンテナが存在しません。docker-compose で作成・起動します...");
+                createAndStartContainer();
+                waitForContainerHealthy();
+                LOGGER.info("DB コンテナが正常に作成・起動しました。");
+                return;
+            }
+
             if (!isContainerRunning()) {
                 LOGGER.info("DB コンテナが停止しています。起動します...");
                 startContainer();
@@ -74,6 +83,80 @@ public class Application {
 
         LOGGER.warn("Docker の絶対パスが見つかりません。PATH から docker を使用します。");
         return "docker";
+    }
+
+    /**
+     * docker-compose コマンドの絶対パスを解決する
+     */
+    private static String resolveDockerComposePath() {
+        String envPath = System.getenv("DOCKER_COMPOSE_PATH");
+        if (envPath != null && Files.isExecutable(Path.of(envPath))) {
+            return envPath;
+        }
+
+        String[] candidates = {
+            "/usr/bin/docker-compose",
+            "/usr/local/bin/docker-compose",
+            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker-compose.exe"
+        };
+
+        for (String candidate : candidates) {
+            if (Files.isExecutable(Path.of(candidate))) {
+                return candidate;
+            }
+        }
+
+        LOGGER.warn("docker-compose の絶対パスが見つかりません。PATH から docker-compose を使用します。");
+        return "docker-compose";
+    }
+
+    /**
+     * コンテナが存在するか確認
+     */
+    private static boolean containerExists() throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(DOCKER_PATH, "ps", "-a", "-q", "-f", "name=" + CONTAINER_NAME);
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            String output = reader.readLine();
+            process.waitFor(5, TimeUnit.SECONDS);
+            return output != null && !output.isEmpty();
+        }
+    }
+
+    /**
+     * docker-compose でコンテナを作成・起動
+     */
+    private static void createAndStartContainer() throws IOException, InterruptedException {
+        // docker-compose.yml はプロジェクトルートにあると想定
+        // 実行時のカレントディレクトリが apps/backend の場合、2つ上の階層
+        ProcessBuilder pb = new ProcessBuilder(DOCKER_COMPOSE_PATH, "up", "-d", "postgres");
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            readProcessOutput(reader);
+        }
+
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            // docker-compose が失敗した場合、docker compose (V2) を試行
+            ProcessBuilder pbV2 = new ProcessBuilder(DOCKER_PATH, "compose", "up", "-d", "postgres");
+            pbV2.redirectErrorStream(true);
+            Process processV2 = pbV2.start();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(processV2.getInputStream(), StandardCharsets.UTF_8))) {
+                readProcessOutput(reader);
+            }
+            exitCode = processV2.waitFor();
+        }
+
+        if (exitCode != 0) {
+            throw new IllegalStateException("docker-compose up failed with exit code: " + exitCode);
+        }
     }
 
     /**
