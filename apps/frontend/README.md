@@ -103,6 +103,46 @@ console.log(config.appName);
 - パスワードや API キーなどの機密情報は本番環境では絶対に設定しないでください
 - `VITE_DEMO_USERNAME` / `VITE_DEMO_PASSWORD` は開発・デモ環境専用です
 
+## Docker ビルド
+
+### 通常ビルド
+
+```bash
+docker build -t frontend .
+```
+
+### デモモードでのビルド
+
+デモ環境向けにビルドする場合、`--build-arg` でデモ認証情報を渡します。
+
+```bash
+docker build \
+  --build-arg VITE_DEMO_MODE=true \
+  --build-arg VITE_DEMO_USERNAME=admin \
+  --build-arg VITE_DEMO_PASSWORD=Password123! \
+  -t frontend .
+```
+
+デモモードが有効な場合、ログイン画面にユーザー名とパスワードが自動入力されます。
+
+### Heroku へのデプロイ
+
+プロジェクトルートから gulp タスクを使用します。
+
+```bash
+# フロントエンドのみデプロイ（デモモード有効）
+gulp deploy:frontend
+
+# 全アプリケーションをデプロイ
+gulp deploy:all
+```
+
+デプロイ時のデモ認証情報は環境変数で変更できます。
+
+```bash
+VITE_DEMO_USERNAME=myuser VITE_DEMO_PASSWORD=mypassword gulp deploy:frontend
+```
+
 ## スクリプト
 
 | コマンド | 説明 |
