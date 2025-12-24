@@ -145,12 +145,65 @@ VITE_DEMO_USERNAME=myuser VITE_DEMO_PASSWORD=mypassword gulp deploy:frontend
 
 ## スクリプト
 
+### 開発
+
 | コマンド | 説明 |
 |---------|------|
 | `npm run dev` | 開発サーバー起動 |
+| `npm run dev:e2e` | E2E テスト用開発サーバー起動（MSW 有効） |
 | `npm run build` | 本番ビルド |
 | `npm run preview` | ビルド結果のプレビュー |
-| `npm test` | テスト実行 |
+| `npm run setup` | 初期セットアップ（install + checkAndFix） |
+
+### テスト
+
+| コマンド | 説明 |
+|---------|------|
+| `npm test` | テスト実行（watch モード） |
+| `npm run test:run` | テスト実行（一度のみ） |
+| `npm run test:ui` | テスト UI 起動 |
 | `npm run test:coverage` | カバレッジ付きテスト |
+
+### E2E テスト
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run cypress` | Cypress をインタラクティブモードで起動 |
+| `npm run cypress:run` | Cypress をヘッドレスモードで実行 |
+| `npm run e2e` | E2E テスト実行（cypress:run のエイリアス） |
+| `npm run e2e:open` | E2E テストをインタラクティブモードで起動 |
+
+### コード品質
+
+| コマンド | 説明 |
+|---------|------|
 | `npm run lint` | ESLint 実行 |
+| `npm run lint:fix` | ESLint 自動修正 |
+| `npm run lint:report` | ESLint レポート出力（JSON） |
 | `npm run format` | Prettier でフォーマット |
+| `npm run format:check` | Prettier フォーマットチェック |
+| `npm run depcruise` | 依存関係チェック |
+| `npm run check` | 全チェック実行（Gulp） |
+| `npm run checkAndFix` | 全チェック＆自動修正（Gulp） |
+
+### API クライアント
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run api:generate` | OpenAPI から API クライアント生成 |
+| `npm run api:fetch` | バックエンドから OpenAPI スキーマを取得して生成 |
+
+### SonarQube
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run sonar` | SonarQube 分析実行（テスト + lint + スキャン） |
+| `npm run sonar:ci` | CI 用 SonarQube 分析（スキャンのみ） |
+
+### Gulp タスク
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run gulp` | Gulp タスク実行 |
+| `npm run watch` | ファイル監視タスク |
+| `npm run guard` | ガードタスク |

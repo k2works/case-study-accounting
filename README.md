@@ -76,6 +76,63 @@ npm install
 npm start
 ```
 
+### npm スクリプト
+
+#### 開発
+
+| コマンド | 説明 |
+|---------|------|
+| `npm start` | 開発環境起動（MkDocs サーバー） |
+| `npm run dev:backend` | バックエンド開発サーバー起動 |
+| `npm run dev:frontend` | フロントエンド開発サーバー起動 |
+| `npm run dev:frontend:e2e` | フロントエンド E2E テスト用サーバー起動 |
+
+#### ドキュメント
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run docs:serve` | MkDocs サーバー起動 |
+| `npm run docs:stop` | MkDocs サーバー停止 |
+| `npm run docs:build` | MkDocs ドキュメントビルド |
+| `npm run journal` | 作業履歴（ジャーナル）生成 |
+
+#### フロントエンド
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run frontend:lint` | ESLint 実行 |
+| `npm run frontend:format` | フォーマットチェック |
+| `npm run frontend:test` | テスト実行 |
+| `npm run frontend:check` | lint + format チェック |
+| `npm run frontend:build` | 本番ビルド |
+
+#### バックエンド
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run backend:check` | Gradle check 実行 |
+
+#### デプロイ
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run deploy:backend` | バックエンドをデプロイ |
+| `npm run deploy:frontend` | フロントエンドをデプロイ |
+| `npm run deploy:all` | 全アプリケーションをデプロイ |
+| `npm run deploy:status` | デプロイ状態確認 |
+| `npm run deploy:open` | デプロイ済みアプリをブラウザで開く |
+| `npm run deploy:backend:open` | バックエンドをブラウザで開く |
+| `npm run deploy:frontend:open` | フロントエンドをブラウザで開く |
+| `npm run deploy:backend:logs` | バックエンドログ表示 |
+| `npm run deploy:frontend:logs` | フロントエンドログ表示 |
+
+#### その他
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run claude:yol` | Claude Code（権限スキップモード） |
+| `npm run prepare` | Husky セットアップ |
+
 ### Docker Compose でアプリケーション起動
 
 バックエンドとフロントエンドを Docker Compose で起動できます。

@@ -128,6 +128,58 @@ npm run dev
 | user | Password123! | 経理担当者 |
 | viewer | Password123! | 閲覧者 |
 
+## npm スクリプト
+
+プロジェクトルートから実行できる npm スクリプト一覧です。
+
+### 開発
+
+| コマンド | 説明 |
+|---------|------|
+| `npm start` | 開発環境起動（MkDocs サーバー） |
+| `npm run dev:backend` | バックエンド開発サーバー起動 |
+| `npm run dev:frontend` | フロントエンド開発サーバー起動 |
+| `npm run dev:frontend:e2e` | フロントエンド E2E テスト用サーバー起動 |
+
+### ドキュメント
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run docs:serve` | MkDocs サーバー起動 |
+| `npm run docs:stop` | MkDocs サーバー停止 |
+| `npm run docs:build` | MkDocs ドキュメントビルド |
+| `npm run journal` | 作業履歴（ジャーナル）生成 |
+
+### フロントエンド
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run frontend:lint` | ESLint 実行 |
+| `npm run frontend:format` | フォーマットチェック |
+| `npm run frontend:test` | テスト実行 |
+| `npm run frontend:check` | lint + format チェック |
+| `npm run frontend:build` | 本番ビルド |
+
+### バックエンド
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run backend:check` | Gradle check 実行 |
+
+### デプロイ
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run deploy:backend` | バックエンドをデプロイ |
+| `npm run deploy:frontend` | フロントエンドをデプロイ |
+| `npm run deploy:all` | 全アプリケーションをデプロイ |
+| `npm run deploy:status` | デプロイ状態確認 |
+| `npm run deploy:open` | デプロイ済みアプリをブラウザで開く |
+| `npm run deploy:backend:open` | バックエンドをブラウザで開く |
+| `npm run deploy:frontend:open` | フロントエンドをブラウザで開く |
+| `npm run deploy:backend:logs` | バックエンドログ表示 |
+| `npm run deploy:frontend:logs` | フロントエンドログ表示 |
+
 ## サービス一覧
 
 ### アプリケーションサービス
@@ -245,17 +297,29 @@ cd apps/frontend
 # ESLint
 npm run lint
 
+# ESLint（自動修正）
+npm run lint:fix
+
 # Prettier（チェックのみ）
 npm run format:check
 
 # Prettier（自動修正）
 npm run format
 
-# テスト
-npm run test
+# テスト（watch モード）
+npm test
+
+# テスト（一度のみ）
+npm run test:run
 
 # カバレッジ
-npm run coverage
+npm run test:coverage
+
+# 全チェック（lint + format）
+npm run check
+
+# 全チェック + 自動修正
+npm run checkAndFix
 ```
 
 ## 開発サーバーの起動パターン
@@ -277,14 +341,11 @@ cd apps/frontend && npm run dev
 
 ### パターン 2: フロントエンド開発のみ
 
-バックエンドは Docker で起動する場合。
+バックエンドは MSW で起動する場合。
 
 ```bash
-# バックエンド + データベースを Docker で起動
-docker compose up -d backend postgres
-
 # フロントエンドのみローカル開発
-cd apps/frontend && npm run dev
+cd apps/frontend && npm run dev:e2e
 ```
 
 ### パターン 3: Docker Compose で全て起動
