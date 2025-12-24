@@ -68,6 +68,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Heroku CLI のインストール
+RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+
 # Java 25 (SDKMAN!) のインストール準備
 RUN apt-get update && \
     apt-get install -y \
