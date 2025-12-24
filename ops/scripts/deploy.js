@@ -187,16 +187,6 @@ export default function (gulp) {
     ));
 
     /**
-     * 全アプリケーションをデプロイする
-     */
-    gulp.task('deploy:all', gulp.series(
-        'deploy:login',
-        gulp.parallel('deploy:backend:build', 'deploy:frontend:build'),
-        gulp.parallel('deploy:backend:push', 'deploy:frontend:push'),
-        gulp.parallel('deploy:backend:release', 'deploy:frontend:release')
-    ));
-
-    /**
      * デプロイ状態を確認する
      */
     gulp.task('deploy:status', (done) => {
@@ -284,4 +274,15 @@ export default function (gulp) {
      * 両アプリケーションをブラウザで開く
      */
     gulp.task('deploy:open', gulp.parallel('deploy:backend:open', 'deploy:frontend:open'));
+
+    /**
+     * 全アプリケーションをデプロイする
+     */
+    gulp.task('deploy:all', gulp.series(
+        'deploy:login',
+        gulp.parallel('deploy:backend:build', 'deploy:frontend:build'),
+        gulp.parallel('deploy:backend:push', 'deploy:frontend:push'),
+        gulp.parallel('deploy:backend:release', 'deploy:frontend:release'),
+        'deploy:open'
+    ));
 }
