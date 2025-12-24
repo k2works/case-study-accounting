@@ -9,6 +9,11 @@ import path from 'path';
 const isWindows = process.platform === 'win32';
 
 /**
+ * @type {boolean} macOS環境かどうかをチェック
+ */
+const isMac = process.platform === 'darwin';
+
+/**
  * SonarQube関連のGulpタスクを登録する
  * @param {import('gulp').Gulp} gulp
  */
@@ -62,7 +67,8 @@ export default function (gulp) {
         try {
             console.log('Opening SonarQube dashboard...');
 
-            const command = isWindows ? `start ${SONAR_URL}` : `open ${SONAR_URL}`;
+            const openCmd = isWindows ? 'start' : isMac ? 'open' : 'xdg-open';
+            const command = `${openCmd} ${SONAR_URL}`;
             execSync(command, { stdio: 'inherit' });
 
             console.log('SonarQube dashboard opened successfully!');

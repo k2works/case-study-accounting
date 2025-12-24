@@ -9,6 +9,11 @@ import path from 'path';
  */
 const isWindows = process.platform === 'win32';
 
+/**
+ * @type {boolean} macOS環境かどうかをチェック
+ */
+const isMac = process.platform === 'darwin';
+
 // Function to register the mkdocs:serve task
 export default function (gulp) {
     // Helper function to remove site directory
@@ -82,7 +87,8 @@ export default function (gulp) {
         try {
             console.log('Opening MkDocs server...');
 
-            const command = isWindows ? 'start http://localhost:8000' : 'open http://localhost:8000';
+            const openCmd = isWindows ? 'start' : isMac ? 'open' : 'xdg-open';
+            const command = `${openCmd} http://localhost:8000`;
             execSync(command, {stdio: 'inherit'});
 
             console.log('MkDocs server opened successfully!');

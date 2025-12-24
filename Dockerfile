@@ -47,6 +47,7 @@ RUN apt-get update && \
         tmux \
         ca-certificates \
         gnupg \
+        xdg-utils \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*
 
