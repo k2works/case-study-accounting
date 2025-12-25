@@ -1,6 +1,7 @@
-package com.example.accounting.infrastructure.web.controller;
+package com.example.accounting.integration;
 
 import com.example.accounting.TestcontainersConfiguration;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -13,7 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
-class HealthControllerIntegrationTest {
+@DisplayName("ヘルスチェック API 統合テスト")
+class HealthApiIntegrationTest {
 
     @LocalServerPort
     private int port;
