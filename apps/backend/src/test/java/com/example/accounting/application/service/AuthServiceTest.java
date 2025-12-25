@@ -1,6 +1,6 @@
 package com.example.accounting.application.service;
 
-import com.example.accounting.application.port.in.LoginResult;
+import com.example.accounting.application.port.out.LoginResult;
 import com.example.accounting.application.port.in.command.LoginCommand;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.Email;

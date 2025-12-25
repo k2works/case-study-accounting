@@ -1,7 +1,7 @@
 package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.AuthUseCase;
-import com.example.accounting.application.port.in.LoginResult;
+import com.example.accounting.application.port.out.LoginResult;
 import com.example.accounting.application.port.in.command.LoginCommand;
 import com.example.accounting.infrastructure.web.dto.LoginRequest;
 import com.example.accounting.infrastructure.web.dto.LoginResponse;
