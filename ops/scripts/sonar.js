@@ -29,7 +29,13 @@ export default function (gulp) {
         try {
             console.log('Starting SonarQube services using Docker Compose...');
 
-            execSync('docker compose up -d sonarqube-db sonarqube', { stdio: 'inherit' });
+            // Normalize DOCKER_HOST on Windows if it's incorrect
+            const env = { ...process.env };
+            if (isWindows && env.DOCKER_HOST === 'npipe://./pipe/docker_engine') {
+                env.DOCKER_HOST = 'npipe:////./pipe/docker_engine';
+            }
+
+            execSync('docker compose up -d sonarqube-db sonarqube', { stdio: 'inherit', env });
 
             console.log('\nSonarQube services started successfully!');
             console.log(`SonarQube dashboard is available at ${SONAR_URL}`);
@@ -49,7 +55,13 @@ export default function (gulp) {
         try {
             console.log('Stopping SonarQube services...');
 
-            execSync('docker compose stop sonarqube sonarqube-db', { stdio: 'inherit' });
+            // Normalize DOCKER_HOST on Windows if it's incorrect
+            const env = { ...process.env };
+            if (isWindows && env.DOCKER_HOST === 'npipe://./pipe/docker_engine') {
+                env.DOCKER_HOST = 'npipe:////./pipe/docker_engine';
+            }
+
+            execSync('docker compose stop sonarqube sonarqube-db', { stdio: 'inherit', env });
 
             console.log('SonarQube services stopped successfully!');
 
@@ -142,7 +154,13 @@ export default function (gulp) {
         try {
             console.log('Checking SonarQube service status...');
 
-            execSync('docker compose ps sonarqube sonarqube-db', { stdio: 'inherit' });
+            // Normalize DOCKER_HOST on Windows if it's incorrect
+            const env = { ...process.env };
+            if (isWindows && env.DOCKER_HOST === 'npipe://./pipe/docker_engine') {
+                env.DOCKER_HOST = 'npipe:////./pipe/docker_engine';
+            }
+
+            execSync('docker compose ps sonarqube sonarqube-db', { stdio: 'inherit', env });
 
             done();
         } catch (error) {
@@ -158,7 +176,13 @@ export default function (gulp) {
         try {
             console.log('Showing SonarQube logs...');
 
-            execSync('docker compose logs -f sonarqube', { stdio: 'inherit' });
+            // Normalize DOCKER_HOST on Windows if it's incorrect
+            const env = { ...process.env };
+            if (isWindows && env.DOCKER_HOST === 'npipe://./pipe/docker_engine') {
+                env.DOCKER_HOST = 'npipe:////./pipe/docker_engine';
+            }
+
+            execSync('docker compose logs -f sonarqube', { stdio: 'inherit', env });
 
             done();
         } catch (error) {
