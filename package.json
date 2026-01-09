@@ -9,6 +9,7 @@
     "docs:stop": "gulp mkdocs:stop",
     "docs:build": "gulp mkdocs:build",
     "claude:yol": "claude --dangerously-skip-permissions",
+    "copilot:yol": "copilot --allow-all-tools",
     "prepare": "husky",
     "frontend:lint": "cd apps/frontend && npm run lint",
     "frontend:format": "cd apps/frontend && npm run format:check",
