@@ -526,6 +526,16 @@ Nix を使用して、再現可能な開発環境を構築できます。
   nix develop
   ```
 
+- **Frontend 環境（React + TypeScript + Vite）に入る:**
+  ```bash
+  nix develop .#frontend
+  ```
+
+- **Backend 環境（Spring Boot + Java + Gradle）に入る:**
+  ```bash
+  nix develop .#backend
+  ```
+
 - **Node.js 環境に入る:**
   ```bash
   nix develop .#node
@@ -537,6 +547,16 @@ Nix を使用して、再現可能な開発環境を構築できます。
   ```
 
 環境から抜けるには `exit` を入力します。
+
+##### 利用可能な環境一覧
+
+| 環境 | コマンド | 用途 |
+|------|----------|------|
+| default | `nix develop` | 共通ツール（git, curl, vim, tmux） |
+| frontend | `nix develop .#frontend` | React + TypeScript + Vite 開発 |
+| backend | `nix develop .#backend` | Spring Boot + Java + Gradle 開発 |
+| node | `nix develop .#node` | Node.js 汎用開発 |
+| python | `nix develop .#python` | Python + MkDocs ドキュメント作成 |
 
 #### 依存関係の更新
 
