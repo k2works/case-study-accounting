@@ -5,11 +5,17 @@ on:
     branches: [ main, develop ]
     paths:
       - 'apps/frontend/**'
+      - 'ops/nix/environments/frontend/**'
+      - 'flake.nix'
+      - 'flake.lock'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'apps/frontend/**'
+      - 'ops/nix/environments/frontend/**'
+      - 'flake.nix'
+      - 'flake.lock'
       - '.github/workflows/frontend-ci.yml'
   workflow_dispatch:
 
@@ -25,36 +31,51 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Install Nix
+      uses: cachix/install-nix-action@v30
       with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: apps/frontend/package-lock.json
+        nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+
+    - name: Cache Nix store
+      uses: actions/cache@v4
+      with:
+        path: /nix/store
+        key: nix-${{ runner.os }}-frontend-${{ hashFiles('flake.lock') }}
+        restore-keys: |
+          nix-${{ runner.os }}-frontend-
 
     - name: Install dependencies
-      run: npm ci
+      run: nix develop .#frontend --command npm ci
+      working-directory: .
 
     - name: Generate API client
-      run: npm run api:generate
+      run: nix develop .#frontend --command npm run api:generate
+      working-directory: .
 
     - name: Run ESLint
-      run: npm run lint
+      run: nix develop .#frontend --command bash -c "cd apps/frontend && npm run lint"
+      working-directory: .
       continue-on-error: true
 
     - name: Check formatting
-      run: npm run format:check
+      run: nix develop .#frontend --command bash -c "cd apps/frontend && npm run format:check"
+      working-directory: .
       continue-on-error: true
 
     - name: Check circular dependencies
-      run: npm run depcruise
+      run: nix develop .#frontend --command bash -c "cd apps/frontend && npm run depcruise"
+      working-directory: .
       continue-on-error: true
 
     - name: Run tests with coverage
-      run: npm run test:coverage
+      run: nix develop .#frontend --command bash -c "cd apps/frontend && npm run test:coverage"
+      working-directory: .
 
     - name: Build
-      run: npm run build
+      run: nix develop .#frontend --command bash -c "cd apps/frontend && npm run build"
+      working-directory: .
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
