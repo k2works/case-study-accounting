@@ -47,11 +47,11 @@ jobs:
           nix-${{ runner.os }}-frontend-
 
     - name: Install dependencies
-      run: nix develop .#frontend --command npm ci
+      run: nix develop .#frontend --command bash -c "cd apps/frontend && npm ci"
       working-directory: .
 
     - name: Generate API client
-      run: nix develop .#frontend --command npm run api:generate
+      run: nix develop .#frontend --command bash -c "cd apps/frontend && npm run api:generate"
       working-directory: .
 
     - name: Run ESLint
