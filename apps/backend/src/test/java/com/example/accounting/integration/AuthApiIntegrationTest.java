@@ -1,4 +1,4 @@
-package com.example.accounting.infrastructure.web.controller;
+package com.example.accounting.integration;
 
 import com.example.accounting.TestcontainersConfiguration;
 import com.example.accounting.infrastructure.web.dto.LoginResponse;
@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("認証 API 統合テスト")
-class AuthControllerIntegrationTest {
+class AuthApiIntegrationTest {
 
     @LocalServerPort
     private int port;
