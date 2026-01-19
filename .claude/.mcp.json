@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "codex": {
+      "command": "npx",
+      "args": ["@openai/codex", "mcp-server"]
+    },
     "Context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
