@@ -23,13 +23,13 @@
 開発フェーズは以下の工程で構成されます：
 
 1. **バックエンド開発** (`/dev-backend`)
-   - Java/Kotlin での実装
-   - Gradle によるビルド・テスト
+   - 実装
+   - ビルド・テスト
    - インサイドアウトアプローチ推奨
 
 2. **フロントエンド開発** (`/dev-frontend`)
-   - TypeScript/React での実装
-   - npm によるビルド・テスト
+   - 実装
+   - ビルド・テスト
    - アウトサイドインアプローチ推奨
 
 #### TDD サイクルの実践
@@ -43,6 +43,7 @@ Red-Green-Refactor サイクルを厳密に実行：
 
 #### 参照ドキュメント
 
+- @docs/design/architecture.md を参照
 - @docs/design/architecture_backend.md を参照
 - @docs/design/architecture_frontend.md を参照
 - @docs/design/data-model.md を参照
