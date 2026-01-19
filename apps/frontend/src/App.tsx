@@ -56,7 +56,7 @@ export const App = () => {
         }
       />
       <Route
-        path="/users/register"
+        path="/system/users"
         element={
           <AdminRoute>
             <RegisterUserPage />
