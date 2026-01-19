@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import RegisterUserPage from './pages/RegisterUserPage';
+import CreateAccountPage from './pages/CreateAccountPage';
 import { Loading } from './views/common';
 
 /**
@@ -43,6 +44,27 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+/**
+ * 管理者または経理責任者のみアクセス可能なルートのガード
+ */
+const ManagerRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading, hasRole } = useAuth();
+
+  if (isLoading) {
+    return <Loading message="認証情報を確認中..." fullScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!hasRole('ADMIN') && !hasRole('MANAGER')) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 export const App = () => {
   return (
     <Routes>
@@ -61,6 +83,14 @@ export const App = () => {
           <AdminRoute>
             <RegisterUserPage />
           </AdminRoute>
+        }
+      />
+      <Route
+        path="/master/accounts"
+        element={
+          <ManagerRoute>
+            <CreateAccountPage />
+          </ManagerRoute>
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
