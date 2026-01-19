@@ -1,0 +1,105 @@
+.register-form__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-left: 4px solid var(--color-error);
+  border-radius: var(--border-radius);
+  color: var(--color-error);
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+}
+
+.register-form__error-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.register-form__error-text {
+  flex: 1;
+}
+
+.register-form__success {
+  margin-bottom: 20px;
+}
+
+.register-form__field {
+  margin-bottom: 20px;
+}
+
+.register-form__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.register-form__required {
+  color: var(--color-error);
+}
+
+.register-form__input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  background-color: white;
+}
+
+.register-form__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.register-form__input:disabled {
+  background-color: var(--color-background);
+}
+
+.register-form__input.is-error {
+  border-color: var(--color-error);
+}
+
+.register-form__input.is-error:focus {
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+}
+
+.register-form__field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--font-size-small);
+  color: var(--color-error);
+}
+
+.register-form__submit {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.register-form__submit:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+
+.register-form__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

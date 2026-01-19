@@ -17,7 +17,13 @@ fi
 BACKEND_CHANGED=$(git diff --cached --name-only | grep -E "^apps/backend/" || true)
 if [ -n "$BACKEND_CHANGED" ]; then
     echo "[Backend] Running quality checks..."
-    (cd apps/backend && ./gradlew.bat check --console=plain) || exit 1
+    if [ -f "apps/backend/gradlew" ]; then
+        (cd apps/backend && ./gradlew check --console=plain) || exit 1
+    elif [ -f "apps/backend/gradlew.bat" ]; then
+        (cd apps/backend && ./gradlew.bat check --console=plain) || exit 1
+    else
+        echo "Warning: gradlew not found, skipping backend checks"
+    fi
 fi
 
 echo "Pre-commit checks completed!"
