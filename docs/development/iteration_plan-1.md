@@ -131,24 +131,48 @@
 
 ---
 
-### US-MST-002: 勘定科目編集（3SP）
+### US-MST-002: 勘定科目編集（3SP） ✅ 完了
 
 **受入条件**:
 
-- [ ] 科目名、勘定科目種別を編集できる
-- [ ] 科目コードは変更できない
-- [ ] 仕訳で使用されている科目の種別は変更できない
-- [ ] 編集成功時、確認メッセージが表示される
+- [x] 科目名、勘定科目種別を編集できる
+- [x] 科目コードは変更できない
+- [x] 仕訳で使用されている科目の種別は変更できない（スタブ実装: 仕訳機能は将来実装のため、現時点では AccountUsageChecker が常に false を返す）
+- [x] 編集成功時、確認メッセージが表示される
 
 | タスクID | タスク名 | 理想時間 | 担当 | 状態 |
 |----------|---------|---------|------|------|
-| MST-002-01 | 勘定科目編集ユースケース実装 | 3h | - | 未着手 |
-| MST-002-02 | 使用中チェックロジック実装 | 2h | - | 未着手 |
-| MST-002-03 | 勘定科目編集 API 実装 | 2h | - | 未着手 |
-| MST-002-04 | 単体テスト作成 | 3h | - | 未着手 |
-| MST-002-05 | 勘定科目編集画面 UI 実装 | 4h | - | 未着手 |
-| MST-002-06 | 統合テスト | 2h | - | 未着手 |
+| MST-002-01 | 勘定科目編集ユースケース実装 | 3h | - | 完了 |
+| MST-002-02 | 使用中チェックロジック実装 | 2h | - | 完了 |
+| MST-002-03 | 勘定科目編集 API 実装 | 2h | - | 完了 |
+| MST-002-04 | 単体テスト作成 | 3h | - | 完了 |
+| MST-002-05 | 勘定科目編集画面 UI 実装 | 4h | - | 完了 |
+| MST-002-06 | 統合テスト | 2h | - | 完了 |
 | | **小計** | **16h** | | |
+
+#### 実装詳細
+
+**バックエンド実装**:
+
+- `UpdateAccountUseCase` / `UpdateAccountCommand` / `UpdateAccountResult` - Input/Output Port
+- `UpdateAccountService` - ユースケース実装（Vavr Either/IO モナド使用）
+- `AccountUsageChecker` / `AccountUsageCheckerImpl` - 使用中チェック（スタブ）
+- `AccountController` - PUT /api/accounts/{id}、GET /api/accounts、GET /api/accounts/{id}
+- `UpdateAccountRequest` / `UpdateAccountResponse` / `AccountResponse` - DTO
+
+**フロントエンド実装**:
+
+- `updateAccount.ts` / `getAccounts.ts` / `getAccount.ts` - API クライアント
+- `AccountList.tsx` - 勘定科目一覧ビュー
+- `EditAccountForm.tsx` - 勘定科目編集フォーム
+- `AccountListPage.tsx` / `EditAccountPage.tsx` - ページコンポーネント
+- ルーティング: `/master/accounts`（一覧）、`/master/accounts/:id/edit`（編集）
+
+**テスト**:
+
+- `UpdateAccountServiceTest` - ユースケースユニットテスト
+- `AccountControllerTest` - コントローラーユニットテスト
+- `AccountApiIntegrationTest` - API 統合テスト
 
 ---
 
