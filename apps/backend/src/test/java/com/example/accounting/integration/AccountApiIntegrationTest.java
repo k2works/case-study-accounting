@@ -1,8 +1,10 @@
 package com.example.accounting.integration;
 
 import com.example.accounting.TestcontainersConfiguration;
+import com.example.accounting.infrastructure.web.dto.AccountResponse;
 import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
 import com.example.accounting.infrastructure.web.dto.LoginResponse;
+import com.example.accounting.infrastructure.web.dto.UpdateAccountResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -53,6 +55,17 @@ class AccountApiIntegrationTest {
                 .body(CreateAccountResponse.class);
     }
 
+    private UpdateAccountResponse performUpdateAccount(RestClient restClient, String token, Integer accountId,
+                                                       String requestBody) {
+        return restClient.put()
+                .uri("/api/accounts/{id}", accountId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .body(requestBody)
+                .retrieve()
+                .body(UpdateAccountResponse.class);
+    }
+
     private String createLoginRequestBody(String username, String password) {
         return """
                 {
@@ -70,6 +83,15 @@ class AccountApiIntegrationTest {
                     "accountType": "%s"
                 }
                 """.formatted(accountCode, accountName, accountType);
+    }
+
+    private String updateAccountRequestBody(String accountName, String accountType) {
+        return """
+                {
+                    "accountName": "%s",
+                    "accountType": "%s"
+                }
+                """.formatted(accountName, accountType);
     }
 
     private String loginAndGetToken(RestClient restClient, String username, String password) {
@@ -240,6 +262,169 @@ class AccountApiIntegrationTest {
                     createAccountRequestBody("5201", "給料手当", "EXPENSE"));
             assertThat(expenseResponse.success()).isTrue();
             assertThat(expenseResponse.accountType()).isEqualTo("EXPENSE");
+        }
+    }
+
+    @Nested
+    @DisplayName("勘定科目更新 API")
+    class UpdateAccountApi {
+
+        @Test
+        @DisplayName("管理者は勘定科目を更新できる")
+        void shouldUpdateAccountAsAdmin() {
+            RestClient restClient = createRestClient();
+            String token = loginAndGetToken(restClient, "admin", "Password123!");
+            CreateAccountResponse createResponse = performCreateAccount(
+                    restClient,
+                    token,
+                    createAccountRequestBody("6101", "立替金", "ASSET")
+            );
+
+            UpdateAccountResponse response = performUpdateAccount(
+                    restClient,
+                    token,
+                    createResponse.accountId(),
+                    updateAccountRequestBody("立替金(社員)", "EXPENSE")
+            );
+
+            assertThat(response)
+                    .isNotNull()
+                    .satisfies(r -> {
+                        assertThat(r.success()).isTrue();
+                        assertThat(r.accountId()).isEqualTo(createResponse.accountId());
+                        assertThat(r.accountCode()).isEqualTo("6101");
+                        assertThat(r.accountName()).isEqualTo("立替金(社員)");
+                        assertThat(r.accountType()).isEqualTo("EXPENSE");
+                        assertThat(r.message()).isEqualTo("勘定科目を更新しました");
+                        assertThat(r.errorMessage()).isNull();
+                    });
+        }
+
+        @Test
+        @DisplayName("存在しない勘定科目は更新できない")
+        void shouldFailWhenAccountDoesNotExist() {
+            RestClient restClient = createRestClient();
+            String token = loginAndGetToken(restClient, "admin", "Password123!");
+
+            UpdateAccountResponse response = restClient.put()
+                    .uri("/api/accounts/{id}", 99999)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + token)
+                    .body(updateAccountRequestBody("不明", "ASSET"))
+                    .exchange((req, res) -> res.bodyTo(UpdateAccountResponse.class));
+
+            assertThat(response)
+                    .isNotNull()
+                    .satisfies(r -> {
+                        assertThat(r.success()).isFalse();
+                        assertThat(r.errorMessage()).isEqualTo("勘定科目が見つかりません");
+                    });
+        }
+    }
+
+    @Nested
+    @DisplayName("勘定科目一覧取得 API")
+    class FindAllAccountsApi {
+
+        @Test
+        @DisplayName("認証済みユーザーは勘定科目一覧を取得できる")
+        void shouldFindAllAccountsAsAuthenticatedUser() {
+            RestClient restClient = createRestClient();
+            String token = loginAndGetToken(restClient, "user", "Password123!");
+
+            // 勘定科目を事前に登録（admin で実行）
+            String adminToken = loginAndGetToken(restClient, "admin", "Password123!");
+            performCreateAccount(restClient, adminToken, createAccountRequestBody("7101", "現金7", "ASSET"));
+
+            // 一覧取得（一般ユーザーで実行）
+            AccountResponse[] responses = restClient.get()
+                    .uri("/api/accounts")
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .body(AccountResponse[].class);
+
+            assertThat(responses).isNotNull();
+            assertThat(responses.length).isGreaterThanOrEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("認証なしでは勘定科目一覧を取得できない")
+        void shouldRejectFindAllWithoutAuth() {
+            RestClient restClient = createRestClient();
+
+            assertThatThrownBy(() -> restClient.get()
+                    .uri("/api/accounts")
+                    .retrieve()
+                    .body(AccountResponse[].class))
+                    .isInstanceOf(HttpClientErrorException.class)
+                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
+                    .extracting(HttpClientErrorException::getStatusCode)
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @Nested
+    @DisplayName("勘定科目単体取得 API")
+    class FindAccountByIdApi {
+
+        @Test
+        @DisplayName("認証済みユーザーは勘定科目を単体取得できる")
+        void shouldFindAccountByIdAsAuthenticatedUser() {
+            RestClient restClient = createRestClient();
+            String adminToken = loginAndGetToken(restClient, "admin", "Password123!");
+
+            // 勘定科目を登録
+            CreateAccountResponse createResponse = performCreateAccount(
+                    restClient,
+                    adminToken,
+                    createAccountRequestBody("8101", "現金8", "ASSET")
+            );
+
+            // 単体取得（一般ユーザーで実行）
+            String userToken = loginAndGetToken(restClient, "user", "Password123!");
+            AccountResponse response = restClient.get()
+                    .uri("/api/accounts/{id}", createResponse.accountId())
+                    .header("Authorization", "Bearer " + userToken)
+                    .retrieve()
+                    .body(AccountResponse.class);
+
+            assertThat(response)
+                    .isNotNull()
+                    .satisfies(r -> {
+                        assertThat(r.accountId()).isEqualTo(createResponse.accountId());
+                        assertThat(r.accountCode()).isEqualTo("8101");
+                        assertThat(r.accountName()).isEqualTo("現金8");
+                        assertThat(r.accountType()).isEqualTo("ASSET");
+                    });
+        }
+
+        @Test
+        @DisplayName("存在しない勘定科目は取得できない")
+        void shouldReturn404WhenAccountDoesNotExist() {
+            RestClient restClient = createRestClient();
+            String token = loginAndGetToken(restClient, "user", "Password123!");
+
+            HttpStatus statusCode = restClient.get()
+                    .uri("/api/accounts/{id}", 99999)
+                    .header("Authorization", "Bearer " + token)
+                    .exchange((req, res) -> HttpStatus.valueOf(res.getStatusCode().value()));
+
+            assertThat(statusCode).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("認証なしでは勘定科目を単体取得できない")
+        void shouldRejectFindByIdWithoutAuth() {
+            RestClient restClient = createRestClient();
+
+            assertThatThrownBy(() -> restClient.get()
+                    .uri("/api/accounts/{id}", 1)
+                    .retrieve()
+                    .body(AccountResponse.class))
+                    .isInstanceOf(HttpClientErrorException.class)
+                    .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
+                    .extracting(HttpClientErrorException::getStatusCode)
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
     }
 }

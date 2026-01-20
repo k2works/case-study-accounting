@@ -3,7 +3,9 @@ import { useAuth } from './hooks/useAuth';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import RegisterUserPage from './pages/RegisterUserPage';
+import AccountListPage from './pages/AccountListPage';
 import CreateAccountPage from './pages/CreateAccountPage';
+import EditAccountPage from './pages/EditAccountPage';
 import { Loading } from './views/common';
 
 /**
@@ -89,7 +91,23 @@ export const App = () => {
         path="/master/accounts"
         element={
           <ManagerRoute>
+            <AccountListPage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/accounts/new"
+        element={
+          <ManagerRoute>
             <CreateAccountPage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/accounts/:id/edit"
+        element={
+          <ManagerRoute>
+            <EditAccountPage />
           </ManagerRoute>
         }
       />

@@ -23,7 +23,12 @@ const CreateAccountPage: React.FC = () => {
     return <Navigate to="/" replace />;
   }
 
-  const breadcrumbs = [{ label: 'ホーム' }, { label: 'マスタ管理' }, { label: '勘定科目登録' }];
+  const breadcrumbs = [
+    { label: 'ホーム' },
+    { label: 'マスタ管理' },
+    { label: '勘定科目一覧', path: '/master/accounts' },
+    { label: '勘定科目登録' },
+  ];
 
   return (
     <MainLayout breadcrumbs={breadcrumbs}>
