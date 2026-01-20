@@ -70,6 +70,16 @@
         <exclude name="SignatureDeclareThrowsException"/>
         <!-- テストコードでの汎用例外スローを許可（意図的なエラー発生テスト） -->
         <exclude name="AvoidThrowingRawExceptionTypes"/>
+        <!-- ExcessiveImports はカスタム設定で上書き -->
+        <exclude name="ExcessiveImports"/>
+    </rule>
+
+    <!-- ExcessiveImports のカスタム設定 -->
+    <!-- コントローラーは Spring/Swagger アノテーション、DTO、ユースケース等で多くのインポートが必要 -->
+    <rule ref="category/java/design.xml/ExcessiveImports">
+        <properties>
+            <property name="minimum" value="40"/>
+        </properties>
     </rule>
 
     <!-- 循環複雑度のカスタム設定 -->

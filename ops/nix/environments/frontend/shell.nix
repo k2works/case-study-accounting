@@ -1,0 +1,20 @@
+{ packages ? import <nixpkgs> {} }:
+let
+  baseShell = import ../../shells/shell.nix { inherit packages; };
+in
+packages.mkShell {
+  inherit (baseShell) pure;
+  buildInputs = baseShell.buildInputs ++ (with packages; [
+    nodejs_22
+    nodePackages.npm
+    nodePackages.typescript
+    nodePackages.typescript-language-server
+  ]);
+  shellHook = ''
+    ${baseShell.shellHook}
+    echo "Frontend (React + TypeScript + Vite) development environment activated"
+    echo "  - Node.js: $(node --version)"
+    echo "  - npm: $(npm --version)"
+    echo "  - TypeScript: $(tsc --version)"
+  '';
+}

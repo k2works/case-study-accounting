@@ -20,14 +20,51 @@ const createMockJwt = (sub: string, expiresInSeconds = 3600): string => {
 
 // Account type definition (will be replaced by generated types)
 interface Account {
+  accountId: number;
   accountCode: string;
   accountName: string;
-  bsplType: string;
-  debitCreditType: string;
-  elementType: string;
-  displayOrder: number;
-  version: number;
+  accountType: string;
 }
+
+// モックユーザー定義
+const mockUsers: Record<string, { password: string; role: string }> = {
+  admin: { password: 'Password123!', role: 'ADMIN' },
+  user: { password: 'Password123!', role: 'USER' },
+  manager: { password: 'Password123!', role: 'MANAGER' },
+  viewer: { password: 'Password123!', role: 'VIEWER' },
+};
+
+// エラーユーザー定義
+const errorUsers: Record<string, string> = {
+  locked:
+    'アカウントがロックされています。ログイン試行が複数回失敗したため、セキュリティ保護のためロックされました。管理者にお問い合わせください。',
+  inactive: 'アカウントが無効化されています。管理者にお問い合わせください。',
+};
+
+/**
+ * ログインリクエストを処理
+ */
+const handleLogin = (body: LoginRequest): LoginResponse => {
+  // エラーユーザーチェック
+  if (body.username in errorUsers) {
+    return { success: false, errorMessage: errorUsers[body.username] };
+  }
+
+  // 正常ユーザーチェック
+  const user = mockUsers[body.username];
+  if (user && user.password === body.password) {
+    return {
+      success: true,
+      accessToken: createMockJwt(body.username),
+      refreshToken: createMockJwt(`${body.username}-refresh`, 86400),
+      username: body.username,
+      role: user.role,
+    };
+  }
+
+  // 認証エラー
+  return { success: false, errorMessage: 'ユーザーIDまたはパスワードが正しくありません' };
+};
 
 /**
  * 認証関連のハンドラー
@@ -38,51 +75,7 @@ export const authHandlers = [
   // ログイン（Orval 生成コード対応: baseURL + /api/auth/login = /api/api/auth/login）
   http.post('*/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
-
-    // 成功ケース: admin/Password123!
-    if (body.username === 'admin' && body.password === 'Password123!') {
-      return HttpResponse.json<LoginResponse>({
-        success: true,
-        accessToken: createMockJwt('admin'),
-        refreshToken: createMockJwt('admin-refresh', 86400),
-        username: 'admin',
-        role: 'ADMIN',
-      });
-    }
-
-    // 成功ケース: user/Password123!
-    if (body.username === 'user' && body.password === 'Password123!') {
-      return HttpResponse.json<LoginResponse>({
-        success: true,
-        accessToken: createMockJwt('user'),
-        refreshToken: createMockJwt('user-refresh', 86400),
-        username: 'user',
-        role: 'USER',
-      });
-    }
-
-    // 失敗ケース: ロックされたアカウント
-    if (body.username === 'locked') {
-      return HttpResponse.json<LoginResponse>({
-        success: false,
-        errorMessage:
-          'アカウントがロックされています。ログイン試行が複数回失敗したため、セキュリティ保護のためロックされました。管理者にお問い合わせください。',
-      });
-    }
-
-    // 失敗ケース: 無効化されたアカウント
-    if (body.username === 'inactive') {
-      return HttpResponse.json<LoginResponse>({
-        success: false,
-        errorMessage: 'アカウントが無効化されています。管理者にお問い合わせください。',
-      });
-    }
-
-    // 失敗ケース: 認証エラー
-    return HttpResponse.json<LoginResponse>({
-      success: false,
-      errorMessage: 'ユーザーIDまたはパスワードが正しくありません',
-    });
+    return HttpResponse.json<LoginResponse>(handleLogin(body));
   }),
 
   // トークンリフレッシュ
@@ -113,48 +106,120 @@ export const authHandlers = [
   http.post('*/auth/logout', () => {
     return new HttpResponse(null, { status: 204 });
   }),
+
+  // ユーザー登録
+  http.post('*/auth/register', async ({ request }) => {
+    const body = (await request.json()) as {
+      username: string;
+      email: string;
+      password: string;
+      displayName: string;
+      role: string;
+    };
+
+    // 既存ユーザーとの重複チェック（admin, user, manager は既存ユーザー）
+    const existingUsers = ['admin', 'user', 'manager', 'viewer'];
+    if (existingUsers.includes(body.username)) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: 'このユーザーIDは既に使用されています',
+      });
+    }
+
+    // 成功ケース
+    return HttpResponse.json({
+      success: true,
+      username: body.username,
+      email: body.email,
+      displayName: body.displayName,
+      role: body.role,
+    });
+  }),
 ];
+
+// 既存の勘定科目コードを追跡（重複チェック用）
+const existingAccountCodes = new Set(['1000', '2000']);
+let nextAccountId = 3;
 
 /**
  * 勘定科目関連のハンドラー
+ * Note: Orval 生成コードの URL と axios の baseURL の組み合わせで
+ * 実際のリクエスト先は /api/api/accounts になる
  */
 export const accountHandlers = [
-  // 勘定科目一覧取得
-  http.get('*/accounts', () => {
-    return HttpResponse.json<Account[]>([
-      {
-        accountCode: '111',
-        accountName: '現金預金',
-        bsplType: 'B',
-        debitCreditType: '借',
-        elementType: '資産',
-        displayOrder: 1,
-        version: 1,
-      },
-      {
-        accountCode: '211',
-        accountName: '買掛金',
-        bsplType: 'B',
-        debitCreditType: '貸',
-        elementType: '負債',
-        displayOrder: 10,
-        version: 1,
-      },
-    ]);
+  // 勘定科目詳細取得（正規表現で明確にマッチ）
+  http.get(/\/accounts\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/accounts\/(\d+)$/);
+    const id = match ? match[1] : '0';
+    return HttpResponse.json<Account>({
+      accountId: Number(id),
+      accountCode: '1000',
+      accountName: '現金預金',
+      accountType: 'ASSET',
+    });
   }),
 
-  // 勘定科目詳細取得
-  http.get('*/accounts/:code', ({ params }) => {
-    const { code } = params;
-    return HttpResponse.json<Account>({
-      accountCode: code as string,
-      accountName: '現金預金',
-      bsplType: 'B',
-      debitCreditType: '借',
-      elementType: '資産',
-      displayOrder: 1,
-      version: 1,
+  // 勘定科目更新（正規表現で明確にマッチ）
+  http.put(/\/accounts\/(\d+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/accounts\/(\d+)$/);
+    const id = match ? match[1] : '0';
+    const body = (await request.json()) as { accountName: string; accountType: string };
+    return HttpResponse.json({
+      success: true,
+      accountId: Number(id),
+      accountCode: '1000',
+      accountName: body.accountName,
+      accountType: body.accountType,
+      message: '勘定科目を更新しました',
     });
+  }),
+
+  // 勘定科目登録
+  http.post('*/accounts', async ({ request }) => {
+    const body = (await request.json()) as {
+      accountCode: string;
+      accountName: string;
+      accountType: string;
+    };
+
+    // 重複チェック
+    if (existingAccountCodes.has(body.accountCode)) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: '勘定科目コードは既に使用されています',
+      });
+    }
+
+    // 成功ケース
+    existingAccountCodes.add(body.accountCode);
+    const accountId = nextAccountId++;
+    return HttpResponse.json({
+      success: true,
+      accountId,
+      accountCode: body.accountCode,
+      accountName: body.accountName,
+      accountType: body.accountType,
+    });
+  }),
+
+  // 勘定科目一覧取得（:id なしの /accounts のみにマッチ）
+  http.get(/\/accounts\/?$/, () => {
+    return HttpResponse.json<Account[]>([
+      {
+        accountId: 1,
+        accountCode: '1000',
+        accountName: '現金預金',
+        accountType: 'ASSET',
+      },
+      {
+        accountId: 2,
+        accountCode: '2000',
+        accountName: '買掛金',
+        accountType: 'LIABILITY',
+      },
+    ]);
   }),
 ];
 

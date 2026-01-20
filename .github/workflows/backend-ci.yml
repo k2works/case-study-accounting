@@ -5,11 +5,17 @@ on:
     branches: [ main, develop ]
     paths:
       - 'apps/backend/**'
+      - 'ops/nix/environments/backend/**'
+      - 'flake.nix'
+      - 'flake.lock'
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'apps/backend/**'
+      - 'ops/nix/environments/backend/**'
+      - 'flake.nix'
+      - 'flake.lock'
       - '.github/workflows/backend-ci.yml'
   workflow_dispatch:
 
@@ -40,38 +46,50 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Set up JDK 25
-      uses: actions/setup-java@v4
+    - name: Install Nix
+      uses: cachix/install-nix-action@v30
       with:
-        java-version: '25'
-        distribution: 'temurin'
+        nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          experimental-features = nix-command flakes
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+    - name: Cache Nix store
+      uses: actions/cache@v4
+      with:
+        path: /nix/store
+        key: nix-${{ runner.os }}-backend-${{ hashFiles('flake.lock') }}
+        restore-keys: |
+          nix-${{ runner.os }}-backend-
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Build
-      run: ./gradlew build -x test
+      run: nix develop .#backend --command bash -c "cd apps/backend && ./gradlew build -x test"
+      working-directory: .
 
     - name: Run tests
-      run: ./gradlew test
+      run: nix develop .#backend --command bash -c "cd apps/backend && ./gradlew test"
+      working-directory: .
 
     - name: Run Checkstyle
-      run: ./gradlew checkstyleMain checkstyleTest
+      run: nix develop .#backend --command bash -c "cd apps/backend && ./gradlew checkstyleMain checkstyleTest"
+      working-directory: .
       continue-on-error: true
 
     - name: Run PMD
-      run: ./gradlew pmdMain pmdTest
+      run: nix develop .#backend --command bash -c "cd apps/backend && ./gradlew pmdMain pmdTest"
+      working-directory: .
       continue-on-error: true
 
     - name: Run SpotBugs
-      run: ./gradlew spotbugsMain
+      run: nix develop .#backend --command bash -c "cd apps/backend && ./gradlew spotbugsMain"
+      working-directory: .
       continue-on-error: true
 
     - name: Generate coverage report
-      run: ./gradlew jacocoTestReport
+      run: nix develop .#backend --command bash -c "cd apps/backend && ./gradlew jacocoTestReport"
+      working-directory: .
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4

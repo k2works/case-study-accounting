@@ -9,13 +9,27 @@
     "docs:stop": "gulp mkdocs:stop",
     "docs:build": "gulp mkdocs:build",
     "claude:yol": "claude --dangerously-skip-permissions",
+    "copilot:yol": "copilot --allow-all-tools",
+    "codex:yol": "codex --yolo",
     "prepare": "husky",
     "frontend:lint": "cd apps/frontend && npm run lint",
     "frontend:format": "cd apps/frontend && npm run format:check",
     "frontend:test": "cd apps/frontend && npm run test:run",
     "frontend:check": "cd apps/frontend && npm run lint && npm run format:check",
     "frontend:build": "cd apps/frontend && npm run build",
-    "backend:check": "apps\\backend\\gradlew.bat -p apps/backend check"
+    "backend:check": "apps\\backend\\gradlew.bat -p apps/backend check",
+    "dev:backend": "apps\\backend\\gradlew.bat -p apps/backend bootRun",
+    "dev:frontend": "cd apps/frontend && npm run dev",
+    "dev:frontend:e2e": "cd apps/frontend && npm run dev:e2e",
+    "deploy:backend": "gulp deploy:backend",
+    "deploy:backend:open": "gulp deploy:backend:open",
+    "deploy:backend:logs": "gulp deploy:backend:logs",
+    "deploy:frontend": "gulp deploy:frontend",
+    "deploy:frontend:open": "gulp deploy:frontend:open",
+    "deploy:frontend:logs": "gulp deploy:frontend:logs",
+    "deploy:status": "gulp deploy:status",
+    "deploy:open": "gulp deploy:open",
+    "deploy:all": "gulp deploy:all"
   },
   "repository": {
     "type": "git",
@@ -34,6 +48,7 @@
   "homepage": "https://github.com/k2works/{project_name}#readme",
   "type": "module",
   "dependencies": {
+    "@k2works/claude-code-booster": "^0.19.0",
     "gulp": "^5.0.0"
   },
   "devDependencies": {

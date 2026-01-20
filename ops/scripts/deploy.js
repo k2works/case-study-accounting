@@ -45,7 +45,7 @@ export default function (gulp) {
             console.log('Building backend Docker image...');
             console.log(`Context: ${BACKEND_DIR}`);
 
-            execSync(`docker build -t registry.heroku.com/${BACKEND_APP}/web ${BACKEND_DIR}`, {
+            execSync(`docker build --platform linux/amd64 --provenance=false -t registry.heroku.com/${BACKEND_APP}/web ${BACKEND_DIR}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
@@ -66,7 +66,10 @@ export default function (gulp) {
         try {
             console.log('Pushing backend Docker image to Heroku...');
 
-            execSync(`docker push registry.heroku.com/${BACKEND_APP}/web`, { stdio: 'inherit' });
+            execSync(`heroku container:push web -a ${BACKEND_APP}`, {
+                stdio: 'inherit',
+                cwd: BACKEND_DIR
+            });
 
             console.log('\nBackend Docker image pushed successfully!');
 
@@ -114,7 +117,11 @@ export default function (gulp) {
             console.log('Building frontend Docker image (demo mode enabled)...');
             console.log(`Context: ${FRONTEND_DIR}`);
 
-            execSync(`docker build --build-arg VITE_DEMO_MODE=true -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
+            // デモ認証情報を環境変数から取得
+            const demoUsername = process.env.VITE_DEMO_USERNAME || 'admin';
+            const demoPassword = process.env.VITE_DEMO_PASSWORD || 'Password123!';
+
+            execSync(`docker build --platform linux/amd64 --provenance=false --build-arg VITE_DEMO_MODE=true --build-arg VITE_DEMO_USERNAME=${demoUsername} --build-arg VITE_DEMO_PASSWORD=${demoPassword} -t registry.heroku.com/${FRONTEND_APP}/web ${FRONTEND_DIR}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
@@ -130,12 +137,16 @@ export default function (gulp) {
 
     /**
      * フロントエンドの Docker イメージをプッシュする
+     * 注: heroku container:push は再ビルドを行うため、docker push を直接使用
      */
     gulp.task('deploy:frontend:push', (done) => {
         try {
             console.log('Pushing frontend Docker image to Heroku...');
 
-            execSync(`docker push registry.heroku.com/${FRONTEND_APP}/web`, { stdio: 'inherit' });
+            execSync(`docker push registry.heroku.com/${FRONTEND_APP}/web`, {
+                stdio: 'inherit',
+                cwd: process.cwd()
+            });
 
             console.log('\nFrontend Docker image pushed successfully!');
 
@@ -173,16 +184,6 @@ export default function (gulp) {
         'deploy:frontend:build',
         'deploy:frontend:push',
         'deploy:frontend:release'
-    ));
-
-    /**
-     * 全アプリケーションをデプロイする
-     */
-    gulp.task('deploy:all', gulp.series(
-        'deploy:login',
-        gulp.parallel('deploy:backend:build', 'deploy:frontend:build'),
-        gulp.parallel('deploy:backend:push', 'deploy:frontend:push'),
-        gulp.parallel('deploy:backend:release', 'deploy:frontend:release')
     ));
 
     /**
@@ -273,4 +274,15 @@ export default function (gulp) {
      * 両アプリケーションをブラウザで開く
      */
     gulp.task('deploy:open', gulp.parallel('deploy:backend:open', 'deploy:frontend:open'));
+
+    /**
+     * 全アプリケーションをデプロイする
+     */
+    gulp.task('deploy:all', gulp.series(
+        'deploy:login',
+        gulp.parallel('deploy:backend:build', 'deploy:frontend:build'),
+        gulp.parallel('deploy:backend:push', 'deploy:frontend:push'),
+        gulp.parallel('deploy:backend:release', 'deploy:frontend:release'),
+        'deploy:open'
+    ));
 }

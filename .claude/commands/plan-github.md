@@ -13,9 +13,9 @@
 - なし : 全体の同期を実行（Project作成、Issue作成、フィールド設定、Milestone作成）
 - `--project` : GitHub Project のみを作成
 - `--issues` : Issue のみを作成（Project が存在する前提）
-- `--fields` : Project フィールド値のみを設定
+- `--fields` : 各 Issue に対して Project フィールド値を個別に設定（リリース、イテレーション、優先度、SP、カテゴリ、Status）
 - `--milestones` : Milestone のみを作成し Issue に割り当て
-- `--verify` : release_plan.md と GitHub の差異を確認
+- `--sync` : release_plan.md と GitHub の差異を確認し、差異があれば同期を実行
 - `--status` : 現在の GitHub Project 状態を表示
 
 ### 基本例
@@ -29,9 +29,9 @@
 /plan-github --project
 「GitHub Project を作成して」
 
-# 差異確認
-/plan-github --verify
-「release_plan.md と GitHub Issue の差異を確認して」
+# 差異確認と同期
+/plan-github --sync
+「release_plan.md と GitHub の差異を確認して同期して」
 
 # 現在の状態確認
 /plan-github --status
@@ -76,20 +76,99 @@ release_plan.md に基づいて GitHub Project を作成し、カスタムフィ
 
 #### フィールド値の設定
 
-各 Issue の Project フィールドに release_plan.md の値を反映します。
+各 Issue に対して Project のカスタムフィールド値を個別に設定します。
 
-**設定される情報**:
+**設定手順**:
 
-- リリース（マイルストーン対応）
-- イテレーション番号
-- 優先度（必須/重要）
-- ストーリーポイント
-- カテゴリ
+1. **フィールド ID とオプション ID の取得**
+   ```bash
+   gh project field-list <PROJECT_NUMBER> --owner <OWNER> --format json
+   ```
+
+2. **Project Item ID の取得**
+   ```bash
+   gh project item-list <PROJECT_NUMBER> --owner <OWNER> --format json --limit 50 \
+     | jq -r '.items[] | "\(.content.number):\(.id)"'
+   ```
+
+3. **各 Issue にフィールド値を設定**
+   ```bash
+   # Single Select フィールド（リリース、イテレーション、優先度、カテゴリ、Status）
+   gh project item-edit --project-id <PROJECT_ID> --id <ITEM_ID> \
+     --field-id <FIELD_ID> --single-select-option-id <OPTION_ID>
+
+   # Number フィールド（SP）
+   gh project item-edit --project-id <PROJECT_ID> --id <ITEM_ID> \
+     --field-id <FIELD_ID> --number <VALUE>
+   ```
+
+**設定されるフィールド**:
+
+| フィールド | タイプ | 設定内容 |
+|-----------|--------|---------|
+| **リリース** | Single Select | Release 1.0 MVP Alpha / 1.1 MVP Beta / 1.2 MVP / 2.0 完成版 |
+| **イテレーション** | **Iteration** | IT-1 〜 IT-6（2週間スプリント） |
+| **優先度** | Single Select | 必須 / 中 / 低 |
+| **SP** | Number | ストーリーポイント（2〜5） |
+| **カテゴリ** | Single Select | 認証 / お知らせ / 社員名簿 / カレンダー / 規定集 / マニュアル / ツール / 問い合わせ / 申請 / 承認 / ユーザー管理 |
+| **Status** | Single Select | Todo / In Progress / Done |
+
+**Iteration フィールドの作成**:
+
+イテレーションフィールドは `gh project field-create` では作成できないため、GraphQL API を使用します:
+
+```bash
+# Iteration タイプでフィールドを作成
+gh api graphql -f query='
+mutation {
+  createProjectV2Field(input: {
+    projectId: "<PROJECT_ID>"
+    dataType: ITERATION
+    name: "イテレーション"
+  }) {
+    projectV2Field {
+      ... on ProjectV2IterationField {
+        id
+        name
+        dataType
+      }
+    }
+  }
+}'
+```
+
+**注意**: Iteration フィールドの期間設定（開始日、スプリント期間）は GitHub Web UI から設定する必要があります:
+1. Project Settings → 「イテレーション」フィールド → 設定
+2. 各イテレーション（IT-1〜IT-6）を追加し、開始日と期間（14日）を設定
+
+**設定例**:
+
+```bash
+# Issue #1 にフィールド値を設定
+PROJECT_ID="PVT_kwDOBz-FwM4BNAQ9"
+ITEM_ID="PVTI_lADOBz-FwM4BNAQ9zgj6ixU"
+
+# リリース: Release 1.0 MVP Alpha
+gh project item-edit --project-id $PROJECT_ID --id $ITEM_ID \
+  --field-id PVTSSF_xxx --single-select-option-id 32cce308
+
+# イテレーション: IT-1（Iteration フィールドの場合）
+gh project item-edit --project-id $PROJECT_ID --id $ITEM_ID \
+  --field-id PVTIF_xxx --iteration-id <ITERATION_ID>
+
+# SP: 5
+gh project item-edit --project-id $PROJECT_ID --id $ITEM_ID \
+  --field-id PVTF_xxx --number 5
+
+# Status: Done
+gh project item-edit --project-id $PROJECT_ID --id $ITEM_ID \
+  --field-id PVTSSF_xxx --single-select-option-id 98236657
+```
 
 ```bash
 # フィールド値の一括設定
 /plan-github --fields
-「release_plan.md の内容で Project フィールドを更新して」
+「release_plan.md の内容で各 Issue のフィールド値を個別に設定して」
 ```
 
 #### Milestone の作成
@@ -108,9 +187,9 @@ release_plan.md に基づいて GitHub Project を作成し、カスタムフィ
 「リリースを Milestone として作成して Issue に割り当てて」
 ```
 
-#### 差異確認
+#### 差異確認と同期
 
-release_plan.md と GitHub Issue/Project の整合性を確認します。
+release_plan.md と GitHub Issue/Project の整合性を確認し、差異があれば同期を実行します。
 
 **確認項目**:
 
@@ -118,11 +197,22 @@ release_plan.md と GitHub Issue/Project の整合性を確認します。
 - ストーリーポイントの一致
 - リリース/Milestone 割り当ての一致
 - 優先度の一致
+- Status の一致
+
+**同期動作**:
+
+1. release_plan.md と GitHub Issue/Project の差異を検出
+2. 差異レポートを表示（追加/変更/削除項目）
+3. 差異がある場合は同期を実行:
+   - **新規ストーリー**: Issue を作成し Project に追加
+   - **変更されたストーリー**: Issue のフィールド値を更新
+   - **削除されたストーリー**: Issue をクローズ（削除はしない）
+   - **Status 変更**: release_plan.md の Status を GitHub に反映
 
 ```bash
-# 差異確認
-/plan-github --verify
-「release_plan.md と GitHub の差異がないか確認して」
+# 差異確認と同期
+/plan-github --sync
+「release_plan.md と GitHub の差異を確認して同期して」
 ```
 
 ### 出力例
@@ -148,7 +238,11 @@ release_plan.md と GitHub Issue/Project の整合性を確認します。
 ├─ リリース 2.0 機能拡張版: 12件（期日: 2026-04-24）
 └─ リリース 3.0 完成版: 8件（期日: 2026-06-19）
 
-✅ 差異確認: release_plan.md と完全一致
+🔄 差異確認・同期結果
+├─ 新規 Issue: 2件（US-401, US-402）
+├─ 更新 Issue: 3件（SP変更、Status変更）
+├─ クローズ Issue: 0件
+└─ ✅ 同期完了: release_plan.md と GitHub が一致
 ```
 
 ### Claude との連携
@@ -161,8 +255,8 @@ cat docs/development/release_plan.md
 
 # 計画更新後の差異確認と同期
 cat docs/development/release_plan.md
-/plan-github --verify
-「更新したリリース計画と GitHub の差異を確認して」
+/plan-github --sync
+「更新したリリース計画と GitHub の差異を確認して同期して」
 
 # 既存 Project へのフィールド更新
 /plan-github --fields
@@ -179,17 +273,19 @@ cat docs/development/release_plan.md
   - 既存の Project/Issue がある場合は重複作成に注意
   - フィールド値の更新は既存値を上書き
 - **推奨事項**:
-  - 初回は `--verify` で差異確認してから同期
+  - 初回は `--sync` で差異確認してから同期
   - 大規模な変更前にはバックアップを推奨
 
 ### ベストプラクティス
 
 1. **初回同期**: `/plan-github` で全体を一括作成
-2. **計画更新時**: `/plan-github --verify` で差異確認後、必要な部分のみ更新
+2. **計画更新時**: `/plan-github --sync` で差異確認と自動同期
 3. **定期確認**: `/plan-github --status` で進捗状況を定期的に確認
-4. **一貫性維持**: release_plan.md を Single Source of Truth として管理
+4. **一貫性維持**: release_plan.md を Single Source of Truth として管理し、`--sync` で GitHub に反映
 
 ### 同期フロー
+
+#### 初回同期フロー（`/plan-github`）
 
 ```mermaid
 graph TD
@@ -201,8 +297,24 @@ graph TD
     F --> G[フィールド値設定]
     G --> H[Milestone 作成]
     H --> I[Issue に Milestone 割当]
-    I --> J[差異確認]
-    J --> K[同期完了]
+    I --> J[同期完了]
+```
+
+#### 差異確認・同期フロー（`/plan-github --sync`）
+
+```mermaid
+graph TD
+    A[release_plan.md] --> B[GitHub Issue/Project 取得]
+    B --> C{差異検出}
+    C -->|差異なし| D[✅ 一致確認]
+    C -->|差異あり| E[差異レポート表示]
+    E --> F{同期実行}
+    F --> G[新規 Issue 作成]
+    F --> H[既存 Issue 更新]
+    F --> I[削除された Issue クローズ]
+    G --> J[同期完了]
+    H --> J
+    I --> J
 ```
 
 ### 関連コマンド

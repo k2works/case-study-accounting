@@ -76,9 +76,22 @@ VITE_ENABLE_MSW=false
 # ビルドステージ
 FROM node:22-alpine AS builder
 WORKDIR /app
+
+# ビルド時の環境変数
+ARG VITE_DEMO_MODE=false
+ARG VITE_DEMO_USERNAME=
+ARG VITE_DEMO_PASSWORD=
+
 COPY package*.json ./
 RUN npm ci
 COPY . .
+
+# ビルド時に環境変数ファイルを生成（.env.production.local は .env.production より優先される）
+RUN echo "VITE_DEMO_MODE=${VITE_DEMO_MODE}" >> .env.production.local && \
+    echo "VITE_DEMO_USERNAME=${VITE_DEMO_USERNAME}" >> .env.production.local && \
+    echo "VITE_DEMO_PASSWORD=${VITE_DEMO_PASSWORD}" >> .env.production.local
+
+RUN npm run api:generate
 RUN npm run build
 
 # 実行ステージ
@@ -90,6 +103,14 @@ RUN sed -i 's/\r$//' /start.sh && chmod +x /start.sh
 EXPOSE 80
 CMD ["/bin/sh", "/start.sh"]
 ```
+
+#### デモモード用ビルド引数
+
+| 引数 | デフォルト | 説明 |
+|------|-----------|------|
+| `VITE_DEMO_MODE` | `false` | デモモード有効化フラグ |
+| `VITE_DEMO_USERNAME` | 空 | ログイン画面に自動入力されるユーザー名 |
+| `VITE_DEMO_PASSWORD` | 空 | ログイン画面に自動入力されるパスワード |
 
 ### nginx.conf
 
@@ -172,10 +193,14 @@ heroku config:set API_URL=https://バックエンドアプリ名.herokuapp.com/a
 heroku container:login
 ```
 
-#### 5. Docker ビルド
+#### 5. Docker ビルド（デモモード有効）
 
 ```bash
-docker build -t registry.heroku.com/アプリ名/web apps/frontend
+docker build \
+  --build-arg VITE_DEMO_MODE=true \
+  --build-arg VITE_DEMO_USERNAME=admin \
+  --build-arg VITE_DEMO_PASSWORD=Password123! \
+  -t registry.heroku.com/アプリ名/web apps/frontend
 ```
 
 #### 6. プッシュ
@@ -190,6 +215,31 @@ docker push registry.heroku.com/アプリ名/web
 heroku container:release web -a アプリ名
 ```
 
+### デプロイ手順（gulp タスク使用・推奨）
+
+プロジェクトルートから gulp タスクを使用すると、デモモード設定が自動的に適用されます。
+
+```bash
+# Heroku にログイン
+gulp deploy:login
+
+# フロントエンドのみデプロイ（デモモード有効）
+gulp deploy:frontend
+
+# 全アプリケーションをデプロイ
+gulp deploy:all
+```
+
+デモ認証情報をカスタマイズする場合:
+
+```bash
+VITE_DEMO_USERNAME=myuser VITE_DEMO_PASSWORD=mypassword gulp deploy:frontend
+```
+
+デフォルトのデモ認証情報:
+- ユーザー名: `admin`
+- パスワード: `Password123!`
+
 #### 8. 動作確認
 
 ```bash
@@ -202,10 +252,20 @@ curl https://アプリ名.herokuapp.com/health
 
 ## 環境変数一覧
 
+### ランタイム環境変数
+
 | 変数名 | 説明 | 例 |
 |--------|------|-----|
 | `PORT` | nginx がリッスンするポート（Heroku が自動設定） | 自動 |
 | `API_URL` | バックエンド API の URL | `https://backend.herokuapp.com/api` |
+
+### ビルド時環境変数（デモモード）
+
+| 変数名 | 説明 | デフォルト |
+|--------|------|-----------|
+| `VITE_DEMO_MODE` | デモモード有効化フラグ | `false` |
+| `VITE_DEMO_USERNAME` | ログイン画面に自動入力されるユーザー名 | `admin`（gulp 使用時） |
+| `VITE_DEMO_PASSWORD` | ログイン画面に自動入力されるパスワード | `Password123!`（gulp 使用時） |
 
 ## トラブルシューティング
 

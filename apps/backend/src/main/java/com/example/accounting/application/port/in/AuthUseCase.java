@@ -1,6 +1,7 @@
 package com.example.accounting.application.port.in;
 
 import com.example.accounting.application.port.in.command.LoginCommand;
+import com.example.accounting.application.port.out.LoginResult;
 
 /**
  * 認証ユースケースインターフェース（Input Port）

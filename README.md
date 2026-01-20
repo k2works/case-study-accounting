@@ -76,6 +76,63 @@ npm install
 npm start
 ```
 
+### npm スクリプト
+
+#### 開発
+
+| コマンド | 説明 |
+|---------|------|
+| `npm start` | 開発環境起動（MkDocs サーバー） |
+| `npm run dev:backend` | バックエンド開発サーバー起動 |
+| `npm run dev:frontend` | フロントエンド開発サーバー起動 |
+| `npm run dev:frontend:e2e` | フロントエンド E2E テスト用サーバー起動 |
+
+#### ドキュメント
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run docs:serve` | MkDocs サーバー起動 |
+| `npm run docs:stop` | MkDocs サーバー停止 |
+| `npm run docs:build` | MkDocs ドキュメントビルド |
+| `npm run journal` | 作業履歴（ジャーナル）生成 |
+
+#### フロントエンド
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run frontend:lint` | ESLint 実行 |
+| `npm run frontend:format` | フォーマットチェック |
+| `npm run frontend:test` | テスト実行 |
+| `npm run frontend:check` | lint + format チェック |
+| `npm run frontend:build` | 本番ビルド |
+
+#### バックエンド
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run backend:check` | Gradle check 実行 |
+
+#### デプロイ
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run deploy:backend` | バックエンドをデプロイ |
+| `npm run deploy:frontend` | フロントエンドをデプロイ |
+| `npm run deploy:all` | 全アプリケーションをデプロイ |
+| `npm run deploy:status` | デプロイ状態確認 |
+| `npm run deploy:open` | デプロイ済みアプリをブラウザで開く |
+| `npm run deploy:backend:open` | バックエンドをブラウザで開く |
+| `npm run deploy:frontend:open` | フロントエンドをブラウザで開く |
+| `npm run deploy:backend:logs` | バックエンドログ表示 |
+| `npm run deploy:frontend:logs` | フロントエンドログ表示 |
+
+#### その他
+
+| コマンド | 説明 |
+|---------|------|
+| `npm run claude:yol` | Claude Code（権限スキップモード） |
+| `npm run prepare` | Husky セットアップ |
+
 ### Docker Compose でアプリケーション起動
 
 バックエンドとフロントエンドを Docker Compose で起動できます。
@@ -452,6 +509,60 @@ VS Code で Dev Container を使用する場合：
 | `template`     | ドキュメントテンプレート               |
 
 詳細は [docs/index.md](docs/index.md) を参照してください。
+
+#### Nix による開発環境
+
+Nix を使用して、再現可能な開発環境を構築できます。
+
+##### 準備
+
+1. [Nix をインストール](https://nixos.org/download.html)します。
+2. Flakes を有効にします（`~/.config/nix/nix.conf` に `experimental-features = nix-command flakes` を追加）。
+
+##### 環境の利用
+
+- **デフォルト環境（共通ツール）に入る:**
+  ```bash
+  nix develop
+  ```
+
+- **Frontend 環境（React + TypeScript + Vite）に入る:**
+  ```bash
+  nix develop .#frontend
+  ```
+
+- **Backend 環境（Spring Boot + Java + Gradle）に入る:**
+  ```bash
+  nix develop .#backend
+  ```
+
+- **Node.js 環境に入る:**
+  ```bash
+  nix develop .#node
+  ```
+
+- **Python/MkDocs 環境に入る:**
+  ```bash
+  nix develop .#python
+  ```
+
+環境から抜けるには `exit` を入力します。
+
+##### 利用可能な環境一覧
+
+| 環境 | コマンド | 用途 |
+|------|----------|------|
+| default | `nix develop` | 共通ツール（git, curl, vim, tmux） |
+| frontend | `nix develop .#frontend` | React + TypeScript + Vite 開発 |
+| backend | `nix develop .#backend` | Spring Boot + Java + Gradle 開発 |
+| node | `nix develop .#node` | Node.js 汎用開発 |
+| python | `nix develop .#python` | Python + MkDocs ドキュメント作成 |
+
+#### 依存関係の更新
+
+```bash
+nix flake update
+```
 
 **[⬆ back to top](#目次)**
 

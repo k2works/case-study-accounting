@@ -6,38 +6,41 @@ AI コーディングエージェント向けのプロジェクトガイドラ�
 
 ## プロジェクト概要
 
-会計システムのケーススタディ - フルスタック Web アプリケーション
+<!-- プロジェクトの概要を記述 -->
 
-- **フロントエンド**: React + TypeScript + Vite (`apps/frontend/`)
-- **バックエンド**: Spring Boot + Java (`apps/backend/`)
-- **アーキテクチャ**: クリーンアーキテクチャ / DDD
+- **プロジェクト名**: <!-- プロジェクト名 -->
+- **説明**: <!-- プロジェクトの目的・概要 -->
+- **技術スタック**: <!-- 使用する主要技術 -->
+- **アーキテクチャ**: <!-- アーキテクチャパターン -->
+
+## ディレクトリ構成
+
+<!-- 主要なディレクトリ構成を記述 -->
+
+```
+.
+├── src/                # ソースコード
+├── tests/              # テストコード
+├── docs/               # ドキュメント
+└── ...
+```
 
 ## ビルド・テストコマンド
 
-### フロントエンド (`apps/frontend/`)
+<!-- プロジェクトで使用するコマンドを記述 -->
 
 ```bash
-npm install              # 依存関係インストール
-npm run dev              # 開発サーバー起動
-npm run build            # プロダクションビルド
-npm run test:run         # テスト実行
-npm run lint             # ESLint 実行
-npm run format:check     # Prettier チェック
-```
+# 依存関係インストール
+# npm install / pip install -r requirements.txt / ./gradlew build
 
-### バックエンド (`apps/backend/`)
+# 開発サーバー起動
+# npm run dev / python manage.py runserver
 
-```bash
-./gradlew.bat build      # ビルド
-./gradlew.bat test       # テスト実行
-./gradlew.bat check      # Lint + テスト
-```
+# テスト実行
+# npm test / pytest / ./gradlew test
 
-### ルート
-
-```bash
-npm run frontend:check   # フロントエンド Lint + Format
-npm run backend:check    # バックエンド Check
+# Lint 実行
+# npm run lint / flake8 / ./gradlew check
 ```
 
 ## コード規約
@@ -48,23 +51,19 @@ npm run backend:check    # バックエンド Check
 - 日本語と半角英数字の間に**半角スペース**を入れる
 - **ですます調**、句読点は「。」「、」
 
-### TypeScript (Frontend)
+### プロジェクト固有のルール
 
-- ESLint + Prettier による自動フォーマット
-- 関数コンポーネント + Hooks パターン
-- `@/` パスエイリアスを使用
+<!-- プロジェクト固有のコーディングルールを記述 -->
 
-### Java (Backend)
-
-- Checkstyle によるフォーマット
-- クリーンアーキテクチャの層構造を遵守
+- フォーマッター: <!-- Prettier / Black / Checkstyle など -->
+- リンター: <!-- ESLint / Flake8 / Checkstyle など -->
+- その他: <!-- パスエイリアス、命名規則など -->
 
 ## テスト指示
 
 - **TDD サイクル**に従う: Red → Green → Refactor
 - テストが通る状態でのみコミット
-- フロントエンド: Vitest + React Testing Library
-- バックエンド: JUnit 5 + Mockito
+- テストフレームワーク: <!-- Jest / Vitest / pytest / JUnit など -->
 
 ## コミット規約
 
@@ -78,6 +77,7 @@ fix: バグを修正
 docs: ドキュメントを更新
 refactor: リファクタリング
 test: テストを追加
+chore: ビルド・設定変更
 ```
 
 ## PR 指示
@@ -88,7 +88,7 @@ test: テストを追加
 
 ## 参照ドキュメント
 
+<!-- プロジェクトの参照ドキュメントを記述 -->
+
 - `CLAUDE.md` - 詳細な AI エージェント実行ガイドライン
-- `docs/reference/開発ガイド.md` - 開発ライフサイクル
-- `docs/reference/よいソフトウェアとは.md` - 品質基準
-- `.claude/README.md` - カスタムコマンド一覧
+- <!-- その他の参照ドキュメント -->

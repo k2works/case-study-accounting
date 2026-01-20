@@ -47,6 +47,7 @@ RUN apt-get update && \
         tmux \
         ca-certificates \
         gnupg \
+        xdg-utils \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*
 
@@ -67,6 +68,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get install -y gh \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Heroku CLI のインストール
+RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
 
 # Java 25 (SDKMAN!) のインストール準備
 RUN apt-get update && \
@@ -99,11 +103,30 @@ sdk default java 25-open' > /tmp/sdkman_install.sh \
     && su - $USERNAME -c /tmp/sdkman_install.sh \
     && rm /tmp/sdkman_install.sh
 
+# Nixのインストール
+ENV NIX_INSTALL_DIR=/nix
+RUN mkdir -m 0755 $NIX_INSTALL_DIR && chown $USERNAME $NIX_INSTALL_DIR
+USER $USERNAME
+ENV USER=$USERNAME
+ENV HOME=/home/$USERNAME
+RUN curl -L https://nixos.org/nix/install | sh -s -- --no-daemon \
+    && echo '. /home/'$USERNAME'/.nix-profile/etc/profile.d/nix.sh' >> /home/$USERNAME/.bashrc \
+    && mkdir -p /home/$USERNAME/.config/nix \
+    && echo "experimental-features = nix-command flakes" >> /home/$USERNAME/.config/nix/nix.conf
+
+# Nix環境変数の設定
+ENV PATH="/home/$USERNAME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PATH}" \
+    NIX_PATH="/home/$USERNAME/.nix-profile/etc/profile.d/nix.sh:/nix/var/nix/profiles/default/etc/profile.d/nix.sh" \
+    NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
+USER root
+
 # Gemini CLI と Claude Code のインストール（nvm 経由の npm を使用）
 RUN echo '#!/bin/bash\n\
 export NVM_DIR="/home/'$USERNAME'/.nvm"\n\
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"\n\
 npm install -g @google/gemini-cli\n\
+npm install -g @github/copilot\n\
 npm install -g @anthropic-ai/claude-code' > /tmp/npm_global_install.sh \
     && chmod +x /tmp/npm_global_install.sh \
     && su - $USERNAME -c /tmp/npm_global_install.sh \

@@ -10,6 +10,11 @@ import path from 'path';
 const isWindows = process.platform === 'win32';
 
 /**
+ * @type {boolean} macOS環境かどうかをチェック
+ */
+const isMac = process.platform === 'darwin';
+
+/**
  * SchemaSpy関連のGulpタスクを登録する
  * @param {import('gulp').Gulp} gulp
  */
@@ -74,7 +79,8 @@ export default function (gulp) {
                 return;
             }
 
-            const command = isWindows ? `start ${INDEX_FILE}` : `open ${INDEX_FILE}`;
+            const openCmd = isWindows ? 'start' : isMac ? 'open' : 'xdg-open';
+            const command = `${openCmd} ${INDEX_FILE}`;
             execSync(command, { stdio: 'inherit' });
 
             console.log('SchemaSpy ER diagram opened successfully!');
