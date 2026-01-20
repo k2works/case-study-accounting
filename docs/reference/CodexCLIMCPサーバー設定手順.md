@@ -9,7 +9,6 @@ Codex CLI を MCP（Model Context Protocol）サーバーとして動作させ�
 - Node.js 18 以降がインストールされていること
 - npm が利用可能であること
 - Claude Code がインストールされていること
-- **有効な OpenAI アカウント**があること
 
 ## 手順
 
@@ -27,43 +26,7 @@ npm install -g @openai/codex
 codex --version
 ```
 
-### 2. OpenAI 認証の設定
-
-Codex CLI を使用するには OpenAI アカウントでの認証が必要です。
-
-#### 方法 1: `codex login` コマンド（推奨）
-
-```bash
-codex login
-```
-
-ブラウザが開き、OpenAI アカウントでログインできます。認証情報は `~/.codex/auth.json` に保存されます。
-
-#### 方法 2: 環境変数で設定
-
-`.zshrc` または `.bashrc` に追加:
-
-```bash
-export OPENAI_API_KEY="sk-your-api-key-here"
-```
-
-設定を反映:
-
-```bash
-source ~/.zshrc  # または source ~/.bashrc
-```
-
-#### 認証状態の確認
-
-```bash
-# 認証ファイルの存在確認
-ls -la ~/.codex/auth.json
-
-# 簡単な動作テスト
-codex exec "Say hello"
-```
-
-### 3. Codex MCP サーバーの起動確認
+### 2. Codex MCP サーバーの起動確認
 
 Codex CLI には MCP サーバーとして動作する機能が組み込まれています。以下のコマンドで動作確認します。
 
@@ -75,7 +38,7 @@ codex mcp-server
 
 **注意**: `codex mcp-server` は stdio transport で動作します。
 
-### 4. Claude Code への MCP サーバー設定
+### 3. Claude Code への MCP サーバー設定
 
 Claude Code の MCP 設定ファイルに Codex MCP サーバーを登録します。
 
@@ -139,7 +102,7 @@ claude mcp add -s project codex -- npx @openai/codex mcp-server
 }
 ```
 
-### 5. Claude Code からの利用
+### 4. Claude Code からの利用
 
 Claude Code を起動します。
 
@@ -179,101 +142,11 @@ claude
 3. Claude Code を再起動
 4. `/mcp` コマンドで MCP サーバーの状態を確認
 
-### 401 Unauthorized エラーが発生する場合
-
-このエラーは OpenAI 認証に問題がある場合に発生します。
-
-1. **認証ファイルの確認**:
-
-   ```bash
-   ls -la ~/.codex/auth.json
-   ```
-
-2. **再認証の実行**:
-
-   ```bash
-   codex logout
-   codex login
-   ```
-
-3. **環境変数の確認**:
-
-   ```bash
-   echo $OPENAI_API_KEY
-   ```
-
-4. **直接テスト**（MCP 経由ではなく CLI で確認）:
-
-   ```bash
-   codex exec "Say hello"
-   ```
-
-### アカウント無効化エラー（account_deactivated）
-
-以下のエラーが表示される場合:
-
-```
-Your OpenAI account has been deactivated, please check your email for more information.
-```
-
-**対処方法**:
-
-1. OpenAI からのメールを確認
-2. [help.openai.com](https://help.openai.com) でサポートに問い合わせ
-3. 別の有効な OpenAI アカウントで再認証:
-
-   ```bash
-   codex logout
-   codex login
-   ```
-
-### MCP 経由で認証情報が引き継がれない場合
-
-MCP サーバーが認証情報を読み取れない場合は、MCP 設定に環境変数を追加:
-
-```json
-{
-  "mcpServers": {
-    "codex": {
-      "command": "npx",
-      "args": ["@openai/codex", "mcp-server"],
-      "env": {
-        "OPENAI_API_KEY": "sk-your-api-key-here"
-      }
-    }
-  }
-}
-```
-
-**注意**: API キーを直接設定ファイルに記載する場合は、`.mcp.json` を `.gitignore` に追加してください。
-
-## 通信確認
-
-セットアップ完了後、以下の方法で Codex MCP との通信を確認できます。
-
-### CLI での確認
-
-```bash
-# 直接 Codex CLI で動作確認
-codex exec "Say hello"
-```
-
-### Claude Code での確認
-
-Claude Code 内で以下のように Codex MCP ツールを呼び出して確認:
-
-```
-mcp__codex__codex ツールで "Say hello" を実行してください
-```
-
-正常に動作すれば、Codex からの応答が返ってきます。
-
 ## ベストプラクティス
 
 1. **プロジェクト固有の設定**: `.claude/settings.json` を使用してプロジェクトごとに設定
 2. **除外設定**: `.gitignore` で不要なファイルを除外（Codex は Git を参照）
 3. **OpenAI API キー**: `codex login` で認証を設定
-4. **セキュリティ**: API キーを含む設定ファイルは `.gitignore` に追加
 
 ## Codex MCP ツールの使用方法
 
