@@ -5,6 +5,8 @@ import { getAccounts, getAccountsErrorMessage } from '../api/getAccounts';
 import type { Account } from '../api/getAccounts';
 import { MainLayout, Loading, SuccessNotification, ErrorMessage } from '../views/common';
 import { AccountList } from '../views/account/AccountList';
+import type { AccountSearchParams } from '../api/getAccounts';
+import type { AccountFilterValues } from '../views/account/AccountFilter';
 
 interface AccountListLocationState {
   successMessage?: string;
@@ -22,13 +24,19 @@ const initialState: AccountListState = {
   errorMessage: null,
 };
 
+const initialFilterValues: AccountFilterValues = {
+  type: '',
+  keyword: '',
+};
+
 const useAccountListFetch = () => {
   const [state, setState] = useState<AccountListState>(initialState);
+  const [filterValues, setFilterValues] = useState<AccountFilterValues>(initialFilterValues);
 
-  const fetchAccounts = useCallback(async () => {
+  const fetchAccounts = useCallback(async (params?: AccountSearchParams) => {
     setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
     try {
-      const data = await getAccounts();
+      const data = await getAccounts(params);
       setState({ accounts: data, isLoading: false, errorMessage: null });
     } catch (error) {
       setState((prev) => ({
@@ -39,16 +47,39 @@ const useAccountListFetch = () => {
     }
   }, []);
 
+  const handleSearch = useCallback(() => {
+    const params: AccountSearchParams = {};
+    if (filterValues.type) params.type = filterValues.type;
+    if (filterValues.keyword) params.keyword = filterValues.keyword;
+    void fetchAccounts(Object.keys(params).length > 0 ? params : undefined);
+  }, [fetchAccounts, filterValues]);
+
+  const handleReset = useCallback(() => {
+    setFilterValues(initialFilterValues);
+    void fetchAccounts();
+  }, [fetchAccounts]);
+
   useEffect(() => {
     void fetchAccounts();
   }, [fetchAccounts]);
 
-  return { state, fetchAccounts };
+  return {
+    state,
+    filterValues,
+    setFilterValues,
+    fetchAccounts,
+    handleSearch,
+    handleReset,
+  };
 };
 
 interface AccountListContentProps {
   state: AccountListState;
-  fetchAccounts: () => Promise<void>;
+  fetchAccounts: (params?: AccountSearchParams) => Promise<void>;
+  filterValues: AccountFilterValues;
+  onFilterChange: (values: AccountFilterValues) => void;
+  onSearch: () => void;
+  onReset: () => void;
   successMessage: string | null;
   onDismissSuccess: () => void;
   onEdit: (account: Account) => void;
@@ -57,6 +88,10 @@ interface AccountListContentProps {
 const AccountListContent: React.FC<AccountListContentProps> = ({
   state,
   fetchAccounts,
+  filterValues,
+  onFilterChange,
+  onSearch,
+  onReset,
   successMessage,
   onDismissSuccess,
   onEdit,
@@ -78,7 +113,15 @@ const AccountListContent: React.FC<AccountListContentProps> = ({
         <ErrorMessage message={state.errorMessage} onRetry={fetchAccounts} />
       ) : (
         shouldShowList && (
-          <AccountList accounts={state.accounts} onEdit={onEdit} onDelete={fetchAccounts} />
+          <AccountList
+            accounts={state.accounts}
+            filterValues={filterValues}
+            onFilterChange={onFilterChange}
+            onSearch={onSearch}
+            onReset={onReset}
+            onEdit={onEdit}
+            onDelete={onSearch}
+          />
         )
       )}
     </div>
@@ -92,7 +135,8 @@ const AccountListPage: React.FC = () => {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { state, fetchAccounts } = useAccountListFetch();
+  const { state, filterValues, setFilterValues, fetchAccounts, handleSearch, handleReset } =
+    useAccountListFetch();
   const [successMessage, setSuccessMessage] = useState<string | null>(() => {
     const state = location.state as AccountListLocationState | null;
     return state?.successMessage ?? null;
@@ -120,6 +164,10 @@ const AccountListPage: React.FC = () => {
       <AccountListContent
         state={state}
         fetchAccounts={fetchAccounts}
+        filterValues={filterValues}
+        onFilterChange={setFilterValues}
+        onSearch={handleSearch}
+        onReset={handleReset}
         successMessage={successMessage}
         onDismissSuccess={() => setSuccessMessage(null)}
         onEdit={(account) => navigate(`/master/accounts/${account.accountId}/edit`)}

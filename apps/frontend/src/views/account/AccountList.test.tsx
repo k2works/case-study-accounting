@@ -20,6 +20,8 @@ const mockAccounts: Account[] = [
   { accountId: 2, accountCode: '2000', accountName: '売掛金', accountType: 'ASSET' },
 ];
 
+const mockFilterValues = { type: '', keyword: '' };
+
 describe('AccountList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,8 +30,21 @@ describe('AccountList', () => {
   it('勘定科目一覧が正常に表示される', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onFilterChange = vi.fn();
+    const onSearch = vi.fn();
+    const onReset = vi.fn();
 
-    render(<AccountList accounts={mockAccounts} onEdit={onEdit} onDelete={onDelete} />);
+    render(
+      <AccountList
+        accounts={mockAccounts}
+        filterValues={mockFilterValues}
+        onFilterChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
 
     await waitFor(() => {
       expect(screen.getByText('現金')).toBeInTheDocument();
@@ -43,8 +58,21 @@ describe('AccountList', () => {
   it('勘定科目が空の場合の表示', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onFilterChange = vi.fn();
+    const onSearch = vi.fn();
+    const onReset = vi.fn();
 
-    render(<AccountList accounts={[]} onEdit={onEdit} onDelete={onDelete} />);
+    render(
+      <AccountList
+        accounts={[]}
+        filterValues={mockFilterValues}
+        onFilterChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
 
     await waitFor(() => {
       expect(screen.getByText('勘定科目が登録されていません')).toBeInTheDocument();
@@ -54,9 +82,22 @@ describe('AccountList', () => {
   it('編集ボタンのクリックで編集コールバックが呼ばれる', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onFilterChange = vi.fn();
+    const onSearch = vi.fn();
+    const onReset = vi.fn();
     const user = setupUser();
 
-    render(<AccountList accounts={mockAccounts} onEdit={onEdit} onDelete={onDelete} />);
+    render(
+      <AccountList
+        accounts={mockAccounts}
+        filterValues={mockFilterValues}
+        onFilterChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
 
     await waitFor(() => expect(screen.getByText('現金')).toBeInTheDocument());
 
@@ -68,8 +109,21 @@ describe('AccountList', () => {
   it('削除ボタンが表示される', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onFilterChange = vi.fn();
+    const onSearch = vi.fn();
+    const onReset = vi.fn();
 
-    render(<AccountList accounts={mockAccounts} onEdit={onEdit} onDelete={onDelete} />);
+    render(
+      <AccountList
+        accounts={mockAccounts}
+        filterValues={mockFilterValues}
+        onFilterChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
 
     await waitFor(() => expect(screen.getByText('現金')).toBeInTheDocument());
 
@@ -79,10 +133,23 @@ describe('AccountList', () => {
   it('削除ボタンクリックで確認ダイアログが表示される', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onFilterChange = vi.fn();
+    const onSearch = vi.fn();
+    const onReset = vi.fn();
     const user = setupUser();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
 
-    render(<AccountList accounts={mockAccounts} onEdit={onEdit} onDelete={onDelete} />);
+    render(
+      <AccountList
+        accounts={mockAccounts}
+        filterValues={mockFilterValues}
+        onFilterChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
 
     await waitFor(() => expect(screen.getByText('現金')).toBeInTheDocument());
 
@@ -95,6 +162,9 @@ describe('AccountList', () => {
   it('確認後に削除処理が実行される', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onFilterChange = vi.fn();
+    const onSearch = vi.fn();
+    const onReset = vi.fn();
     const user = setupUser();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     mockDeleteAccount.mockResolvedValue({
@@ -103,7 +173,17 @@ describe('AccountList', () => {
       message: '勘定科目を削除しました',
     });
 
-    render(<AccountList accounts={mockAccounts} onEdit={onEdit} onDelete={onDelete} />);
+    render(
+      <AccountList
+        accounts={mockAccounts}
+        filterValues={mockFilterValues}
+        onFilterChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
 
     await waitFor(() => expect(screen.getByText('現金')).toBeInTheDocument());
 

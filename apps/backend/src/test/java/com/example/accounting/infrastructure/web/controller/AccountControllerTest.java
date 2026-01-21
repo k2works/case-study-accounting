@@ -242,7 +242,7 @@ class AccountControllerTest {
             when(accountRepository.findAll()).thenReturn(List.of(account1, account2));
 
             // When
-            ResponseEntity<List<AccountResponse>> response = accountController.findAll();
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, null);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -261,7 +261,7 @@ class AccountControllerTest {
             when(accountRepository.findAll()).thenReturn(List.of());
 
             // When
-            ResponseEntity<List<AccountResponse>> response = accountController.findAll();
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, null);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

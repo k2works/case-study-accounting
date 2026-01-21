@@ -82,6 +82,14 @@
         </properties>
     </rule>
 
+    <!-- CouplingBetweenObjects のカスタム設定 -->
+    <!-- コントローラーは Spring アノテーション、DTO、ドメインモデル等との結合が多くなる -->
+    <rule ref="category/java/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="threshold" value="25"/>
+        </properties>
+    </rule>
+
     <!-- 循環複雑度のカスタム設定 -->
     <rule ref="category/java/design.xml/CyclomaticComplexity">
         <properties>

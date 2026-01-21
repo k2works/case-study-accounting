@@ -2,6 +2,7 @@ package com.example.accounting.infrastructure.persistence.mapper;
 
 import com.example.accounting.infrastructure.persistence.entity.AccountEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +60,18 @@ public interface AccountMapper {
      * @return 勘定科目エンティティのリスト
      */
     List<AccountEntity> findByType(String accountType);
+
+    /**
+     * 検索条件に基づいて勘定科目を検索する
+     *
+     * @param accountType 勘定科目種別（null の場合は全種別）
+     * @param keyword 検索キーワード（コードまたは名前、null の場合は全件）
+     * @return 勘定科目エンティティのリスト
+     */
+    List<AccountEntity> search(
+            @Param("accountType") String accountType,
+            @Param("keyword") String keyword
+    );
 
     /**
      * 勘定科目を削除する

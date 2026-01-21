@@ -56,6 +56,15 @@ public interface AccountRepository {
     List<Account> findByType(AccountType type);
 
     /**
+     * 検索条件に基づいて勘定科目を検索する
+     *
+     * @param type 勘定科目種別（null の場合は全種別）
+     * @param keyword 検索キーワード（null の場合は全件）
+     * @return 勘定科目リスト
+     */
+    List<Account> search(AccountType type, String keyword);
+
+    /**
      * 勘定科目を削除する
      *
      * @param id 勘定科目ID

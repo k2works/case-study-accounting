@@ -54,6 +54,20 @@
         SELECT * FROM accounts WHERE account_type = #{accountType} ORDER BY code ASC
     </select>
 
+    <!-- Search with optional filters -->
+    <select id="search" resultMap="accountResultMap">
+        SELECT * FROM accounts
+        <where>
+            <if test="accountType != null and accountType != ''">
+                account_type = #{accountType}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (code LIKE CONCAT(#{keyword}, '%') OR name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY code ASC
+    </select>
+
     <!-- DELETE by ID -->
     <delete id="deleteById">
         DELETE FROM accounts WHERE id = #{id}

@@ -11,6 +11,8 @@ import com.example.accounting.application.port.out.CreateAccountResult;
 import com.example.accounting.application.port.out.UpdateAccountResult;
 import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountId;
+import com.example.accounting.domain.model.account.AccountType;
+import com.example.accounting.infrastructure.web.exception.BusinessException;
 import com.example.accounting.infrastructure.web.dto.AccountResponse;
 import com.example.accounting.infrastructure.web.dto.CreateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -121,11 +124,40 @@ public class AccountController {
     )
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<AccountResponse>> findAll() {
-        List<AccountResponse> responses = accountRepository.findAll().stream()
+    public ResponseEntity<List<AccountResponse>> findAll(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String keyword) {
+        AccountType accountType = parseAccountType(type);
+        String normalizedKeyword = normalizeKeyword(keyword);
+
+        List<Account> accounts = fetchAccounts(accountType, normalizedKeyword);
+
+        List<AccountResponse> responses = accounts.stream()
                 .map(this::toResponse)
                 .toList();
         return ResponseEntity.ok(responses);
+    }
+
+    private AccountType parseAccountType(String type) {
+        if (type == null || type.isBlank()) {
+            return null;
+        }
+        try {
+            return AccountType.fromCode(type);
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException("Invalid Parameter", ex.getMessage(), ex);
+        }
+    }
+
+    private String normalizeKeyword(String keyword) {
+        return (keyword != null && !keyword.isBlank()) ? keyword : null;
+    }
+
+    private List<Account> fetchAccounts(AccountType accountType, String keyword) {
+        if (accountType != null || keyword != null) {
+            return accountRepository.search(accountType, keyword);
+        }
+        return accountRepository.findAll();
     }
 
     /**

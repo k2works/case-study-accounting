@@ -8,8 +8,22 @@ export interface Account extends Record<string, unknown> {
   accountType: string;
 }
 
-export const getAccounts = async (): Promise<Account[]> => {
-  const { data } = await axiosInstance.get<Account[]>('/api/accounts');
+export interface AccountSearchParams {
+  type?: string;
+  keyword?: string;
+}
+
+export const getAccounts = async (params?: AccountSearchParams): Promise<Account[]> => {
+  const searchParams = new URLSearchParams();
+  if (params?.type) {
+    searchParams.append('type', params.type);
+  }
+  if (params?.keyword) {
+    searchParams.append('keyword', params.keyword);
+  }
+  const queryString = searchParams.toString();
+  const url = queryString ? `/api/accounts?${queryString}` : '/api/accounts';
+  const { data } = await axiosInstance.get<Account[]>(url);
   return data;
 };
 
