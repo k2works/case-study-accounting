@@ -208,7 +208,8 @@ heroku auth:token
 
 | シークレット名 | 内容 |
 |----------------|------|
-| `HEROKU_API_KEY` | Heroku API キー |
+| `HEROKU_BACKEND_API_KEY` | バックエンド用 Heroku API キー |
+| `HEROKU_FRONTEND_API_KEY` | フロントエンド用 Heroku API キー |
 
 #### 4. 環境変数（Config Vars）
 
@@ -239,7 +240,8 @@ heroku auth:token
 |----------------|----------|------|
 | `SONAR_TOKEN` | SonarCloud | コード品質分析 |
 | `QLTY_COVERAGE_TOKEN` | Qlty | カバレッジレポート |
-| `HEROKU_API_KEY` | Heroku | デモ環境デプロイ |
+| `HEROKU_BACKEND_API_KEY` | Heroku | バックエンドデモ環境デプロイ |
+| `HEROKU_FRONTEND_API_KEY` | Heroku | フロントエンドデモ環境デプロイ |
 
 ### 設定手順
 
