@@ -35,6 +35,13 @@ const MENU_ITEMS: MenuItem[] = [
     ],
   },
   {
+    id: 'journal-entry',
+    label: '仕訳',
+    icon: 'book',
+    roles: ['ADMIN', 'MANAGER', 'USER'],
+    children: [{ id: 'journal-entry-new', label: '仕訳入力', path: '/journal/entries/new' }],
+  },
+  {
     id: 'ledger',
     label: '元帳・残高',
     icon: 'ledger',

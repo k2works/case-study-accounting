@@ -260,6 +260,25 @@ export const accountHandlers = [
 ];
 
 /**
+ * 仕訳関連のハンドラー
+ */
+export const journalEntryHandlers = [
+  http.post('*/journal-entries', async ({ request }) => {
+    const body = (await request.json()) as {
+      journalDate: string;
+      description: string;
+    };
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: 1,
+      journalDate: body.journalDate,
+      description: body.description,
+      status: 'DRAFT',
+    });
+  }),
+];
+
+/**
  * すべてのハンドラー
  */
-export const handlers = [...authHandlers, ...accountHandlers];
+export const handlers = [...authHandlers, ...accountHandlers, ...journalEntryHandlers];
