@@ -17,6 +17,7 @@ public class JournalEntryLineEntity {
     private Integer accountId;
     private BigDecimal debitAmount;
     private BigDecimal creditAmount;
+    private String lineDescription;
 
     /**
      * ドメインモデルからエンティティを生成する
@@ -96,5 +97,13 @@ public class JournalEntryLineEntity {
 
     public void setCreditAmount(BigDecimal creditAmount) {
         this.creditAmount = creditAmount;
+    }
+
+    public String getLineDescription() {
+        return lineDescription;
+    }
+
+    public void setLineDescription(String lineDescription) {
+        this.lineDescription = lineDescription;
     }
 }

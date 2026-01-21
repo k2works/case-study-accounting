@@ -73,13 +73,23 @@ class DatabaseConnectionTest {
 
         var columns = jdbcTemplate.queryForList(sql, String.class);
 
+        // V6マイグレーションで追加されたカラムを含む
         assertThat(columns).containsExactly(
                 "id",
                 "code",
                 "name",
                 "account_type",
                 "created_at",
-                "updated_at"
+                "updated_at",
+                "kana",
+                "bspl_category",
+                "transaction_element_category",
+                "expense_category",
+                "is_summary_account",
+                "display_order",
+                "is_aggregation_target",
+                "balance",
+                "tax_transaction_code"
         );
     }
 }

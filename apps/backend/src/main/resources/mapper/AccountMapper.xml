@@ -10,6 +10,15 @@
         <result property="code" column="code"/>
         <result property="name" column="name"/>
         <result property="accountType" column="account_type"/>
+        <result property="kana" column="kana"/>
+        <result property="bsplCategory" column="bspl_category"/>
+        <result property="transactionElementCategory" column="transaction_element_category"/>
+        <result property="expenseCategory" column="expense_category"/>
+        <result property="summaryAccount" column="is_summary_account"/>
+        <result property="displayOrder" column="display_order"/>
+        <result property="aggregationTarget" column="is_aggregation_target"/>
+        <result property="balance" column="balance"/>
+        <result property="taxTransactionCode" column="tax_transaction_code"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>

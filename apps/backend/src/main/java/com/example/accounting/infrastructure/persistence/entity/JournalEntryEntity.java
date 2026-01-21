@@ -6,14 +6,18 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.user.UserId;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 仕訳エンティティ（永続化用）
  */
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields"})
 public class JournalEntryEntity {
 
     private Integer id;
@@ -23,7 +27,20 @@ public class JournalEntryEntity {
     private String createdBy;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
-    private List<JournalEntryLineEntity> lines;
+    // MyBatisがcollectionマッピングで要素を追加できるように可変リストで初期化
+    private List<JournalEntryLineEntity> lines = new ArrayList<>();
+
+    // 設計書で追加されたカラム
+    private String voucherNumber;
+    private LocalDate inputDate;
+    private Integer closingEntryFlag;
+    private Integer singleEntryFlag;
+    private Integer voucherType;
+    private Integer recurringFlag;
+    private String employeeCode;
+    private String departmentCode;
+    private Integer redSlipFlag;
+    private String redBlackVoucherNumber;
 
     /**
      * ドメインモデルからエンティティを生成する
@@ -130,11 +147,95 @@ public class JournalEntryEntity {
         this.updatedAt = updatedAt;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP",
+            justification = "MyBatisのcollectionマッピングが直接このリストに追加するため、可変リストを返す必要がある")
     public List<JournalEntryLineEntity> getLines() {
-        return lines == null ? List.of() : List.copyOf(lines);
+        return lines;
     }
 
     public void setLines(List<JournalEntryLineEntity> lines) {
-        this.lines = lines == null ? List.of() : List.copyOf(lines);
+        // MyBatisがcollectionマッピングで要素を追加できるようにArrayListを使用
+        this.lines = lines == null ? new ArrayList<>() : new ArrayList<>(lines);
+    }
+
+    // 設計書で追加されたカラムのGetter/Setter
+    public String getVoucherNumber() {
+        return voucherNumber;
+    }
+
+    public void setVoucherNumber(String voucherNumber) {
+        this.voucherNumber = voucherNumber;
+    }
+
+    public LocalDate getInputDate() {
+        return inputDate;
+    }
+
+    public void setInputDate(LocalDate inputDate) {
+        this.inputDate = inputDate;
+    }
+
+    public Integer getClosingEntryFlag() {
+        return closingEntryFlag;
+    }
+
+    public void setClosingEntryFlag(Integer closingEntryFlag) {
+        this.closingEntryFlag = closingEntryFlag;
+    }
+
+    public Integer getSingleEntryFlag() {
+        return singleEntryFlag;
+    }
+
+    public void setSingleEntryFlag(Integer singleEntryFlag) {
+        this.singleEntryFlag = singleEntryFlag;
+    }
+
+    public Integer getVoucherType() {
+        return voucherType;
+    }
+
+    public void setVoucherType(Integer voucherType) {
+        this.voucherType = voucherType;
+    }
+
+    public Integer getRecurringFlag() {
+        return recurringFlag;
+    }
+
+    public void setRecurringFlag(Integer recurringFlag) {
+        this.recurringFlag = recurringFlag;
+    }
+
+    public String getEmployeeCode() {
+        return employeeCode;
+    }
+
+    public void setEmployeeCode(String employeeCode) {
+        this.employeeCode = employeeCode;
+    }
+
+    public String getDepartmentCode() {
+        return departmentCode;
+    }
+
+    public void setDepartmentCode(String departmentCode) {
+        this.departmentCode = departmentCode;
+    }
+
+    public Integer getRedSlipFlag() {
+        return redSlipFlag;
+    }
+
+    public void setRedSlipFlag(Integer redSlipFlag) {
+        this.redSlipFlag = redSlipFlag;
+    }
+
+    public String getRedBlackVoucherNumber() {
+        return redBlackVoucherNumber;
+    }
+
+    public void setRedBlackVoucherNumber(String redBlackVoucherNumber) {
+        this.redBlackVoucherNumber = redBlackVoucherNumber;
     }
 }

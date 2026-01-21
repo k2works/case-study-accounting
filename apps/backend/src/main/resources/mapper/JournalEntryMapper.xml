@@ -13,6 +13,16 @@
         <result property="createdBy" column="created_by"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
+        <result property="voucherNumber" column="voucher_number"/>
+        <result property="inputDate" column="input_date"/>
+        <result property="closingEntryFlag" column="is_closing_entry"/>
+        <result property="singleEntryFlag" column="is_single_entry"/>
+        <result property="voucherType" column="voucher_type"/>
+        <result property="recurringFlag" column="is_recurring"/>
+        <result property="employeeCode" column="employee_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="redSlipFlag" column="is_red_slip"/>
+        <result property="redBlackVoucherNumber" column="red_black_voucher_number"/>
         <collection property="lines"
                     ofType="com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity"
                     notNullColumn="line_id">
@@ -22,6 +32,7 @@
             <result property="accountId" column="account_id"/>
             <result property="debitAmount" column="debit_amount"/>
             <result property="creditAmount" column="credit_amount"/>
+            <result property="lineDescription" column="line_description"/>
         </collection>
     </resultMap>
 
@@ -32,6 +43,7 @@
         <result property="accountId" column="account_id"/>
         <result property="debitAmount" column="debit_amount"/>
         <result property="creditAmount" column="credit_amount"/>
+        <result property="lineDescription" column="line_description"/>
     </resultMap>
 
     <!-- INSERT -->
@@ -78,12 +90,23 @@
             je.created_by,
             je.created_at,
             je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
             jel.id AS line_id,
             jel.journal_entry_id AS line_journal_entry_id,
             jel.line_number,
             jel.account_id,
             jel.debit_amount,
-            jel.credit_amount
+            jel.credit_amount,
+            jel.line_description
         FROM journal_entries je
         LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
         WHERE je.id = #{id}
@@ -100,12 +123,23 @@
             je.created_by,
             je.created_at,
             je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
             jel.id AS line_id,
             jel.journal_entry_id AS line_journal_entry_id,
             jel.line_number,
             jel.account_id,
             jel.debit_amount,
-            jel.credit_amount
+            jel.credit_amount,
+            jel.line_description
         FROM journal_entries je
         LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
         ORDER BY je.id ASC, jel.line_number ASC
