@@ -1,19 +1,27 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AccountListPage from './AccountListPage';
 import { useAuth } from '../hooks/useAuth';
 import { useLocation } from 'react-router-dom';
 import type { AuthContextType } from '../types/auth';
+import { getAccounts } from '../api/getAccounts';
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: vi.fn(),
 }));
 
+vi.mock('../api/getAccounts', () => ({
+  getAccounts: vi.fn(),
+  getAccountsErrorMessage: (error: unknown) =>
+    error instanceof Error ? error.message : '勘定科目一覧の取得に失敗しました',
+}));
+
 vi.mock('react-router-dom', () => ({
   Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
   useLocation: vi.fn(),
+  useNavigate: vi.fn(),
 }));
 
 vi.mock('../views/common', () => ({
@@ -35,6 +43,7 @@ vi.mock('../views/account/AccountList', () => ({
 
 const mockUseAuth = vi.mocked(useAuth);
 const mockUseLocation = vi.mocked(useLocation);
+const mockGetAccounts = vi.mocked(getAccounts);
 
 const setupUser = () => userEvent.setup();
 
@@ -52,6 +61,7 @@ describe('AccountListPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseLocation.mockReturnValue({ state: null } as ReturnType<typeof useLocation>);
+    mockGetAccounts.mockResolvedValue([]);
   });
 
   it('認証されていない場合はログインページにリダイレクト', () => {
@@ -81,7 +91,7 @@ describe('AccountListPage', () => {
     expect(screen.getByTestId('loading')).toHaveTextContent('認証情報を確認中...');
   });
 
-  it('ADMIN/MANAGER ロールの場合は正常表示', () => {
+  it('ADMIN/MANAGER ロールの場合は正常表示', async () => {
     mockUseAuth.mockReturnValue(
       createMockAuthContext({
         isAuthenticated: true,
@@ -94,7 +104,7 @@ describe('AccountListPage', () => {
 
     expect(screen.getByTestId('account-list-page')).toBeInTheDocument();
     expect(screen.getByText('勘定科目一覧')).toBeInTheDocument();
-    expect(screen.getByTestId('account-list-mock')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('account-list-mock')).toBeInTheDocument());
   });
 
   it('権限がない場合はホームにリダイレクト', () => {

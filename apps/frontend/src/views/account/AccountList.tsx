@@ -1,45 +1,49 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAccounts, getAccountsErrorMessage, Account } from '../../api/getAccounts';
-import { ErrorMessage, Loading, Table, TableColumn, Button } from '../common';
+import React, { useCallback, useMemo, useState } from 'react';
+import type { Account } from '../../api/getAccounts';
+import { deleteAccount, getDeleteAccountErrorMessage } from '../../api/deleteAccount';
+import { ErrorMessage, SuccessNotification, Table, TableColumn, Button } from '../common';
 import './AccountList.css';
 
-interface AccountListState {
+interface AccountListProps {
   accounts: Account[];
-  isLoading: boolean;
-  errorMessage: string | null;
+  onEdit: (account: Account) => void;
+  onDelete: () => void;
 }
-
-const initialState: AccountListState = {
-  accounts: [],
-  isLoading: false,
-  errorMessage: null,
-};
 
 /**
  * 勘定科目一覧コンポーネント
  */
-export const AccountList: React.FC = () => {
-  const [state, setState] = useState<AccountListState>(initialState);
-  const navigate = useNavigate();
+export const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete }) => {
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
+  const [deletingAccountId, setDeletingAccountId] = useState<number | null>(null);
 
-  const fetchAccounts = useCallback(async () => {
-    setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
-    try {
-      const data = await getAccounts();
-      setState({ accounts: data, isLoading: false, errorMessage: null });
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        errorMessage: getAccountsErrorMessage(error),
-      }));
-    }
-  }, []);
+  const handleDelete = useCallback(
+    async (account: Account) => {
+      const isConfirmed = window.confirm(`勘定科目「${account.accountName}」を削除しますか？`);
+      if (!isConfirmed) {
+        return;
+      }
 
-  useEffect(() => {
-    void fetchAccounts();
-  }, [fetchAccounts]);
+      setDeleteErrorMessage(null);
+      setDeleteSuccessMessage(null);
+      setDeletingAccountId(account.accountId);
+
+      try {
+        const response = await deleteAccount(account.accountId);
+        if (!response.success) {
+          throw new Error(response.errorMessage || '勘定科目の削除に失敗しました');
+        }
+        setDeleteSuccessMessage(response.message || '勘定科目を削除しました');
+        onDelete();
+      } catch (error) {
+        setDeleteErrorMessage(getDeleteAccountErrorMessage(error));
+      } finally {
+        setDeletingAccountId(null);
+      }
+    },
+    [onDelete]
+  );
 
   const columns = useMemo<TableColumn<Account>[]>(
     () => [
@@ -49,39 +53,52 @@ export const AccountList: React.FC = () => {
       {
         key: 'actions',
         header: '操作',
-        width: '120px',
+        width: '180px',
         align: 'center',
         render: (_, row) => (
-          <Button
-            variant="text"
-            size="small"
-            onClick={() => navigate(`/master/accounts/${row.accountId}/edit`)}
-          >
-            編集
-          </Button>
+          <div className="account-list__actions">
+            <Button variant="text" size="small" onClick={() => onEdit(row)}>
+              編集
+            </Button>
+            <Button
+              variant="danger"
+              size="small"
+              onClick={() => void handleDelete(row)}
+              disabled={deletingAccountId === row.accountId}
+            >
+              削除
+            </Button>
+          </div>
         ),
       },
     ],
-    [navigate]
+    [deletingAccountId, handleDelete, onEdit]
   );
-
-  if (state.isLoading && state.accounts.length === 0) {
-    return <Loading message="勘定科目を読み込み中..." />;
-  }
 
   return (
     <div className="account-list" data-testid="account-list">
-      {state.errorMessage ? (
-        <ErrorMessage message={state.errorMessage} onRetry={fetchAccounts} />
-      ) : (
-        <Table
-          columns={columns}
-          data={state.accounts}
-          keyField="accountId"
-          isLoading={state.isLoading}
-          emptyMessage="勘定科目が登録されていません"
-        />
+      {deleteSuccessMessage && (
+        <div className="account-list__notification">
+          <SuccessNotification
+            message={deleteSuccessMessage}
+            onDismiss={() => setDeleteSuccessMessage(null)}
+          />
+        </div>
       )}
+      {deleteErrorMessage && (
+        <div className="account-list__notification">
+          <ErrorMessage
+            message={deleteErrorMessage}
+            onDismiss={() => setDeleteErrorMessage(null)}
+          />
+        </div>
+      )}
+      <Table
+        columns={columns}
+        data={accounts}
+        keyField="accountId"
+        emptyMessage="勘定科目が登録されていません"
+      />
     </div>
   );
 };

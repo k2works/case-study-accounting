@@ -1,6 +1,7 @@
 package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateAccountUseCase;
+import com.example.accounting.application.port.in.DeleteAccountUseCase;
 import com.example.accounting.application.port.in.UpdateAccountUseCase;
 import com.example.accounting.application.port.in.command.CreateAccountCommand;
 import com.example.accounting.application.port.in.command.UpdateAccountCommand;
@@ -49,13 +50,21 @@ class AccountControllerTest {
     private UpdateAccountUseCase updateAccountUseCase;
 
     @Mock
+    private DeleteAccountUseCase deleteAccountUseCase;
+
+    @Mock
     private AccountRepository accountRepository;
 
     private AccountController accountController;
 
     @BeforeEach
     void setUp() {
-        accountController = new AccountController(createAccountUseCase, updateAccountUseCase, accountRepository);
+        accountController = new AccountController(
+                createAccountUseCase,
+                updateAccountUseCase,
+                deleteAccountUseCase,
+                accountRepository
+        );
     }
 
     @Nested

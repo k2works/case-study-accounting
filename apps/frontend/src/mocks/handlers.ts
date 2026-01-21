@@ -176,6 +176,42 @@ export const accountHandlers = [
     });
   }),
 
+  // 勘定科目削除（正規表現で明確にマッチ）
+  http.delete(/\/accounts\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/accounts\/(\d+)$/);
+    const id = match ? match[1] : '0';
+
+    // 存在しない勘定科目のチェック（ID が 999 の場合はエラー）
+    if (id === '999') {
+      return HttpResponse.json(
+        {
+          success: false,
+          errorMessage: '勘定科目が見つかりません',
+        },
+        { status: 404 }
+      );
+    }
+
+    // 使用中勘定科目のチェック（ID が 888 の場合は使用中エラー）
+    if (id === '888') {
+      return HttpResponse.json(
+        {
+          success: false,
+          errorMessage: 'この勘定科目は仕訳で使用されているため削除できません',
+        },
+        { status: 409 }
+      );
+    }
+
+    // 成功ケース
+    return HttpResponse.json({
+      success: true,
+      accountId: Number(id),
+      message: '勘定科目を削除しました',
+    });
+  }),
+
   // 勘定科目登録
   http.post('*/accounts', async ({ request }) => {
     const body = (await request.json()) as {
