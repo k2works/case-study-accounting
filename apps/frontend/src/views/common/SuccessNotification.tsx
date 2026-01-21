@@ -25,7 +25,7 @@ export const SuccessNotification: React.FC<SuccessNotificationProps> = ({
   }, [onDismiss, autoHideDuration]);
 
   return (
-    <output className="success-notification">
+    <output className="success-notification" data-testid="success-notification">
       <span className="success-notification__icon">✓</span>
       <span className="success-notification__text">{message}</span>
       {onDismiss && (
