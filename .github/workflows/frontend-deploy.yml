@@ -24,7 +24,7 @@ jobs:
 
     - name: Login to Heroku Container Registry
       env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        HEROKU_API_KEY: ${{ secrets.HEROKU_FRONTEND_API_KEY }}
       run: heroku container:login
 
     - name: Build Docker image
@@ -35,12 +35,12 @@ jobs:
 
     - name: Release to Heroku
       env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        HEROKU_API_KEY: ${{ secrets.HEROKU_FRONTEND_API_KEY }}
       run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
 
     - name: Verify deployment
       env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        HEROKU_API_KEY: ${{ secrets.HEROKU_FRONTEND_API_KEY }}
       run: |
         echo "Waiting for deployment to complete..."
         sleep 10

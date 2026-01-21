@@ -85,6 +85,7 @@ nav:
       - リリース計画: development/release_plan.md
       - イテレーション計画:
           - イテレーション1: development/iteration_plan-1.md
+          - イテレーション2: development/iteration_plan-2.md
       - ふりかえり:
           - イテレーション1: development/retrospective-1.md
   - 運用:

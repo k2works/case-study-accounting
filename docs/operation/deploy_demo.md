@@ -69,7 +69,8 @@ heroku auth:token
 
 | シークレット名 | 内容 |
 |----------------|------|
-| `HEROKU_API_KEY` | Heroku API キー |
+| `HEROKU_BACKEND_API_KEY` | バックエンド用 Heroku API キー |
+| `HEROKU_FRONTEND_API_KEY` | フロントエンド用 Heroku API キー |
 
 ## 自動デプロイ
 
@@ -153,13 +154,15 @@ npx gulp deploy:status
 
 ### 認証エラー
 
-`HEROKU_API_KEY` シークレットが正しく設定されているか確認：
+`HEROKU_BACKEND_API_KEY` / `HEROKU_FRONTEND_API_KEY` シークレットが正しく設定されているか確認：
 
 ```bash
 # ローカルで API キーを確認
 heroku auth:token
 
 # GitHub Secrets に同じ値が設定されているか確認
+# バックエンド用: HEROKU_BACKEND_API_KEY
+# フロントエンド用: HEROKU_FRONTEND_API_KEY
 ```
 
 ### Docker ビルドエラー
