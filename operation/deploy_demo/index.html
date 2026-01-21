@@ -1268,6 +1268,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/iteration_plan-2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5443,8 +5471,12 @@ heroku<span class="w"> </span>create<span class="w"> </span><span class="k">case
 </thead>
 <tbody>
 <tr>
-<td><code>HEROKU_API_KEY</code></td>
-<td>Heroku API キー</td>
+<td><code>HEROKU_BACKEND_API_KEY</code></td>
+<td>バックエンド用 Heroku API キー</td>
+</tr>
+<tr>
+<td><code>HEROKU_FRONTEND_API_KEY</code></td>
+<td>フロントエンド用 Heroku API キー</td>
 </tr>
 </tbody>
 </table>
@@ -5510,11 +5542,13 @@ npx<span class="w"> </span>gulp<span class="w"> </span>deploy:status
 <span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">curl https://cli-assets.heroku.com/install.sh | sh</span>
 </code></pre></div>
 <h3 id="_14">認証エラー<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
-<p><code>HEROKU_API_KEY</code> シークレットが正しく設定されているか確認：</p>
+<p><code>HEROKU_BACKEND_API_KEY</code> / <code>HEROKU_FRONTEND_API_KEY</code> シークレットが正しく設定されているか確認：</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># ローカルで API キーを確認</span>
 heroku<span class="w"> </span>auth:token
 
 <span class="c1"># GitHub Secrets に同じ値が設定されているか確認</span>
+<span class="c1"># バックエンド用: HEROKU_BACKEND_API_KEY</span>
+<span class="c1"># フロントエンド用: HEROKU_FRONTEND_API_KEY</span>
 </code></pre></div>
 <h3 id="docker">Docker ビルドエラー<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h3>
 <p>ローカルで Docker ビルドが成功することを確認：</p>
