@@ -11,6 +11,7 @@
     "claude:yol": "claude --dangerously-skip-permissions",
     "copilot:yol": "copilot --allow-all-tools",
     "codex:yol": "codex --yolo",
+    "gemini:yol": "gemini --yolo",
     "prepare": "husky",
     "frontend:lint": "cd apps/frontend && npm run lint",
     "frontend:format": "cd apps/frontend && npm run format:check",
