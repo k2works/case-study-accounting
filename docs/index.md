@@ -44,10 +44,12 @@
 ### イテレーション
 
 - [イテレーション計画 1](./development/iteration_plan-1.md) - イテレーション1の詳細計画
+- [イテレーション計画 2](./development/iteration_plan-2.md) - イテレーション2の詳細計画
 
 ### ふりかえり
 
 - [イテレーション 1 ふりかえり](./development/retrospective-1.md) - イテレーション1の KPT 分析
+- [イテレーション 2 ふりかえり](./development/retrospective-2.md) - イテレーション2の KPT 分析
 
 ## 運用
 
