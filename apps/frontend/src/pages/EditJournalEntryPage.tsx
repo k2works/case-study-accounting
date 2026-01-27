@@ -13,8 +13,9 @@ import {
   updateJournalEntryErrorMessage,
   type UpdateJournalEntryRequest,
 } from '../api/updateJournalEntry';
+import { deleteJournalEntry, deleteJournalEntryErrorMessage } from '../api/deleteJournalEntry';
 import type { Role } from '../types/auth';
-import { MainLayout, Loading, ErrorMessage } from '../views/common';
+import { MainLayout, Loading, ErrorMessage, ConfirmModal } from '../views/common';
 import { JournalEntryEditForm } from '../views/journal/JournalEntryEditForm';
 
 interface JournalEntryState {
@@ -155,9 +156,11 @@ interface ContentProps {
   accountsState: AccountsState;
   journalState: JournalEntryState;
   isSubmitting: boolean;
+  isDeleting: boolean;
   submitError: string | null;
   onSubmit: (data: UpdateJournalEntryRequest) => Promise<void>;
   onCancel: () => void;
+  onDelete: () => void;
   onRetry: () => void;
 }
 
@@ -168,9 +171,11 @@ const EditFormSection: React.FC<Omit<ContentProps, 'onRetry'>> = ({
   accountsState,
   journalState,
   isSubmitting,
+  isDeleting,
   submitError,
   onSubmit,
   onCancel,
+  onDelete,
 }) => {
   if (!journalState.journalEntry) return null;
   return (
@@ -179,7 +184,9 @@ const EditFormSection: React.FC<Omit<ContentProps, 'onRetry'>> = ({
       journalEntry={journalState.journalEntry}
       onSubmit={onSubmit}
       onCancel={onCancel}
+      onDelete={onDelete}
       isSubmitting={isSubmitting}
+      isDeleting={isDeleting}
       error={submitError || undefined}
     />
   );
@@ -244,7 +251,9 @@ const EditJournalEntryPage: React.FC = () => {
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchAll = useCallback(() => {
     void fetchAccounts();
@@ -266,6 +275,31 @@ const EditJournalEntryPage: React.FC = () => {
     },
     [journalEntryId, navigate]
   );
+
+  const handleDeleteClick = useCallback(() => {
+    setShowDeleteConfirm(true);
+  }, []);
+
+  const handleDeleteCancel = useCallback(() => {
+    setShowDeleteConfirm(false);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    setShowDeleteConfirm(false);
+    setIsDeleting(true);
+    setSubmitError(null);
+    try {
+      const response = await deleteJournalEntry(journalEntryId);
+      if (!response.success) {
+        throw new Error(response.errorMessage || '仕訳の削除に失敗しました');
+      }
+      navigate('/', { replace: true, state: { successMessage: '仕訳を削除しました' } });
+    } catch (error) {
+      setSubmitError(deleteJournalEntryErrorMessage(error));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [journalEntryId, navigate]);
 
   const handleCancel = useCallback(() => navigate(-1), [navigate]);
   const breadcrumbs = useMemo(() => BREADCRUMBS, []);
@@ -290,12 +324,24 @@ const EditJournalEntryPage: React.FC = () => {
           accountsState={accountsState}
           journalState={journalState}
           isSubmitting={isSubmitting}
+          isDeleting={isDeleting}
           submitError={submitError}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          onDelete={handleDeleteClick}
           onRetry={fetchAll}
         />
       </div>
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="仕訳の削除"
+        message="この仕訳を削除してもよろしいですか？この操作は取り消せません。"
+        confirmLabel="削除"
+        cancelLabel="キャンセル"
+        isDestructive
+      />
     </MainLayout>
   );
 };

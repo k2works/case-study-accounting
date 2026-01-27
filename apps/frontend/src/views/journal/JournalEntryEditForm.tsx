@@ -10,7 +10,9 @@ interface JournalEntryEditFormProps {
   journalEntry: JournalEntry;
   onSubmit: (data: UpdateJournalEntryRequest) => Promise<void>;
   onCancel: () => void;
+  onDelete?: () => void;
   isSubmitting: boolean;
+  isDeleting?: boolean;
   error?: string;
 }
 
@@ -214,6 +216,56 @@ const useJournalEntryEditFormState = (journalEntry: JournalEntry) => {
 };
 
 /**
+ * フォームフッターのアクションボタン
+ */
+interface FormFooterProps {
+  isSubmitting: boolean;
+  isDeleting: boolean;
+  isSubmitDisabled: boolean;
+  onCancel: () => void;
+  onDelete?: () => void;
+}
+
+const FormFooter: React.FC<FormFooterProps> = ({
+  isSubmitting,
+  isDeleting,
+  isSubmitDisabled,
+  onCancel,
+  onDelete,
+}) => (
+  <div className="journal-entry-form__footer">
+    <Button
+      type="submit"
+      variant="primary"
+      disabled={isSubmitDisabled}
+      data-testid="journal-entry-submit"
+    >
+      {isSubmitting ? '保存中...' : '保存'}
+    </Button>
+    <Button
+      type="button"
+      variant="text"
+      onClick={onCancel}
+      disabled={isSubmitting || isDeleting}
+      data-testid="journal-entry-cancel"
+    >
+      キャンセル
+    </Button>
+    {onDelete && (
+      <Button
+        type="button"
+        variant="danger"
+        onClick={onDelete}
+        disabled={isSubmitting || isDeleting}
+        data-testid="journal-entry-delete"
+      >
+        {isDeleting ? '削除中...' : '削除'}
+      </Button>
+    )}
+  </div>
+);
+
+/**
  * 仕訳編集フォームコンポーネント
  */
 export const JournalEntryEditForm: React.FC<JournalEntryEditFormProps> = ({
@@ -221,7 +273,9 @@ export const JournalEntryEditForm: React.FC<JournalEntryEditFormProps> = ({
   journalEntry,
   onSubmit,
   onCancel,
+  onDelete,
   isSubmitting,
+  isDeleting = false,
   error,
 }) => {
   const form = useJournalEntryEditFormState(journalEntry);
@@ -391,25 +445,13 @@ export const JournalEntryEditForm: React.FC<JournalEntryEditFormProps> = ({
         </div>
       )}
 
-      <div className="journal-entry-form__footer">
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={isSubmitDisabled}
-          data-testid="journal-entry-submit"
-        >
-          {isSubmitting ? '保存中...' : '保存'}
-        </Button>
-        <Button
-          type="button"
-          variant="text"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          data-testid="journal-entry-cancel"
-        >
-          キャンセル
-        </Button>
-      </div>
+      <FormFooter
+        isSubmitting={isSubmitting}
+        isDeleting={isDeleting}
+        isSubmitDisabled={isSubmitDisabled}
+        onCancel={onCancel}
+        onDelete={onDelete}
+      />
     </form>
   );
 };
