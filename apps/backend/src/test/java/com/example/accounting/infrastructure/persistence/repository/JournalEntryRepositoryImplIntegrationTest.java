@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * 仕訳リポジトリ統合テスト
@@ -72,7 +73,7 @@ class JournalEntryRepositoryImplIntegrationTest {
     }
 
     private JournalEntry createTestJournalEntry(UserId userId, Account debitAccount, Account creditAccount) {
-        return JournalEntry.create(JOURNAL_DATE, "売上計上", userId)
+        return JournalEntry.create(JOURNAL_DATE, "売上計上", userId, 0)
                 .addLine(JournalEntryLine.of(
                         1,
                         debitAccount.getId(),
@@ -169,6 +170,47 @@ class JournalEntryRepositoryImplIntegrationTest {
             assertThat(result.getDescription()).isEqualTo("売上計上（更新）");
             assertThat(result.getLines()).hasSize(2);
             assertThat(result.getLines().get(0).debitAmount().value()).isEqualByComparingTo("2000");
+        }
+
+        @Test
+        @DisplayName("仕訳更新時に version がインクリメントされる")
+        void shouldIncrementVersionWhenUpdatingJournalEntry() {
+            String suffix = UUID.randomUUID().toString().substring(0, 8);
+            User savedUser = userRepository.save(createTestUser(suffix));
+            Account debitAccount = accountRepository.save(createTestAccount("16", "現金", AccountType.ASSET));
+            Account creditAccount = accountRepository.save(createTestAccount("46", "売上", AccountType.REVENUE));
+            JournalEntry savedEntry = journalEntryRepository.save(
+                    createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount)
+            );
+
+            JournalEntry updatedEntry = savedEntry.withDescription("売上計上（更新2）");
+
+            JournalEntry result = journalEntryRepository.save(updatedEntry);
+
+            assertThat(savedEntry.getVersion()).isEqualTo(1);
+            assertThat(result.getVersion()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("古い version で更新すると OptimisticLockException が発生する")
+        void shouldThrowOptimisticLockExceptionWhenUpdatingWithOldVersion() {
+            String suffix = UUID.randomUUID().toString().substring(0, 8);
+            User savedUser = userRepository.save(createTestUser(suffix));
+            Account debitAccount = accountRepository.save(createTestAccount("17", "現金", AccountType.ASSET));
+            Account creditAccount = accountRepository.save(createTestAccount("47", "売上", AccountType.REVENUE));
+            JournalEntry savedEntry = journalEntryRepository.save(
+                    createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount)
+            );
+
+            JournalEntry firstUpdate = savedEntry.withDescription("売上計上（更新3）");
+            journalEntryRepository.save(firstUpdate);
+
+            JournalEntry staleEntry = savedEntry.withDescription("売上計上（更新4）");
+
+            assertThrows(
+                    com.example.accounting.domain.shared.OptimisticLockException.class,
+                    () -> journalEntryRepository.save(staleEntry)
+            );
         }
     }
 

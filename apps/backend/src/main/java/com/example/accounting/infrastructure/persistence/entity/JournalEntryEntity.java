@@ -24,6 +24,7 @@ public class JournalEntryEntity {
     private LocalDate journalDate;
     private String description;
     private String status;
+    private Integer version;
     private String createdBy;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -53,6 +54,7 @@ public class JournalEntryEntity {
         entity.setJournalDate(journalEntry.getJournalDate());
         entity.setDescription(journalEntry.getDescription());
         entity.setStatus(journalEntry.getStatus().name());
+        entity.setVersion(journalEntry.getVersion());
         if (journalEntry.getCreatedBy() != null) {
             entity.setCreatedBy(journalEntry.getCreatedBy().value());
         }
@@ -76,6 +78,7 @@ public class JournalEntryEntity {
                 journalDate,
                 description,
                 JournalEntryStatus.fromCode(status),
+                version,
                 domainLines,
                 createdBy == null ? null : UserId.of(createdBy),
                 createdAt == null ? null : createdAt.toLocalDateTime(),
@@ -121,6 +124,14 @@ public class JournalEntryEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
     public String getCreatedBy() {

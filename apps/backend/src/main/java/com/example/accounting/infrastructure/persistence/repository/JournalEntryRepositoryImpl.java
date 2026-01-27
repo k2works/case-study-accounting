@@ -3,6 +3,7 @@ package com.example.accounting.infrastructure.persistence.repository;
 import com.example.accounting.application.port.out.JournalEntryRepository;
 import com.example.accounting.domain.model.journal.JournalEntry;
 import com.example.accounting.domain.model.journal.JournalEntryId;
+import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity;
 import com.example.accounting.infrastructure.persistence.mapper.JournalEntryMapper;
@@ -28,7 +29,10 @@ public class JournalEntryRepositoryImpl implements JournalEntryRepository {
         JournalEntryEntity entity = JournalEntryEntity.fromDomain(journalEntry);
 
         if (entity.getId() != null && journalEntryMapper.findById(entity.getId()).isPresent()) {
-            journalEntryMapper.update(entity);
+            int updatedCount = journalEntryMapper.update(entity);
+            if (updatedCount == 0) {
+                throw new OptimisticLockException("仕訳の更新に失敗しました。再読み込みしてください。");
+            }
             journalEntryMapper.deleteLines(entity.getId());
         } else {
             journalEntryMapper.insert(entity);

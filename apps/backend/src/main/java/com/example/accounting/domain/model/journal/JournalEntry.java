@@ -27,6 +27,7 @@ public class JournalEntry {
     LocalDate journalDate;
     String description;
     JournalEntryStatus status;
+    Integer version;
     List<JournalEntryLine> lines;
     UserId createdBy;
     LocalDateTime createdAt;
@@ -42,8 +43,9 @@ public class JournalEntry {
      */
     public static JournalEntry create(LocalDate journalDate,
                                       String description,
-                                      UserId createdBy) {
-        return create(journalDate, description, createdBy, LocalDateTime::now);
+                                      UserId createdBy,
+                                      Integer version) {
+        return create(journalDate, description, createdBy, version, LocalDateTime::now);
     }
 
     /**
@@ -58,6 +60,7 @@ public class JournalEntry {
     public static JournalEntry create(LocalDate journalDate,
                                       String description,
                                       UserId createdBy,
+                                      Integer version,
                                       Supplier<LocalDateTime> clockSupplier) {
         if (journalDate == null) {
             throw new IllegalArgumentException("仕訳日は必須です");
@@ -79,6 +82,7 @@ public class JournalEntry {
                 journalDate,
                 description,
                 JournalEntryStatus.DRAFT,
+                version,
                 List.of(),
                 createdBy,
                 now,
@@ -103,6 +107,7 @@ public class JournalEntry {
                                            LocalDate journalDate,
                                            String description,
                                            JournalEntryStatus status,
+                                           Integer version,
                                            List<JournalEntryLine> lines,
                                            UserId createdBy,
                                            LocalDateTime createdAt,
@@ -112,11 +117,49 @@ public class JournalEntry {
                 journalDate,
                 description,
                 status,
+                version,
                 List.copyOf(requireLines(lines)),
                 createdBy,
                 createdAt,
                 updatedAt
         );
+    }
+
+    /**
+     * 仕訳を更新した新しいインスタンスを返す
+     *
+     * @param newJournalDate 新しい仕訳日
+     * @param newDescription 新しい摘要
+     * @param newLines       新しい明細行
+     * @return 更新された JournalEntry インスタンス
+     * @throws IllegalStateException 下書き以外のステータスの場合
+     */
+    public JournalEntry update(LocalDate newJournalDate,
+                               String newDescription,
+                               List<JournalEntryLine> newLines) {
+        return update(newJournalDate, newDescription, newLines, LocalDateTime::now);
+    }
+
+    public JournalEntry update(LocalDate newJournalDate,
+                               String newDescription,
+                               List<JournalEntryLine> newLines,
+                               Supplier<LocalDateTime> clockSupplier) {
+        if (status != JournalEntryStatus.DRAFT) {
+            throw new IllegalStateException("下書き状態の仕訳のみ編集可能です");
+        }
+        if (newJournalDate == null) {
+            throw new IllegalArgumentException("仕訳日は必須です");
+        }
+        if (newDescription == null) {
+            throw new IllegalArgumentException("摘要は必須です");
+        }
+
+        return this.toBuilder()
+                .journalDate(newJournalDate)
+                .description(newDescription)
+                .lines(newLines == null ? List.of() : List.copyOf(newLines))
+                .updatedAt(clockSupplier.get())
+                .build();
     }
 
     /**

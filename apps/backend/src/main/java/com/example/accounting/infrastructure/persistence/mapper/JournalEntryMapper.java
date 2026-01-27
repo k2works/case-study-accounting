@@ -20,7 +20,7 @@ public interface JournalEntryMapper {
 
     void insertLines(List<JournalEntryLineEntity> lines);
 
-    void update(JournalEntryEntity entity);
+    int update(JournalEntryEntity entity);
 
     void deleteLines(@Param("journalEntryId") Integer journalEntryId);
 

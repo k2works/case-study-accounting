@@ -15,8 +15,6 @@ import io.vavr.control.Either;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 /**
  * 仕訳登録サービス（CreateJournalEntryUseCase の実装）
  *
@@ -94,7 +92,8 @@ public class CreateJournalEntryService implements CreateJournalEntryUseCase {
             JournalEntry entry = JournalEntry.create(
                     command.journalDate(),
                     command.description(),
-                    UserId.of(command.createdByUserId())
+                    UserId.of(command.createdByUserId()),
+                    0
             );
 
             JournalEntry updated = entry;

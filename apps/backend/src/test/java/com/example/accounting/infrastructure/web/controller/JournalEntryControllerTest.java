@@ -1,8 +1,11 @@
 package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
+import com.example.accounting.application.port.in.GetJournalEntryUseCase;
+import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
+import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.Email;
 import com.example.accounting.domain.model.user.Password;
@@ -12,6 +15,8 @@ import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryRequest;
+import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -46,13 +51,24 @@ class JournalEntryControllerTest {
     private CreateJournalEntryUseCase createJournalEntryUseCase;
 
     @Mock
+    private UpdateJournalEntryUseCase updateJournalEntryUseCase;
+
+    @Mock
+    private GetJournalEntryUseCase getJournalEntryUseCase;
+
+    @Mock
     private UserRepository userRepository;
 
     private JournalEntryController journalEntryController;
 
     @BeforeEach
     void setUp() {
-        journalEntryController = new JournalEntryController(createJournalEntryUseCase, userRepository);
+        journalEntryController = new JournalEntryController(
+                createJournalEntryUseCase,
+                updateJournalEntryUseCase,
+                getJournalEntryUseCase,
+                userRepository
+        );
     }
 
     @Nested
@@ -157,6 +173,117 @@ class JournalEntryControllerTest {
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("勘定科目が存在しません");
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳編集")
+    class UpdateJournalEntry {
+
+        @Test
+        @DisplayName("有効な情報で仕訳を編集できる")
+        void shouldUpdateJournalEntryWithValidRequest() {
+            UpdateJournalEntryRequest request = new UpdateJournalEntryRequest(
+                    LocalDate.of(2024, 2, 10),
+                    "摘要更新",
+                    List.of(
+                            new UpdateJournalEntryRequest.JournalEntryLineRequest(1, 1,
+                                    new BigDecimal("2000"), null),
+                            new UpdateJournalEntryRequest.JournalEntryLineRequest(2, 2,
+                                    null, new BigDecimal("2000"))
+                    ),
+                    1
+            );
+            UpdateJournalEntryResult result = UpdateJournalEntryResult.success(
+                    10,
+                    LocalDate.of(2024, 2, 10),
+                    "摘要更新",
+                    "DRAFT",
+                    2
+            );
+            when(updateJournalEntryUseCase.execute(any()))
+                    .thenReturn(result);
+
+            ResponseEntity<UpdateJournalEntryResponse> response =
+                    journalEntryController.update(10, request, principal("user1"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isTrue();
+            assertThat(response.getBody().journalEntryId()).isEqualTo(10);
+            assertThat(response.getBody().journalDate()).isEqualTo(LocalDate.of(2024, 2, 10));
+            assertThat(response.getBody().description()).isEqualTo("摘要更新");
+            assertThat(response.getBody().status()).isEqualTo("DRAFT");
+            assertThat(response.getBody().version()).isEqualTo(2);
+            assertThat(response.getBody().message()).isEqualTo("仕訳を更新しました");
+            assertThat(response.getBody().errorMessage()).isNull();
+        }
+
+        @Test
+        @DisplayName("仕訳が存在しない場合は 404 を返す")
+        void shouldReturnNotFoundWhenJournalEntryMissing() {
+            UpdateJournalEntryRequest request = new UpdateJournalEntryRequest(
+                    LocalDate.of(2024, 2, 10),
+                    "摘要更新",
+                    List.of(
+                            new UpdateJournalEntryRequest.JournalEntryLineRequest(1, 1,
+                                    new BigDecimal("2000"), null)
+                    ),
+                    1
+            );
+            when(updateJournalEntryUseCase.execute(any()))
+                    .thenReturn(UpdateJournalEntryResult.failure("仕訳が見つかりません"));
+
+            ResponseEntity<UpdateJournalEntryResponse> response =
+                    journalEntryController.update(10, request, principal("user1"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(response.getBody()).isNull();
+        }
+
+        @Test
+        @DisplayName("バリデーションエラーの場合は 400 を返す")
+        void shouldReturnBadRequestWhenValidationFails() {
+            UpdateJournalEntryRequest request = new UpdateJournalEntryRequest(
+                    LocalDate.of(2024, 2, 10),
+                    "摘要更新",
+                    List.of(),
+                    1
+            );
+            when(updateJournalEntryUseCase.execute(any()))
+                    .thenReturn(UpdateJournalEntryResult.failure("仕訳明細は 1 行以上必要です"));
+
+            ResponseEntity<UpdateJournalEntryResponse> response =
+                    journalEntryController.update(10, request, principal("user1"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+            assertThat(response.getBody().errorMessage()).isEqualTo("仕訳明細は 1 行以上必要です");
+        }
+
+        @Test
+        @DisplayName("楽観的ロックエラーの場合は 409 を返す")
+        void shouldReturnConflictWhenOptimisticLockFails() {
+            UpdateJournalEntryRequest request = new UpdateJournalEntryRequest(
+                    LocalDate.of(2024, 2, 10),
+                    "摘要更新",
+                    List.of(
+                            new UpdateJournalEntryRequest.JournalEntryLineRequest(1, 1,
+                                    new BigDecimal("2000"), null)
+                    ),
+                    1
+            );
+            when(updateJournalEntryUseCase.execute(any()))
+                    .thenReturn(UpdateJournalEntryResult.failure("仕訳のバージョンが一致しません"));
+
+            ResponseEntity<UpdateJournalEntryResponse> response =
+                    journalEntryController.update(10, request, principal("user1"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+            assertThat(response.getBody().errorMessage()).isEqualTo("仕訳のバージョンが一致しません");
         }
     }
 
