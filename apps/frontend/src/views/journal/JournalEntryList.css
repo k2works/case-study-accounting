@@ -1,0 +1,15 @@
+.journal-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.journal-entry-list__notification {
+  margin-bottom: 0.5rem;
+}
+
+.journal-entry-list__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}

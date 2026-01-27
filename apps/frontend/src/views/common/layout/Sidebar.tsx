@@ -24,7 +24,10 @@ const MENU_ITEMS: MenuItem[] = [
     label: '仕訳',
     icon: 'book',
     roles: ['ADMIN', 'MANAGER', 'USER'],
-    children: [{ id: 'journal-entry-new', label: '仕訳入力', path: '/journal/entries/new' }],
+    children: [
+      { id: 'journal-entry-list', label: '仕訳一覧', path: '/journal/entries' },
+      { id: 'journal-entry-new', label: '仕訳入力', path: '/journal/entries/new' },
+    ],
   },
   {
     id: 'ledger',
