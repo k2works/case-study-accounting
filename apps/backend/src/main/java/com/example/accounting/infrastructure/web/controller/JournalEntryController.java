@@ -3,13 +3,15 @@ package com.example.accounting.infrastructure.web.controller;
 import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
 import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
+import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
+import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.in.command.UpdateJournalEntryCommand;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
 import com.example.accounting.application.port.out.DeleteJournalEntryResult;
-import com.example.accounting.application.port.out.JournalEntryDetailResult;
+import com.example.accounting.application.port.out.GetJournalEntriesResult;
 import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.User;
@@ -27,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.security.Principal;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -38,6 +41,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,23 +51,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/journal-entries")
 @Tag(name = "仕訳", description = "仕訳に関する API")
+@SuppressWarnings("PMD.CouplingBetweenObjects") // コントローラは複数のユースケースを統合するため結合度が高くなる
 public class JournalEntryController {
 
     private final CreateJournalEntryUseCase createJournalEntryUseCase;
     private final UpdateJournalEntryUseCase updateJournalEntryUseCase;
     private final GetJournalEntryUseCase getJournalEntryUseCase;
     private final DeleteJournalEntryUseCase deleteJournalEntryUseCase;
+    private final GetJournalEntriesUseCase getJournalEntriesUseCase;
     private final UserRepository userRepository;
 
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
                                   UpdateJournalEntryUseCase updateJournalEntryUseCase,
                                   GetJournalEntryUseCase getJournalEntryUseCase,
                                   DeleteJournalEntryUseCase deleteJournalEntryUseCase,
+                                  GetJournalEntriesUseCase getJournalEntriesUseCase,
                                   UserRepository userRepository) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
         this.getJournalEntryUseCase = getJournalEntryUseCase;
         this.deleteJournalEntryUseCase = deleteJournalEntryUseCase;
+        this.getJournalEntriesUseCase = getJournalEntriesUseCase;
         this.userRepository = userRepository;
     }
 
@@ -128,11 +136,11 @@ public class JournalEntryController {
     }
 
     /**
-     * 仕訳一覧取得
+     * 仕訳一覧取得（ページネーション対応）
      */
     @Operation(
             summary = "仕訳一覧取得",
-            description = "経理担当者以上が仕訳一覧を取得します"
+            description = "経理担当者以上が仕訳一覧を取得します（ページネーション対応）"
     )
     @ApiResponse(
             responseCode = "200",
@@ -140,12 +148,22 @@ public class JournalEntryController {
     )
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<List<JournalEntryResponse>> findAll() {
-        List<JournalEntryDetailResult> results = getJournalEntryUseCase.findAll();
-        List<JournalEntryResponse> responses = results.stream()
-                .map(JournalEntryResponse::from)
-                .toList();
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<GetJournalEntriesResult> findAllPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) LocalDate dateFrom,
+            @RequestParam(required = false) LocalDate dateTo
+    ) {
+        GetJournalEntriesQuery query = new GetJournalEntriesQuery(
+                page,
+                size,
+                status != null ? status : List.of(),
+                dateFrom,
+                dateTo
+        );
+        GetJournalEntriesResult result = getJournalEntriesUseCase.execute(query);
+        return ResponseEntity.ok(result);
     }
 
     /**

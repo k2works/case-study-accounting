@@ -3,6 +3,7 @@ package com.example.accounting.application.port.out;
 import com.example.accounting.domain.model.journal.JournalEntry;
 import com.example.accounting.domain.model.journal.JournalEntryId;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,34 @@ public interface JournalEntryRepository {
      * @return 仕訳リスト
      */
     List<JournalEntry> findAll();
+
+    /**
+     * 条件付きで仕訳一覧を取得する（ページネーション対応）
+     *
+     * @param statuses フィルタ対象ステータス（空の場合は全ステータス）
+     * @param dateFrom 仕訳日付開始（null 可）
+     * @param dateTo 仕訳日付終了（null 可）
+     * @param offset オフセット
+     * @param limit 取得件数
+     * @return 仕訳リスト
+     */
+    List<JournalEntry> findByConditions(
+            List<String> statuses,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            int offset,
+            int limit
+    );
+
+    /**
+     * 条件に一致する仕訳件数を取得する
+     *
+     * @param statuses フィルタ対象ステータス（空の場合は全ステータス）
+     * @param dateFrom 仕訳日付開始（null 可）
+     * @param dateTo 仕訳日付終了（null 可）
+     * @return 件数
+     */
+    long countByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo);
 
     /**
      * 仕訳を削除する

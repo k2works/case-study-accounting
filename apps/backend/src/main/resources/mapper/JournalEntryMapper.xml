@@ -159,4 +159,70 @@
         DELETE FROM journal_entries WHERE id = #{id}
     </delete>
 
+    <select id="findByConditions" resultMap="journalEntryResultMap">
+        SELECT
+            je.id,
+            je.journal_date,
+            je.description,
+            je.status,
+            je.version,
+            je.created_by,
+            je.created_at,
+            je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
+            jel.id AS line_id,
+            jel.journal_entry_id AS line_journal_entry_id,
+            jel.line_number,
+            jel.account_id,
+            jel.debit_amount,
+            jel.credit_amount,
+            jel.line_description
+        FROM journal_entries je
+        LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            <if test="statuses != null and statuses.size() > 0">
+                je.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+        ORDER BY je.id ASC, jel.line_number ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByConditions" resultType="long">
+        SELECT COUNT(DISTINCT je.id)
+        FROM journal_entries je
+        <where>
+            <if test="statuses != null and statuses.size() > 0">
+                je.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+    </select>
+
 </mapper>

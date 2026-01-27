@@ -9,6 +9,7 @@ import com.example.accounting.infrastructure.persistence.entity.JournalEntryLine
 import com.example.accounting.infrastructure.persistence.mapper.JournalEntryMapper;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,5 +67,18 @@ public class JournalEntryRepositoryImpl implements JournalEntryRepository {
     @Override
     public void deleteById(JournalEntryId id) {
         journalEntryMapper.deleteById(id.value());
+    }
+
+    @Override
+    public List<JournalEntry> findByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo, int offset, int limit) {
+        return journalEntryMapper.findByConditions(statuses, dateFrom, dateTo, offset, limit)
+                .stream()
+                .map(JournalEntryEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo) {
+        return journalEntryMapper.countByConditions(statuses, dateFrom, dateTo);
     }
 }

@@ -5,6 +5,7 @@ import com.example.accounting.infrastructure.persistence.entity.JournalEntryLine
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +32,18 @@ public interface JournalEntryMapper {
     List<JournalEntryLineEntity> findLinesByJournalEntryId(@Param("journalEntryId") Integer journalEntryId);
 
     void deleteById(Integer id);
+
+    List<JournalEntryEntity> findByConditions(
+            @Param("statuses") List<String> statuses,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+    );
+
+    long countByConditions(
+            @Param("statuses") List<String> statuses,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo
+    );
 }

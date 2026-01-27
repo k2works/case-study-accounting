@@ -1,6 +1,7 @@
 package com.example.accounting.integration;
 
 import com.example.accounting.TestcontainersConfiguration;
+import com.example.accounting.application.port.out.GetJournalEntriesResult;
 import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.JournalEntryResponse;
@@ -335,15 +336,16 @@ class JournalEntryApiIntegrationTest {
 
             // When - 一般ユーザーで一覧取得
             String userToken = loginAndGetToken("user", "Password123!");
-            JournalEntryResponse[] responses = restClient.get()
+            GetJournalEntriesResult response = restClient.get()
                     .uri("/api/journal-entries")
                     .header("Authorization", "Bearer " + userToken)
                     .retrieve()
-                    .body(JournalEntryResponse[].class);
+                    .body(GetJournalEntriesResult.class);
 
             // Then
-            assertThat(responses).isNotNull();
-            assertThat(responses.length).isGreaterThanOrEqualTo(1);
+            assertThat(response).isNotNull();
+            assertThat(response.content()).isNotNull();
+            assertThat(response.content().size()).isGreaterThanOrEqualTo(1);
         }
 
         @Test
@@ -353,7 +355,7 @@ class JournalEntryApiIntegrationTest {
             assertThatThrownBy(() -> restClient.get()
                     .uri("/api/journal-entries")
                     .retrieve()
-                    .body(JournalEntryResponse[].class))
+                    .body(GetJournalEntriesResult.class))
                     .isInstanceOf(HttpClientErrorException.class)
                     .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
                     .extracting(HttpClientErrorException::getStatusCode)
