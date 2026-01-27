@@ -78,7 +78,7 @@
     <!-- コントローラーは Spring/Swagger アノテーション、DTO、ユースケース等で多くのインポートが必要 -->
     <rule ref="category/java/design.xml/ExcessiveImports">
         <properties>
-            <property name="minimum" value="40"/>
+            <property name="minimum" value="45"/>
         </properties>
     </rule>
 

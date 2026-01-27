@@ -1,6 +1,7 @@
 package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
+import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
@@ -57,6 +58,9 @@ class JournalEntryControllerTest {
     private GetJournalEntryUseCase getJournalEntryUseCase;
 
     @Mock
+    private DeleteJournalEntryUseCase deleteJournalEntryUseCase;
+
+    @Mock
     private UserRepository userRepository;
 
     private JournalEntryController journalEntryController;
@@ -67,6 +71,7 @@ class JournalEntryControllerTest {
                 createJournalEntryUseCase,
                 updateJournalEntryUseCase,
                 getJournalEntryUseCase,
+                deleteJournalEntryUseCase,
                 userRepository
         );
     }

@@ -1,11 +1,14 @@
 package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
+import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
+import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.in.command.UpdateJournalEntryCommand;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
+import com.example.accounting.application.port.out.DeleteJournalEntryResult;
 import com.example.accounting.application.port.out.JournalEntryDetailResult;
 import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
@@ -13,6 +16,7 @@ import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.DeleteJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.JournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryResponse;
@@ -29,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,15 +52,18 @@ public class JournalEntryController {
     private final CreateJournalEntryUseCase createJournalEntryUseCase;
     private final UpdateJournalEntryUseCase updateJournalEntryUseCase;
     private final GetJournalEntryUseCase getJournalEntryUseCase;
+    private final DeleteJournalEntryUseCase deleteJournalEntryUseCase;
     private final UserRepository userRepository;
 
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
                                   UpdateJournalEntryUseCase updateJournalEntryUseCase,
                                   GetJournalEntryUseCase getJournalEntryUseCase,
+                                  DeleteJournalEntryUseCase deleteJournalEntryUseCase,
                                   UserRepository userRepository) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
         this.getJournalEntryUseCase = getJournalEntryUseCase;
+        this.deleteJournalEntryUseCase = deleteJournalEntryUseCase;
         this.userRepository = userRepository;
     }
 
@@ -237,5 +245,45 @@ public class JournalEntryController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(UpdateJournalEntryResponse.failure(ex.getMessage()));
         }
+    }
+
+    /**
+     * 仕訳削除
+     */
+    @Operation(
+            summary = "仕訳削除",
+            description = "経理担当者以上が仕訳を削除します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "削除成功",
+            content = @Content(schema = @Schema(implementation = DeleteJournalEntryResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "削除失敗（ステータスエラー等）",
+            content = @Content(schema = @Schema(implementation = DeleteJournalEntryResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "仕訳が見つからない",
+            content = @Content
+    )
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    public ResponseEntity<DeleteJournalEntryResponse> delete(@PathVariable Integer id) {
+        DeleteJournalEntryCommand command = new DeleteJournalEntryCommand(id);
+        DeleteJournalEntryResult result = deleteJournalEntryUseCase.execute(command);
+
+        if (result.success()) {
+            return ResponseEntity.ok(DeleteJournalEntryResponse.success("仕訳を削除しました"));
+        }
+
+        if ("仕訳が見つかりません".equals(result.errorMessage())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.badRequest()
+                .body(DeleteJournalEntryResponse.failure(result.errorMessage()));
     }
 }
