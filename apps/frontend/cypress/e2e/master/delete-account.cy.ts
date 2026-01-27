@@ -9,6 +9,13 @@
  * - 削除成功時、確認メッセージが表示される
  */
 describe('US-MST-003: 勘定科目削除', () => {
+  // テストスイート開始前にテスト用勘定科目をセットアップ
+  before(() => {
+    cy.clearAuth();
+    cy.setupTestAccounts();
+    cy.clearAuth();
+  });
+
   beforeEach(() => {
     // 各テスト前に認証情報をクリア
     cy.clearAuth();
@@ -108,20 +115,31 @@ describe('US-MST-003: 勘定科目削除', () => {
 
   describe('勘定科目削除実行', () => {
     beforeEach(() => {
-      // 管理者でログインして勘定科目一覧ページにアクセス
+      // 管理者でログインして削除専用の勘定科目を作成
       cy.login('admin', 'Password123!');
-      // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
+
+      // 削除用のテスト勘定科目を作成（仕訳で使用されていない科目）
+      const deleteTestCode = `9${Date.now().toString().slice(-3)}`; // ユニークなコード
+      cy.visit('/master/accounts/new');
+      cy.get('[data-testid="create-account-form"]').should('be.visible');
+      cy.get('[data-testid="create-account-code-input"]').type(deleteTestCode);
+      cy.get('[data-testid="create-account-name-input"]').type('削除テスト用科目');
+      cy.get('[data-testid="create-account-type-select"]').select('ASSET');
+      cy.get('[data-testid="create-account-submit"]').click();
+      cy.wait(1000);
+
+      // 勘定科目一覧ページにアクセス
       cy.visit('/master/accounts');
       cy.get('[data-testid="account-list"]').should('be.visible');
     });
 
     it('確認ダイアログでOKを選択すると勘定科目が削除される', () => {
-      // Given: 勘定科目一覧が表示されている
+      // Given: 勘定科目一覧が表示されている（削除専用の勘定科目が含まれる）
 
-      // When: 削除ボタンをクリックしてOKを選択
+      // When: 削除テスト用科目の削除ボタンをクリックしてOKを選択
       cy.on('window:confirm', () => true);
-      cy.contains('button', '削除').first().click();
+      cy.contains('tr', '削除テスト用科目').find('button').contains('削除').click();
 
       // Then: 削除成功メッセージが表示される
       cy.contains('勘定科目を削除しました').should('be.visible');
@@ -130,9 +148,9 @@ describe('US-MST-003: 勘定科目削除', () => {
     it('削除成功時、確認メッセージが表示される', () => {
       // Given: 勘定科目一覧が表示されている
 
-      // When: 削除を実行
+      // When: 削除テスト用科目を削除
       cy.on('window:confirm', () => true);
-      cy.contains('button', '削除').first().click();
+      cy.contains('tr', '削除テスト用科目').find('button').contains('削除').click();
 
       // Then: 成功メッセージが表示される
       cy.get('[data-testid="success-notification"]', { timeout: 5000 }).should('be.visible');
@@ -141,27 +159,34 @@ describe('US-MST-003: 勘定科目削除', () => {
 
     it('削除成功後、勘定科目一覧が再読み込みされる', () => {
       // Given: 勘定科目一覧が表示されている
-      // 削除前の最初の行のデータを取得
-      cy.get('table tbody tr').first().invoke('text').then((firstRowText) => {
-        // When: 削除を実行
-        cy.on('window:confirm', () => true);
-        cy.contains('button', '削除').first().click();
 
-        // Then: 削除成功メッセージが表示され、リストが更新される
-        cy.contains('勘定科目を削除しました').should('be.visible');
-        // 注意: MSW モックの場合、実際にはデータが削除されないため、
-        // リストの再読み込みが行われることを確認
-        cy.get('[data-testid="account-list"]').should('be.visible');
-      });
+      // When: 削除テスト用科目を削除
+      cy.on('window:confirm', () => true);
+      cy.contains('tr', '削除テスト用科目').find('button').contains('削除').click();
+
+      // Then: 削除成功メッセージが表示され、リストが更新される
+      cy.contains('勘定科目を削除しました').should('be.visible');
+      cy.get('[data-testid="account-list"]').should('be.visible');
     });
   });
 
   describe('使用中勘定科目の削除制限', () => {
     beforeEach(() => {
-      // 管理者でログインして勘定科目一覧ページにアクセス
+      // 管理者でログインして削除専用の勘定科目を作成
       cy.login('admin', 'Password123!');
-      // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
+
+      // 削除用のテスト勘定科目を作成
+      const deleteTestCode = `8${Date.now().toString().slice(-3)}`;
+      cy.visit('/master/accounts/new');
+      cy.get('[data-testid="create-account-form"]').should('be.visible');
+      cy.get('[data-testid="create-account-code-input"]').type(deleteTestCode);
+      cy.get('[data-testid="create-account-name-input"]').type('使用中削除テスト用');
+      cy.get('[data-testid="create-account-type-select"]').select('ASSET');
+      cy.get('[data-testid="create-account-submit"]').click();
+      cy.wait(1000);
+
+      // 勘定科目一覧ページにアクセス
       cy.visit('/master/accounts');
       cy.get('[data-testid="account-list"]').should('be.visible');
     });
@@ -172,17 +197,17 @@ describe('US-MST-003: 勘定科目削除', () => {
       // 現在の AccountUsageChecker はスタブ実装で常に false を返すため、
       // 実際の使用中チェックは仕訳機能実装後にテスト可能
 
-      // When: 使用中の勘定科目の削除を試みる
+      // When: 使用中でない勘定科目の削除を試みる
       // （現在はスタブ実装のため、正常に削除される）
 
-      // Then: エラーメッセージが表示される（仕訳機能実装後に有効化）
+      // Then: 削除が成功する（使用中チェックはスタブ実装のため）
+      cy.on('window:confirm', () => true);
+      cy.contains('tr', '使用中削除テスト用').find('button').contains('削除').click();
+      cy.contains('勘定科目を削除しました').should('be.visible');
+
+      // Note: 仕訳機能で使用中チェックが実装された後は、以下のテストに変更：
       // cy.get('[data-testid="error-message"]').should('be.visible');
       // cy.get('[data-testid="error-message"]').should('contain', 'この勘定科目は仕訳で使用されているため削除できません');
-
-      // 現時点では削除が成功することを確認
-      cy.on('window:confirm', () => true);
-      cy.contains('button', '削除').first().click();
-      cy.contains('勘定科目を削除しました').should('be.visible');
     });
   });
 
