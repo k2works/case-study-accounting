@@ -86,6 +86,7 @@ nav:
       - イテレーション計画:
           - イテレーション1: development/iteration_plan-1.md
           - イテレーション2: development/iteration_plan-2.md
+          - イテレーション3: development/iteration_plan-3.md
       - ふりかえり:
           - イテレーション1: development/retrospective-1.md
           - イテレーション2: development/retrospective-2.md
