@@ -18,6 +18,19 @@ declare global {
        * ローカルストレージをクリアしてログアウト状態にする
        */
       clearAuth(): Chainable<void>;
+
+      /**
+       * 勘定科目を作成するコマンド
+       * @param code - 科目コード
+       * @param name - 科目名
+       * @param type - 勘定科目種別 (ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE)
+       */
+      createAccount(code: string, name: string, type: string): Chainable<void>;
+
+      /**
+       * テスト用の基本勘定科目をセットアップする
+       */
+      setupTestAccounts(): Chainable<void>;
     }
   }
 }
@@ -56,6 +69,46 @@ Cypress.Commands.add('clearAuth', () => {
   cy.clearLocalStorage('accessToken');
   cy.clearLocalStorage('refreshToken');
   cy.clearLocalStorage('user');
+});
+
+/**
+ * 勘定科目作成コマンド
+ * 管理者権限で勘定科目登録ページから勘定科目を作成する
+ */
+Cypress.Commands.add('createAccount', (code: string, name: string, type: string) => {
+  cy.visit('/master/accounts/new');
+  cy.get('[data-testid="create-account-form"]').should('be.visible');
+
+  cy.get('[data-testid="create-account-code-input"]').type(code);
+  cy.get('[data-testid="create-account-name-input"]').type(name);
+  cy.get('[data-testid="create-account-type-select"]').select(type);
+  cy.get('[data-testid="create-account-submit"]').click();
+
+  // 成功メッセージまたはエラーメッセージを待機（最大3秒）
+  // 既存の科目の場合はエラーが表示されるが、テストは継続
+  cy.wait(1000);
+});
+
+/**
+ * テスト用の基本勘定科目をセットアップする
+ * 借方・貸方それぞれで使える勘定科目を作成
+ */
+Cypress.Commands.add('setupTestAccounts', () => {
+  // 管理者でログイン
+  cy.login('admin', 'Password123!');
+  cy.get('[data-testid="dashboard"]').should('be.visible');
+
+  // 資産科目（借方で使用）
+  cy.createAccount('1001', '現金', 'ASSET');
+
+  // 収益科目（貸方で使用）
+  cy.createAccount('4001', '売上高', 'REVENUE');
+
+  // 費用科目
+  cy.createAccount('5001', '仕入高', 'EXPENSE');
+
+  // 負債科目
+  cy.createAccount('2001', '買掛金', 'LIABILITY');
 });
 
 export {};

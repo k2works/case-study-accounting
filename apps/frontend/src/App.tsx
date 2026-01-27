@@ -7,6 +7,7 @@ import AccountListPage from './pages/AccountListPage';
 import CreateAccountPage from './pages/CreateAccountPage';
 import EditAccountPage from './pages/EditAccountPage';
 import CreateJournalEntryPage from './pages/CreateJournalEntryPage';
+import EditJournalEntryPage from './pages/EditJournalEntryPage';
 import { Loading } from './views/common';
 
 /**
@@ -117,6 +118,14 @@ export const App = () => {
         element={
           <PrivateRoute>
             <CreateJournalEntryPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/journal/entries/:id/edit"
+        element={
+          <PrivateRoute>
+            <EditJournalEntryPage />
           </PrivateRoute>
         }
       />

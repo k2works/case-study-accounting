@@ -41,7 +41,7 @@ describe('Sidebar', () => {
       renderSidebar();
       expect(screen.getByRole('navigation')).toBeInTheDocument();
       expect(screen.getByText('ダッシュボード')).toBeInTheDocument();
-      expect(screen.getByText('仕訳管理')).toBeInTheDocument();
+      expect(screen.getByText('仕訳')).toBeInTheDocument();
       expect(screen.getByText('元帳・残高')).toBeInTheDocument();
       expect(screen.getByText('財務諸表')).toBeInTheDocument();
       expect(screen.getByText('マスタ管理')).toBeInTheDocument();
@@ -64,19 +64,18 @@ describe('Sidebar', () => {
     it('expands and collapses submenu on click', async () => {
       renderSidebar();
 
-      expect(screen.queryByText('仕訳一覧')).not.toBeInTheDocument();
+      expect(screen.queryByText('仕訳入力')).not.toBeInTheDocument();
 
-      await expandMenu('仕訳管理');
-      expect(screen.getByText('仕訳一覧')).toBeInTheDocument();
+      await expandMenu('仕訳');
       expect(screen.getByText('仕訳入力')).toBeInTheDocument();
 
-      await expandMenu('仕訳管理');
-      expect(screen.queryByText('仕訳一覧')).not.toBeInTheDocument();
+      await expandMenu('仕訳');
+      expect(screen.queryByText('仕訳入力')).not.toBeInTheDocument();
     });
 
     it('adds is-open class to arrow when expanded', async () => {
       const { container } = renderSidebar();
-      await expandMenu('仕訳管理');
+      await expandMenu('仕訳');
       expect(container.querySelector('.sidebar__arrow.is-open')).toBeInTheDocument();
     });
   });
@@ -91,9 +90,7 @@ describe('Sidebar role-based menu visibility', () => {
     it('renders system management and all privileged menus', async () => {
       renderSidebar();
       expect(screen.getByText('システム管理')).toBeInTheDocument();
-
-      await expandMenu('仕訳管理');
-      expect(screen.getByText('承認待ち')).toBeInTheDocument();
+      expect(screen.getByText('仕訳')).toBeInTheDocument();
 
       await expandMenu('財務諸表');
       expect(screen.getByText('財務分析')).toBeInTheDocument();
@@ -103,12 +100,10 @@ describe('Sidebar role-based menu visibility', () => {
   describe('MANAGER role', () => {
     beforeEach(() => setRole('MANAGER'));
 
-    it('renders approval and analysis but not system management', async () => {
+    it('renders journal and analysis but not system management', async () => {
       renderSidebar();
       expect(screen.queryByText('システム管理')).not.toBeInTheDocument();
-
-      await expandMenu('仕訳管理');
-      expect(screen.getByText('承認待ち')).toBeInTheDocument();
+      expect(screen.getByText('仕訳')).toBeInTheDocument();
 
       await expandMenu('財務諸表');
       expect(screen.getByText('財務分析')).toBeInTheDocument();
@@ -121,9 +116,7 @@ describe('Sidebar role-based menu visibility', () => {
     it('does not render privileged menus', async () => {
       renderSidebar();
       expect(screen.queryByText('システム管理')).not.toBeInTheDocument();
-
-      await expandMenu('仕訳管理');
-      expect(screen.queryByText('承認待ち')).not.toBeInTheDocument();
+      expect(screen.getByText('仕訳')).toBeInTheDocument();
 
       await expandMenu('財務諸表');
       expect(screen.queryByText('財務分析')).not.toBeInTheDocument();
@@ -136,6 +129,8 @@ describe('Sidebar role-based menu visibility', () => {
       renderSidebar();
       expect(screen.getByText('ダッシュボード')).toBeInTheDocument();
       expect(screen.queryByText('システム管理')).not.toBeInTheDocument();
+      // VIEWER は仕訳メニューを見れない（roles: ['ADMIN', 'MANAGER', 'USER']）
+      expect(screen.queryByText('仕訳')).not.toBeInTheDocument();
     });
 
     it('null user defaults to VIEWER permissions', () => {

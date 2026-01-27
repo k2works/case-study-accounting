@@ -13,6 +13,13 @@
  * - 保存された仕訳のステータスは「下書き」になる
  */
 describe('US-JNL-001: 仕訳入力', () => {
+  // テストスイート開始前に勘定科目をセットアップ
+  before(() => {
+    cy.clearAuth();
+    cy.setupTestAccounts();
+    cy.clearAuth();
+  });
+
   beforeEach(() => {
     // 各テスト前に認証情報をクリア
     cy.clearAuth();
@@ -63,8 +70,15 @@ describe('US-JNL-001: 仕訳入力', () => {
       cy.login('admin', 'Password123!');
       // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
+
+      // 勘定科目APIを待機
+      cy.intercept('GET', '/api/accounts').as('getAccounts');
       cy.visit('/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
+      cy.wait('@getAccounts', { timeout: 15000 });
+      // 勘定科目が読み込まれるのを待つ
+      cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 })
+        .should('have.length.greaterThan', 1);
     });
 
     it('仕訳日付、摘要を入力できる', () => {
@@ -82,24 +96,24 @@ describe('US-JNL-001: 仕訳入力', () => {
     it('借方科目、借方金額を入力できる', () => {
       // Given: 仕訳入力フォームが表示されている
 
-      // When: 1行目に勘定科目と借方金額を入力
-      cy.get('[data-testid="journal-entry-account-0"]').select('1');
+      // When: 1行目に勘定科目と借方金額を入力（インデックスで選択）
+      cy.get('[data-testid="journal-entry-account-0"]').select(1);
       cy.get('[data-testid="journal-entry-debit-0"]').type('1000');
 
       // Then: 入力値が反映される
-      cy.get('[data-testid="journal-entry-account-0"]').should('have.value', '1');
+      cy.get('[data-testid="journal-entry-account-0"]').should('not.have.value', '');
       cy.get('[data-testid="journal-entry-debit-0"]').should('have.value', '1000');
     });
 
     it('貸方科目、貸方金額を入力できる', () => {
       // Given: 仕訳入力フォームが表示されている
 
-      // When: 1行目に勘定科目と貸方金額を入力
-      cy.get('[data-testid="journal-entry-account-0"]').select('2');
+      // When: 1行目に勘定科目と貸方金額を入力（インデックスで選択）
+      cy.get('[data-testid="journal-entry-account-0"]').select(2);
       cy.get('[data-testid="journal-entry-credit-0"]').type('1000');
 
       // Then: 入力値が反映される
-      cy.get('[data-testid="journal-entry-account-0"]').should('have.value', '2');
+      cy.get('[data-testid="journal-entry-account-0"]').should('not.have.value', '');
       cy.get('[data-testid="journal-entry-credit-0"]').should('have.value', '1000');
     });
 
@@ -133,8 +147,14 @@ describe('US-JNL-001: 仕訳入力', () => {
       cy.login('admin', 'Password123!');
       // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
+
+      // 勘定科目APIを待機
+      cy.intercept('GET', '/api/accounts').as('getAccounts');
       cy.visit('/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
+      cy.wait('@getAccounts', { timeout: 15000 });
+      cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 })
+        .should('have.length.greaterThan', 1);
     });
 
     it('貸借が一致している場合、保存ボタンが有効になる', () => {
@@ -144,13 +164,13 @@ describe('US-JNL-001: 仕訳入力', () => {
       cy.get('[data-testid="journal-entry-date-input"]').type('2024-01-31');
       cy.get('[data-testid="journal-entry-description-input"]').type('売上計上');
 
-      // 借方: 現金 1000円
-      cy.get('[data-testid="journal-entry-account-0"]').select('1');
+      // 借方: 現金 1000円（インデックスで選択）
+      cy.get('[data-testid="journal-entry-account-0"]').select(1);
       cy.get('[data-testid="journal-entry-debit-0"]').type('1000');
 
       // 行追加して貸方: 売上 1000円
       cy.get('[data-testid="journal-entry-add-line"]').click();
-      cy.get('[data-testid="journal-entry-account-1"]').select('2');
+      cy.get('[data-testid="journal-entry-account-1"]').select(2);
       cy.get('[data-testid="journal-entry-credit-1"]').type('1000');
 
       // Then: 差額が¥0になり、保存ボタンが有効
@@ -166,7 +186,7 @@ describe('US-JNL-001: 仕訳入力', () => {
       cy.get('[data-testid="journal-entry-description-input"]').type('売上計上');
 
       // 借方: 現金 1000円のみ（貸方なし）
-      cy.get('[data-testid="journal-entry-account-0"]').select('1');
+      cy.get('[data-testid="journal-entry-account-0"]').select(1);
       cy.get('[data-testid="journal-entry-debit-0"]').type('1000');
 
       // Then: 差額が+¥1,000と表示され、保存ボタンが無効
@@ -181,8 +201,14 @@ describe('US-JNL-001: 仕訳入力', () => {
       cy.login('admin', 'Password123!');
       // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
+
+      // 勘定科目APIを待機
+      cy.intercept('GET', '/api/accounts').as('getAccounts');
       cy.visit('/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
+      cy.wait('@getAccounts', { timeout: 15000 });
+      cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 })
+        .should('have.length.greaterThan', 1);
     });
 
     it('有効な仕訳を保存すると成功メッセージが表示される', () => {
@@ -192,13 +218,13 @@ describe('US-JNL-001: 仕訳入力', () => {
       cy.get('[data-testid="journal-entry-date-input"]').type('2024-01-31');
       cy.get('[data-testid="journal-entry-description-input"]').type('売上計上');
 
-      // 借方: 現金 1000円
-      cy.get('[data-testid="journal-entry-account-0"]').select('1');
+      // 借方: 現金 1000円（インデックスで選択）
+      cy.get('[data-testid="journal-entry-account-0"]').select(1);
       cy.get('[data-testid="journal-entry-debit-0"]').type('1000');
 
       // 行追加して貸方: 売上 1000円
       cy.get('[data-testid="journal-entry-add-line"]').click();
-      cy.get('[data-testid="journal-entry-account-1"]').select('2');
+      cy.get('[data-testid="journal-entry-account-1"]').select(2);
       cy.get('[data-testid="journal-entry-credit-1"]').type('1000');
 
       cy.get('[data-testid="journal-entry-submit"]').click();

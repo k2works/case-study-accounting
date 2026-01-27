@@ -20,21 +20,6 @@ const MENU_ITEMS: MenuItem[] = [
     icon: 'dashboard',
   },
   {
-    id: 'journals',
-    label: '仕訳管理',
-    icon: 'book',
-    children: [
-      { id: 'journals-list', label: '仕訳一覧', path: '/journals' },
-      { id: 'journals-new', label: '仕訳入力', path: '/journals/new' },
-      {
-        id: 'journals-approval',
-        label: '承認待ち',
-        path: '/journals/approval',
-        roles: ['ADMIN', 'MANAGER'],
-      },
-    ],
-  },
-  {
     id: 'journal-entry',
     label: '仕訳',
     icon: 'book',
