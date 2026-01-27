@@ -259,21 +259,215 @@ export const accountHandlers = [
   }),
 ];
 
+// モック仕訳データ
+interface JournalEntrySummary {
+  journalEntryId: number;
+  journalDate: string;
+  description: string;
+  totalDebitAmount: number;
+  totalCreditAmount: number;
+  status: string;
+  version: number;
+}
+
+const mockJournalEntries: JournalEntrySummary[] = [
+  {
+    journalEntryId: 1,
+    journalDate: '2024-04-01',
+    description: '現金売上',
+    totalDebitAmount: 10000,
+    totalCreditAmount: 10000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 2,
+    journalDate: '2024-04-05',
+    description: '仕入支払',
+    totalDebitAmount: 5000,
+    totalCreditAmount: 5000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 3,
+    journalDate: '2024-04-10',
+    description: '経費精算',
+    totalDebitAmount: 3000,
+    totalCreditAmount: 3000,
+    status: 'APPROVED',
+    version: 1,
+  },
+  {
+    journalEntryId: 4,
+    journalDate: '2024-04-15',
+    description: '給与支払',
+    totalDebitAmount: 200000,
+    totalCreditAmount: 200000,
+    status: 'CONFIRMED',
+    version: 1,
+  },
+  {
+    journalEntryId: 5,
+    journalDate: '2024-04-20',
+    description: '備品購入',
+    totalDebitAmount: 50000,
+    totalCreditAmount: 50000,
+    status: 'PENDING',
+    version: 1,
+  },
+];
+
+let nextJournalEntryId = 6;
+
 /**
  * 仕訳関連のハンドラー
  */
 export const journalEntryHandlers = [
+  // 仕訳一覧取得（ページネーション対応）
+  http.get(/\/journal-entries\/?$/, ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+    const statusFilter = url.searchParams.getAll('status');
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+
+    // フィルタリング
+    let filtered = [...mockJournalEntries];
+    if (statusFilter.length > 0) {
+      filtered = filtered.filter((entry) => statusFilter.includes(entry.status));
+    }
+    if (dateFrom) {
+      filtered = filtered.filter((entry) => entry.journalDate >= dateFrom);
+    }
+    if (dateTo) {
+      filtered = filtered.filter((entry) => entry.journalDate <= dateTo);
+    }
+
+    // ページネーション
+    const totalElements = filtered.length;
+    const totalPages = Math.ceil(totalElements / size);
+    const start = page * size;
+    const content = filtered.slice(start, start + size);
+
+    return HttpResponse.json({
+      content,
+      page,
+      size,
+      totalElements,
+      totalPages,
+    });
+  }),
+
+  // 仕訳詳細取得
+  http.get(/\/journal-entries\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json({ message: '仕訳が見つかりません' }, { status: 404 });
+    }
+
+    return HttpResponse.json({
+      journalEntryId: entry.journalEntryId,
+      journalDate: entry.journalDate,
+      description: entry.description,
+      status: entry.status,
+      version: entry.version,
+      lines: [
+        {
+          lineNumber: 1,
+          accountId: 1,
+          accountCode: '1000',
+          accountName: '現金預金',
+          debitAmount: entry.totalDebitAmount,
+          creditAmount: 0,
+        },
+        {
+          lineNumber: 2,
+          accountId: 2,
+          accountCode: '4000',
+          accountName: '売上高',
+          debitAmount: 0,
+          creditAmount: entry.totalCreditAmount,
+        },
+      ],
+    });
+  }),
+
+  // 仕訳登録
   http.post('*/journal-entries', async ({ request }) => {
     const body = (await request.json()) as {
       journalDate: string;
       description: string;
     };
+    const journalEntryId = nextJournalEntryId++;
     return HttpResponse.json({
       success: true,
-      journalEntryId: 1,
+      journalEntryId,
       journalDate: body.journalDate,
       description: body.description,
       status: 'DRAFT',
+    });
+  }),
+
+  // 仕訳更新
+  http.put(/\/journal-entries\/(\d+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+    const body = (await request.json()) as {
+      journalDate: string;
+      description: string;
+      version: number;
+    };
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: id,
+      journalDate: body.journalDate,
+      description: body.description,
+      status: entry.status,
+      version: entry.version + 1,
+      message: '仕訳を更新しました',
+    });
+  }),
+
+  // 仕訳削除
+  http.delete(/\/journal-entries\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    if (entry.status !== 'DRAFT') {
+      return HttpResponse.json(
+        { success: false, errorMessage: '下書きステータスの仕訳のみ削除できます' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({
+      success: true,
+      message: '仕訳を削除しました',
     });
   }),
 ];
