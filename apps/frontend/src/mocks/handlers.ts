@@ -320,10 +320,64 @@ const mockJournalEntries: JournalEntrySummary[] = [
 
 let nextJournalEntryId = 6;
 
+type MockEntry = (typeof mockJournalEntries)[number];
+
+const applySearchFilters = (entries: MockEntry[], params: URLSearchParams): MockEntry[] => {
+  let filtered = [...entries];
+  const statusParams = params.getAll('status');
+  if (statusParams.length > 0) {
+    filtered = filtered.filter((e) => statusParams.includes(e.status));
+  }
+  const dateFrom = params.get('dateFrom');
+  if (dateFrom) filtered = filtered.filter((e) => e.journalDate >= dateFrom);
+  const dateTo = params.get('dateTo');
+  if (dateTo) filtered = filtered.filter((e) => e.journalDate <= dateTo);
+  return filtered;
+};
+
+const applyAmountAndDescriptionFilters = (
+  entries: MockEntry[],
+  params: URLSearchParams
+): MockEntry[] => {
+  let filtered = [...entries];
+  const amountFrom = params.get('amountFrom');
+  if (amountFrom) filtered = filtered.filter((e) => e.totalDebitAmount >= parseFloat(amountFrom));
+  const amountTo = params.get('amountTo');
+  if (amountTo) filtered = filtered.filter((e) => e.totalDebitAmount <= parseFloat(amountTo));
+  const description = params.get('description');
+  if (description) {
+    const desc = description.toLowerCase();
+    filtered = filtered.filter((e) => e.description.toLowerCase().includes(desc));
+  }
+  return filtered;
+};
+
 /**
  * 仕訳関連のハンドラー
  */
 export const journalEntryHandlers = [
+  // 仕訳検索 (US-JNL-005) - must be before the list handler
+  http.get(/\/journal-entries\/search/, ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+
+    let filtered = applySearchFilters(mockJournalEntries, url.searchParams);
+    filtered = applyAmountAndDescriptionFilters(filtered, url.searchParams);
+
+    const totalElements = filtered.length;
+    const totalPages = Math.ceil(totalElements / size);
+    const start = page * size;
+    const content = filtered.slice(start, start + size);
+
+    return HttpResponse.json({
+      content,
+      page,
+      size,
+      totalElements,
+      totalPages,
+    });
+  }),
   // 仕訳一覧取得（ページネーション対応）
   http.get(/\/journal-entries\/?$/, ({ request }) => {
     const url = new URL(request.url);

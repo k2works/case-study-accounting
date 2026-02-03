@@ -6,6 +6,10 @@ export interface JournalEntryFilterValues {
   status: string;
   dateFrom: string;
   dateTo: string;
+  accountId: string;
+  amountFrom: string;
+  amountTo: string;
+  description: string;
 }
 
 interface JournalEntryFilterProps {
@@ -32,17 +36,11 @@ export const JournalEntryFilter: React.FC<JournalEntryFilterProps> = ({
   onSearch,
   onReset,
 }) => {
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange({ ...values, status: event.target.value });
-  };
-
-  const handleDateFromChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...values, dateFrom: event.target.value });
-  };
-
-  const handleDateToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...values, dateTo: event.target.value });
-  };
+  const handleChange =
+    (field: keyof JournalEntryFilterValues) =>
+    (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      onChange({ ...values, [field]: event.target.value });
+    };
 
   return (
     <div className="journal-entry-filter" data-testid="journal-entry-filter">
@@ -54,7 +52,7 @@ export const JournalEntryFilter: React.FC<JournalEntryFilterProps> = ({
           id="journal-entry-filter-status"
           className="journal-entry-filter__select"
           value={values.status}
-          onChange={handleStatusChange}
+          onChange={handleChange('status')}
         >
           {statusOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -72,7 +70,7 @@ export const JournalEntryFilter: React.FC<JournalEntryFilterProps> = ({
           type="date"
           className="journal-entry-filter__input"
           value={values.dateFrom}
-          onChange={handleDateFromChange}
+          onChange={handleChange('dateFrom')}
         />
       </div>
       <div className="journal-entry-filter__field">
@@ -84,7 +82,59 @@ export const JournalEntryFilter: React.FC<JournalEntryFilterProps> = ({
           type="date"
           className="journal-entry-filter__input"
           value={values.dateTo}
-          onChange={handleDateToChange}
+          onChange={handleChange('dateTo')}
+        />
+      </div>
+      <div className="journal-entry-filter__field">
+        <label htmlFor="journal-entry-filter-description" className="journal-entry-filter__label">
+          摘要
+        </label>
+        <input
+          id="journal-entry-filter-description"
+          type="text"
+          className="journal-entry-filter__input"
+          placeholder="摘要で検索"
+          value={values.description}
+          onChange={handleChange('description')}
+        />
+      </div>
+      <div className="journal-entry-filter__field">
+        <label htmlFor="journal-entry-filter-account-id" className="journal-entry-filter__label">
+          勘定科目ID
+        </label>
+        <input
+          id="journal-entry-filter-account-id"
+          type="number"
+          className="journal-entry-filter__input"
+          placeholder="勘定科目ID"
+          value={values.accountId}
+          onChange={handleChange('accountId')}
+        />
+      </div>
+      <div className="journal-entry-filter__field">
+        <label htmlFor="journal-entry-filter-amount-from" className="journal-entry-filter__label">
+          金額（以上）
+        </label>
+        <input
+          id="journal-entry-filter-amount-from"
+          type="number"
+          className="journal-entry-filter__input"
+          placeholder="最小金額"
+          value={values.amountFrom}
+          onChange={handleChange('amountFrom')}
+        />
+      </div>
+      <div className="journal-entry-filter__field">
+        <label htmlFor="journal-entry-filter-amount-to" className="journal-entry-filter__label">
+          金額（以下）
+        </label>
+        <input
+          id="journal-entry-filter-amount-to"
+          type="number"
+          className="journal-entry-filter__input"
+          placeholder="最大金額"
+          value={values.amountTo}
+          onChange={handleChange('amountTo')}
         />
       </div>
       <div className="journal-entry-filter__actions">

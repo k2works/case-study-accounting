@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getJournalEntries, getJournalEntriesErrorMessage } from '../api/getJournalEntries';
-import type {
-  JournalEntrySummary,
-  JournalEntriesSearchParams,
-  GetJournalEntriesResult,
-} from '../api/getJournalEntries';
+import {
+  searchJournalEntries,
+  searchJournalEntriesErrorMessage,
+} from '../api/searchJournalEntries';
+import type { SearchJournalEntriesParams } from '../api/searchJournalEntries';
+import type { JournalEntrySummary, GetJournalEntriesResult } from '../api/getJournalEntries';
 import { MainLayout, Loading, SuccessNotification, ErrorMessage, Button } from '../views/common';
 import { JournalEntryList } from '../views/journal/JournalEntryList';
 import type { JournalEntryFilterValues } from '../views/journal/JournalEntryFilter';
@@ -39,16 +39,20 @@ const initialFilterValues: JournalEntryFilterValues = {
   status: '',
   dateFrom: '',
   dateTo: '',
+  accountId: '',
+  amountFrom: '',
+  amountTo: '',
+  description: '',
 };
 
 const useJournalEntryListFetch = () => {
   const [state, setState] = useState<JournalEntryListState>(initialState);
   const [filterValues, setFilterValues] = useState<JournalEntryFilterValues>(initialFilterValues);
 
-  const fetchEntries = useCallback(async (params?: JournalEntriesSearchParams) => {
+  const fetchEntries = useCallback(async (params?: SearchJournalEntriesParams) => {
     setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
     try {
-      const data: GetJournalEntriesResult = await getJournalEntries(params);
+      const data: GetJournalEntriesResult = await searchJournalEntries(params);
       setState({
         entries: data.content,
         isLoading: false,
@@ -62,23 +66,26 @@ const useJournalEntryListFetch = () => {
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        errorMessage: getJournalEntriesErrorMessage(error),
+        errorMessage: searchJournalEntriesErrorMessage(error),
       }));
     }
   }, []);
 
   const buildSearchParams = useCallback(
-    (page: number, size: number): JournalEntriesSearchParams => {
-      const params: JournalEntriesSearchParams = { page, size };
-      if (filterValues.status) {
-        params.status = [filterValues.status];
-      }
-      if (filterValues.dateFrom) {
-        params.dateFrom = filterValues.dateFrom;
-      }
-      if (filterValues.dateTo) {
-        params.dateTo = filterValues.dateTo;
-      }
+    (page: number, size: number): SearchJournalEntriesParams => {
+      const params: SearchJournalEntriesParams = { page, size };
+      if (filterValues.status) params.status = [filterValues.status];
+
+      const stringFields = ['dateFrom', 'dateTo', 'description'] as const;
+      stringFields.forEach((key) => {
+        if (filterValues[key]) (params as Record<string, unknown>)[key] = filterValues[key];
+      });
+
+      const numberFields = ['accountId', 'amountFrom', 'amountTo'] as const;
+      numberFields.forEach((key) => {
+        if (filterValues[key]) (params as Record<string, unknown>)[key] = Number(filterValues[key]);
+      });
+
       return params;
     },
     [filterValues]
@@ -125,7 +132,7 @@ const useJournalEntryListFetch = () => {
 
 interface JournalEntryListContentProps {
   state: JournalEntryListState;
-  fetchEntries: (params?: JournalEntriesSearchParams) => Promise<void>;
+  fetchEntries: (params?: SearchJournalEntriesParams) => Promise<void>;
   filterValues: JournalEntryFilterValues;
   onFilterChange: (values: JournalEntryFilterValues) => void;
   onSearch: () => void;
