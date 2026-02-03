@@ -9,6 +9,7 @@ import com.example.accounting.infrastructure.persistence.entity.JournalEntryLine
 import com.example.accounting.infrastructure.persistence.mapper.JournalEntryMapper;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -80,5 +81,26 @@ public class JournalEntryRepositoryImpl implements JournalEntryRepository {
     @Override
     public long countByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo) {
         return journalEntryMapper.countByConditions(statuses, dateFrom, dateTo);
+    }
+
+    @Override
+    public List<JournalEntry> searchByConditions(
+            List<String> statuses, LocalDate dateFrom, LocalDate dateTo,
+            Integer accountId, BigDecimal amountFrom, BigDecimal amountTo,
+            String description, int offset, int limit) {
+        return journalEntryMapper.searchByConditions(
+                        statuses, dateFrom, dateTo, accountId, amountFrom, amountTo, description, offset, limit)
+                .stream()
+                .map(JournalEntryEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countBySearchConditions(
+            List<String> statuses, LocalDate dateFrom, LocalDate dateTo,
+            Integer accountId, BigDecimal amountFrom, BigDecimal amountTo,
+            String description) {
+        return journalEntryMapper.countBySearchConditions(
+                statuses, dateFrom, dateTo, accountId, amountFrom, amountTo, description);
     }
 }

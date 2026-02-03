@@ -3,6 +3,7 @@ package com.example.accounting.application.port.out;
 import com.example.accounting.domain.model.journal.JournalEntry;
 import com.example.accounting.domain.model.journal.JournalEntryId;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +66,34 @@ public interface JournalEntryRepository {
      * @return 件数
      */
     long countByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo);
+
+    /**
+     * 検索条件で仕訳一覧を取得する（ページネーション対応）
+     */
+    List<JournalEntry> searchByConditions(
+            List<String> statuses,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            Integer accountId,
+            BigDecimal amountFrom,
+            BigDecimal amountTo,
+            String description,
+            int offset,
+            int limit
+    );
+
+    /**
+     * 検索条件に一致する仕訳件数を取得する
+     */
+    long countBySearchConditions(
+            List<String> statuses,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            Integer accountId,
+            BigDecimal amountFrom,
+            BigDecimal amountTo,
+            String description
+    );
 
     /**
      * 仕訳を削除する

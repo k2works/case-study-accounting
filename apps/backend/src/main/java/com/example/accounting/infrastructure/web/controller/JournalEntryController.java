@@ -4,8 +4,10 @@ import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
 import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
+import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
+import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.in.command.UpdateJournalEntryCommand;
@@ -29,6 +31,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.security.Principal;
 import java.util.List;
@@ -51,7 +54,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/journal-entries")
 @Tag(name = "仕訳", description = "仕訳に関する API")
-@SuppressWarnings("PMD.CouplingBetweenObjects") // コントローラは複数のユースケースを統合するため結合度が高くなる
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.ExcessiveImports"}) // コントローラは複数のユースケースを統合するため結合度が高くなる
 public class JournalEntryController {
 
     private final CreateJournalEntryUseCase createJournalEntryUseCase;
@@ -59,6 +62,7 @@ public class JournalEntryController {
     private final GetJournalEntryUseCase getJournalEntryUseCase;
     private final DeleteJournalEntryUseCase deleteJournalEntryUseCase;
     private final GetJournalEntriesUseCase getJournalEntriesUseCase;
+    private final SearchJournalEntriesUseCase searchJournalEntriesUseCase;
     private final UserRepository userRepository;
 
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
@@ -66,12 +70,14 @@ public class JournalEntryController {
                                   GetJournalEntryUseCase getJournalEntryUseCase,
                                   DeleteJournalEntryUseCase deleteJournalEntryUseCase,
                                   GetJournalEntriesUseCase getJournalEntriesUseCase,
+                                  SearchJournalEntriesUseCase searchJournalEntriesUseCase,
                                   UserRepository userRepository) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
         this.getJournalEntryUseCase = getJournalEntryUseCase;
         this.deleteJournalEntryUseCase = deleteJournalEntryUseCase;
         this.getJournalEntriesUseCase = getJournalEntriesUseCase;
+        this.searchJournalEntriesUseCase = searchJournalEntriesUseCase;
         this.userRepository = userRepository;
     }
 
@@ -163,6 +169,45 @@ public class JournalEntryController {
                 dateTo
         );
         GetJournalEntriesResult result = getJournalEntriesUseCase.execute(query);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 仕訳検索
+     */
+    @Operation(
+            summary = "仕訳検索",
+            description = "検索条件を指定して仕訳を検索します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "検索成功"
+    )
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    public ResponseEntity<GetJournalEntriesResult> search(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) LocalDate dateFrom,
+            @RequestParam(required = false) LocalDate dateTo,
+            @RequestParam(required = false) Integer accountId,
+            @RequestParam(required = false) BigDecimal amountFrom,
+            @RequestParam(required = false) BigDecimal amountTo,
+            @RequestParam(required = false) String description
+    ) {
+        SearchJournalEntriesQuery query = new SearchJournalEntriesQuery(
+                page,
+                size,
+                status != null ? status : List.of(),
+                dateFrom,
+                dateTo,
+                accountId,
+                amountFrom,
+                amountTo,
+                description
+        );
+        GetJournalEntriesResult result = searchJournalEntriesUseCase.execute(query);
         return ResponseEntity.ok(result);
     }
 

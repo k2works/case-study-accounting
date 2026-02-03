@@ -225,4 +225,123 @@
         </where>
     </select>
 
+    <!-- 仕訳検索 (US-JNL-005) -->
+    <select id="searchByConditions" resultMap="journalEntryResultMap">
+        SELECT DISTINCT
+            je.id,
+            je.journal_date,
+            je.description,
+            je.status,
+            je.version,
+            je.created_by,
+            je.created_at,
+            je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
+            jel.id AS line_id,
+            jel.journal_entry_id AS line_journal_entry_id,
+            jel.line_number,
+            jel.account_id,
+            jel.debit_amount,
+            jel.credit_amount,
+            jel.line_description
+        FROM journal_entries je
+        LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            <if test="statuses != null and statuses.size() > 0">
+                je.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+            <if test="accountId != null">
+                AND je.id IN (
+                    SELECT DISTINCT jel2.journal_entry_id
+                    FROM journal_entry_lines jel2
+                    WHERE jel2.account_id = #{accountId}
+                )
+            </if>
+            <if test="amountFrom != null">
+                AND je.id IN (
+                    SELECT jel3.journal_entry_id
+                    FROM journal_entry_lines jel3
+                    GROUP BY jel3.journal_entry_id
+                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{amountFrom}
+                )
+            </if>
+            <if test="amountTo != null">
+                AND je.id IN (
+                    SELECT jel4.journal_entry_id
+                    FROM journal_entry_lines jel4
+                    GROUP BY jel4.journal_entry_id
+                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{amountTo}
+                )
+            </if>
+            <if test="description != null and description != ''">
+                AND je.description LIKE CONCAT('%', #{description}, '%')
+            </if>
+        </where>
+        ORDER BY je.id ASC, jel.line_number ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countBySearchConditions" resultType="long">
+        SELECT COUNT(DISTINCT je.id)
+        FROM journal_entries je
+        <where>
+            <if test="statuses != null and statuses.size() > 0">
+                je.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+            <if test="accountId != null">
+                AND je.id IN (
+                    SELECT DISTINCT jel2.journal_entry_id
+                    FROM journal_entry_lines jel2
+                    WHERE jel2.account_id = #{accountId}
+                )
+            </if>
+            <if test="amountFrom != null">
+                AND je.id IN (
+                    SELECT jel3.journal_entry_id
+                    FROM journal_entry_lines jel3
+                    GROUP BY jel3.journal_entry_id
+                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{amountFrom}
+                )
+            </if>
+            <if test="amountTo != null">
+                AND je.id IN (
+                    SELECT jel4.journal_entry_id
+                    FROM journal_entry_lines jel4
+                    GROUP BY jel4.journal_entry_id
+                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{amountTo}
+                )
+            </if>
+            <if test="description != null and description != ''">
+                AND je.description LIKE CONCAT('%', #{description}, '%')
+            </if>
+        </where>
+    </select>
+
 </mapper>

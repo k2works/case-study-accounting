@@ -5,6 +5,7 @@ import com.example.accounting.infrastructure.persistence.entity.JournalEntryLine
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -45,5 +46,27 @@ public interface JournalEntryMapper {
             @Param("statuses") List<String> statuses,
             @Param("dateFrom") LocalDate dateFrom,
             @Param("dateTo") LocalDate dateTo
+    );
+
+    List<JournalEntryEntity> searchByConditions(
+            @Param("statuses") List<String> statuses,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo,
+            @Param("accountId") Integer accountId,
+            @Param("amountFrom") BigDecimal amountFrom,
+            @Param("amountTo") BigDecimal amountTo,
+            @Param("description") String description,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+    );
+
+    long countBySearchConditions(
+            @Param("statuses") List<String> statuses,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo,
+            @Param("accountId") Integer accountId,
+            @Param("amountFrom") BigDecimal amountFrom,
+            @Param("amountTo") BigDecimal amountTo,
+            @Param("description") String description
     );
 }

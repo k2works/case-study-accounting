@@ -4,6 +4,7 @@ import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
 import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
+import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
@@ -65,6 +66,9 @@ class JournalEntryControllerTest {
     private GetJournalEntriesUseCase getJournalEntriesUseCase;
 
     @Mock
+    private SearchJournalEntriesUseCase searchJournalEntriesUseCase;
+
+    @Mock
     private UserRepository userRepository;
 
     private JournalEntryController journalEntryController;
@@ -77,6 +81,7 @@ class JournalEntryControllerTest {
                 getJournalEntryUseCase,
                 deleteJournalEntryUseCase,
                 getJournalEntriesUseCase,
+                searchJournalEntriesUseCase,
                 userRepository
         );
     }
