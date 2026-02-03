@@ -90,6 +90,7 @@ nav:
       - ふりかえり:
           - イテレーション1: development/retrospective-1.md
           - イテレーション2: development/retrospective-2.md
+          - イテレーション3: development/retrospective-3.md
   - 運用:
       - 開発環境解説: operation/dev_env.md
       - 開発コンテナ構築手順書: operation/dev_container.md
