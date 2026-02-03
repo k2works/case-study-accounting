@@ -202,17 +202,29 @@ describe('US-MST-004: 勘定科目一覧表示', () => {
     it('勘定科目種別とキーワードの複合検索ができる', () => {
       // Given: 勘定科目一覧が表示されている
 
-      // When: 資産 + キーワードで検索（1001 = 現金、ASSET）
+      // Step 1: まず ASSET でフィルタして、存在する ASSET 科目のコードを取得
       cy.get('#account-filter-type').select('ASSET');
-      cy.get('#account-filter-keyword').clear();
-      cy.get('#account-filter-keyword').type('1001');
       cy.contains('button', '検索').click();
+      cy.get('table tbody tr', { timeout: 10000 }).first().find('td').first()
+        .invoke('text').then((code) => {
+          const assetCode = code.trim();
 
-      // Then: 検索が実行され、結果が表示される
-      cy.get('table tbody', { timeout: 10000 }).should('exist');
-      // 検索結果に 1001（現金）が含まれることを確認
-      cy.get('table tbody tr').should('have.length.at.least', 1);
-      cy.get('table tbody tr').first().find('td').first().should('contain', '1001');
+          // Step 2: リセットして全件表示に戻す
+          cy.contains('button', 'リセット').click();
+          cy.get('table tbody tr', { timeout: 10000 }).should('have.length.at.least', 1);
+
+          // Step 3: ASSET + 取得したコードで複合検索
+          cy.get('#account-filter-type').select('ASSET');
+          cy.get('#account-filter-keyword').clear();
+          cy.get('#account-filter-keyword').type(assetCode);
+          cy.contains('button', '検索').click();
+
+          // Then: 複合検索結果に該当科目が含まれ、両方の条件を満たす
+          cy.get('table tbody', { timeout: 10000 }).should('exist');
+          cy.get('table tbody tr').should('have.length.at.least', 1);
+          cy.get('table tbody tr').first().find('td').first().should('contain', assetCode);
+          cy.get('table tbody tr').first().find('td').eq(2).should('contain', 'ASSET');
+        });
     });
   });
 
