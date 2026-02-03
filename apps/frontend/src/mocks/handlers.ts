@@ -452,13 +452,34 @@ export const journalEntryHandlers = [
     });
   }),
 
-  // 仕訳登録
+  // 仕訳登録（mockJournalEntries に永続化して一覧・詳細取得で参照可能にする）
   http.post('*/journal-entries', async ({ request }) => {
     const body = (await request.json()) as {
       journalDate: string;
       description: string;
+      lines?: Array<{
+        lineNumber: number;
+        accountId: number;
+        debitAmount?: number;
+        creditAmount?: number;
+      }>;
     };
     const journalEntryId = nextJournalEntryId++;
+
+    const totalDebit = body.lines?.reduce((sum, l) => sum + (l.debitAmount || 0), 0) || 0;
+    const totalCredit = body.lines?.reduce((sum, l) => sum + (l.creditAmount || 0), 0) || 0;
+
+    const newEntry: JournalEntrySummary = {
+      journalEntryId,
+      journalDate: body.journalDate,
+      description: body.description,
+      totalDebitAmount: totalDebit,
+      totalCreditAmount: totalCredit,
+      status: 'DRAFT',
+      version: 1,
+    };
+    mockJournalEntries.unshift(newEntry);
+
     return HttpResponse.json({
       success: true,
       journalEntryId,

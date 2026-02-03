@@ -71,12 +71,9 @@ describe('US-JNL-001: 仕訳入力', () => {
       // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      // 勘定科目APIを待機
-      cy.intercept('GET', '/api/accounts').as('getAccounts');
       cy.visit('/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
-      cy.wait('@getAccounts', { timeout: 15000 });
-      // 勘定科目が読み込まれるのを待つ
+      // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
       cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 })
         .should('have.length.greaterThan', 1);
     });
@@ -148,11 +145,9 @@ describe('US-JNL-001: 仕訳入力', () => {
       // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      // 勘定科目APIを待機
-      cy.intercept('GET', '/api/accounts').as('getAccounts');
       cy.visit('/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
-      cy.wait('@getAccounts', { timeout: 15000 });
+      // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
       cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 })
         .should('have.length.greaterThan', 1);
     });
@@ -202,11 +197,9 @@ describe('US-JNL-001: 仕訳入力', () => {
       // ログイン完了を待機
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      // 勘定科目APIを待機
-      cy.intercept('GET', '/api/accounts').as('getAccounts');
       cy.visit('/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
-      cy.wait('@getAccounts', { timeout: 15000 });
+      // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
       cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 })
         .should('have.length.greaterThan', 1);
     });

@@ -15,16 +15,10 @@
  * 勘定科目リストから動的に選択する
  */
 const createTestJournalEntry = (date: string, description: string, amount: string) => {
-  // 勘定科目APIのインターセプト設定
-  cy.intercept('GET', '/api/accounts').as('getAccounts');
-
   cy.visit('/journal/entries/new');
   cy.get('[data-testid="journal-entry-form"]').should('be.visible');
 
-  // 勘定科目APIのレスポンスを待つ
-  cy.wait('@getAccounts', { timeout: 15000 });
-
-  // 勘定科目が読み込まれるのを待つ（デフォルトオプション + 勘定科目）
+  // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
   cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 }).should(
     'have.length.greaterThan',
     1
@@ -45,6 +39,26 @@ const createTestJournalEntry = (date: string, description: string, amount: strin
   cy.get('[data-testid="journal-entry-submit"]').click();
 };
 
+/**
+ * 仕訳一覧ページから仕訳の編集画面に遷移するヘルパー
+ * MSW 環境でも cy.intercept を使わずに動作する
+ * @param filterDescription 摘要でフィルタして特定の仕訳を見つける（省略時は先頭行）
+ */
+const navigateToEditViaList = (filterDescription?: string) => {
+  cy.visit('/journal/entries');
+  cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+  cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
+
+  if (filterDescription) {
+    cy.get('#journal-entry-filter-description').type(filterDescription);
+    cy.contains('button', '検索').click();
+    cy.get('table tbody tr', { timeout: 10000 }).should('have.length.at.least', 1);
+  }
+
+  cy.get('table tbody tr').first().contains('button', '編集').click();
+  cy.get('[data-testid="journal-entry-edit-form"]', { timeout: 15000 }).should('be.visible');
+};
+
 describe('US-JNL-003: 仕訳削除', () => {
   // テストスイート開始前に勘定科目をセットアップ
   before(() => {
@@ -59,33 +73,19 @@ describe('US-JNL-003: 仕訳削除', () => {
   });
 
   describe('削除ボタン表示', () => {
-    let createdJournalEntryId: number;
-
     beforeEach(() => {
       // 管理者でログインして仕訳を登録
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      // 仕訳を登録（APIインターセプトを使用してIDを取得）
-      cy.intercept('POST', '/api/journal-entries').as('createJournalEntry');
       createTestJournalEntry('2024-05-01', '削除テスト用仕訳', '3000');
-
-      // APIレスポンスを待機してIDを取得
-      cy.wait('@createJournalEntry').then((interception) => {
-        if (interception.response?.body?.journalEntryId) {
-          createdJournalEntryId = interception.response.body.journalEntryId;
-        }
-      });
-
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
+
+      // 仕訳一覧から摘要で検索して編集画面に遷移
+      navigateToEditViaList('削除テスト用仕訳');
     });
 
     it('仕訳編集画面に削除ボタンが表示される', () => {
-      // When: 作成した仕訳の編集ページにアクセス
-      cy.then(() => {
-        cy.visit(`/journal/entries/${createdJournalEntryId}/edit`);
-      });
-
       // Then: 編集ページに削除ボタンが表示される
       cy.get('[data-testid="edit-journal-entry-page"]').should('be.visible');
       cy.get('[data-testid="journal-entry-delete"]').should('be.visible');
@@ -93,32 +93,19 @@ describe('US-JNL-003: 仕訳削除', () => {
   });
 
   describe('削除確認ダイアログ', () => {
-    let createdJournalEntryId: number;
-
     beforeEach(() => {
       // 管理者でログインして仕訳を登録
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      cy.intercept('POST', '/api/journal-entries').as('createJournalEntry');
       createTestJournalEntry('2024-05-02', 'ダイアログテスト仕訳', '4000');
-
-      cy.wait('@createJournalEntry').then((interception) => {
-        if (interception.response?.body?.journalEntryId) {
-          createdJournalEntryId = interception.response.body.journalEntryId;
-        }
-      });
-
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
+
+      // 仕訳一覧から摘要で検索して編集画面に遷移
+      navigateToEditViaList('ダイアログテスト仕訳');
     });
 
     it('削除ボタンをクリックすると確認ダイアログが表示される', () => {
-      // Given: 仕訳編集ページを開く
-      cy.then(() => {
-        cy.visit(`/journal/entries/${createdJournalEntryId}/edit`);
-      });
-      cy.get('[data-testid="journal-entry-edit-form"]').should('be.visible');
-
       // When: 削除ボタンをクリック
       cy.get('[data-testid="journal-entry-delete"]').click();
 
@@ -129,12 +116,6 @@ describe('US-JNL-003: 仕訳削除', () => {
     });
 
     it('確認ダイアログでキャンセルすると削除されない', () => {
-      // Given: 仕訳編集ページを開く
-      cy.then(() => {
-        cy.visit(`/journal/entries/${createdJournalEntryId}/edit`);
-      });
-      cy.get('[data-testid="journal-entry-edit-form"]').should('be.visible');
-
       // When: 削除ボタンをクリックして確認ダイアログを表示
       cy.get('[data-testid="journal-entry-delete"]').click();
       cy.get('.modal').should('be.visible');
@@ -149,46 +130,28 @@ describe('US-JNL-003: 仕訳削除', () => {
   });
 
   describe('仕訳削除実行', () => {
-    let createdJournalEntryId: number;
-
     beforeEach(() => {
       // 管理者でログインして仕訳を登録
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      cy.intercept('POST', '/api/journal-entries').as('createJournalEntry');
       createTestJournalEntry('2024-05-03', '削除実行テスト仕訳', '5000');
-
-      cy.wait('@createJournalEntry').then((interception) => {
-        if (interception.response?.body?.journalEntryId) {
-          createdJournalEntryId = interception.response.body.journalEntryId;
-        }
-      });
-
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
+
+      // 仕訳一覧から摘要で検索して編集画面に遷移
+      navigateToEditViaList('削除実行テスト仕訳');
     });
 
     it('確認ダイアログで削除を確定すると仕訳が削除される', () => {
-      // Given: 仕訳編集ページを開く
-      cy.then(() => {
-        cy.visit(`/journal/entries/${createdJournalEntryId}/edit`);
-      });
-      cy.get('[data-testid="journal-entry-edit-form"]').should('be.visible');
-
       // When: 削除ボタンをクリックして確認ダイアログを表示
-      cy.intercept('DELETE', `/api/journal-entries/${createdJournalEntryId}`).as(
-        'deleteJournalEntry'
-      );
-
       cy.get('[data-testid="journal-entry-delete"]').click();
       cy.get('.modal').should('be.visible');
 
       // 削除ボタンをクリック
       cy.get('[data-testid="confirm-modal-confirm"]').click();
 
-      // Then: 削除APIが呼ばれ、ダッシュボードにリダイレクトされる
-      cy.wait('@deleteJournalEntry').its('response.statusCode').should('eq', 200);
-      cy.url().should('eq', Cypress.config().baseUrl + '/');
+      // Then: 削除成功後、ダッシュボードにリダイレクトされる
+      cy.url({ timeout: 15000 }).should('eq', Cypress.config().baseUrl + '/');
       cy.get('[data-testid="dashboard"]').should('be.visible');
     });
   });
@@ -199,33 +162,18 @@ describe('US-JNL-003: 仕訳削除', () => {
       cy.login('user', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      cy.intercept('POST', '/api/journal-entries').as('createJournalEntry');
       createTestJournalEntry('2024-05-04', 'ユーザー削除テスト', '2000');
-
-      let journalEntryId: number;
-      cy.wait('@createJournalEntry').then((interception) => {
-        if (interception.response?.body?.journalEntryId) {
-          journalEntryId = interception.response.body.journalEntryId;
-        }
-      });
-
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
 
-      // When: 編集ページにアクセスして削除
-      cy.then(() => {
-        cy.visit(`/journal/entries/${journalEntryId}/edit`);
-      });
-      cy.get('[data-testid="journal-entry-edit-form"]').should('be.visible');
-
-      cy.intercept('DELETE', `/api/journal-entries/*`).as('deleteJournalEntry');
+      // When: 仕訳一覧から摘要で検索して編集ページに遷移して削除
+      navigateToEditViaList('ユーザー削除テスト');
 
       cy.get('[data-testid="journal-entry-delete"]').click();
       cy.get('.modal').should('be.visible');
       cy.get('[data-testid="confirm-modal-confirm"]').click();
 
       // Then: 削除が成功する
-      cy.wait('@deleteJournalEntry').its('response.statusCode').should('eq', 200);
-      cy.url().should('eq', Cypress.config().baseUrl + '/');
+      cy.url({ timeout: 15000 }).should('eq', Cypress.config().baseUrl + '/');
     });
   });
 

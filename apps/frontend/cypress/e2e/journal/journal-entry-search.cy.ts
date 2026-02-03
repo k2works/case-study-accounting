@@ -14,13 +14,10 @@
  * 仕訳を登録するヘルパー関数
  */
 const createTestJournalEntry = (date: string, description: string, amount: string) => {
-  cy.intercept('GET', '/api/accounts').as('getAccounts');
-
   cy.visit('/journal/entries/new');
   cy.get('[data-testid="journal-entry-form"]').should('be.visible');
 
-  cy.wait('@getAccounts', { timeout: 15000 });
-
+  // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
   cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 }).should(
     'have.length.greaterThan',
     1
@@ -39,6 +36,15 @@ const createTestJournalEntry = (date: string, description: string, amount: strin
   cy.get('[data-testid="journal-entry-submit"]').click();
 };
 
+/**
+ * 仕訳一覧ページに遷移してデータ読み込み完了を待つヘルパー
+ */
+const visitJournalEntryList = () => {
+  cy.visit('/journal/entries');
+  cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+  cy.get('table tbody', { timeout: 15000 }).should('exist');
+};
+
 describe('US-JNL-005: 仕訳検索', () => {
   before(() => {
     cy.clearAuth();
@@ -49,18 +55,14 @@ describe('US-JNL-005: 仕訳検索', () => {
     cy.login('admin', 'Password123!');
     cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
 
-    cy.intercept('POST', '/api/journal-entries').as('createEntry');
     createTestJournalEntry('2024-04-01', '4月売上計上', '50000');
-    cy.wait('@createEntry', { timeout: 15000 });
-    cy.get('[data-testid="journal-entry-success"]').should('be.visible');
+    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
 
     createTestJournalEntry('2024-04-15', '4月仕入計上', '30000');
-    cy.wait('@createEntry', { timeout: 15000 });
-    cy.get('[data-testid="journal-entry-success"]').should('be.visible');
+    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
 
     createTestJournalEntry('2024-05-01', '5月売上計上', '80000');
-    cy.wait('@createEntry', { timeout: 15000 });
-    cy.get('[data-testid="journal-entry-success"]').should('be.visible');
+    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
 
     cy.clearAuth();
   });
@@ -73,10 +75,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      cy.intercept('GET', '/api/journal-entries/search*').as('getJournalEntries');
-      cy.visit('/journal/entries');
-      cy.wait('@getJournalEntries', { timeout: 15000 });
-      cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+      visitJournalEntryList();
     });
 
     it('拡張検索フォームが表示される', () => {
@@ -95,10 +94,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      cy.intercept('GET', '/api/journal-entries/search*').as('getJournalEntries');
-      cy.visit('/journal/entries');
-      cy.wait('@getJournalEntries', { timeout: 15000 });
-      cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+      visitJournalEntryList();
     });
 
     it('摘要で検索できる', () => {
@@ -106,11 +102,9 @@ describe('US-JNL-005: 仕訳検索', () => {
 
       // When: 摘要に「売上」と入力して検索
       cy.get('#journal-entry-filter-description').type('売上');
-      cy.intercept('GET', '/api/journal-entries/search*description=*').as('searchEntries');
       cy.contains('button', '検索').click();
 
       // Then: 検索結果が表示される
-      cy.wait('@searchEntries', { timeout: 10000 });
       cy.get('table tbody', { timeout: 10000 }).should('exist');
     });
   });
@@ -119,10 +113,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      cy.intercept('GET', '/api/journal-entries/search*').as('getJournalEntries');
-      cy.visit('/journal/entries');
-      cy.wait('@getJournalEntries', { timeout: 15000 });
-      cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+      visitJournalEntryList();
     });
 
     it('金額範囲で検索できる', () => {
@@ -131,11 +122,9 @@ describe('US-JNL-005: 仕訳検索', () => {
       // When: 金額範囲を指定して検索
       cy.get('#journal-entry-filter-amount-from').type('10000');
       cy.get('#journal-entry-filter-amount-to').type('60000');
-      cy.intercept('GET', '/api/journal-entries/search*amountFrom*amountTo*').as('searchEntries');
       cy.contains('button', '検索').click();
 
       // Then: 検索結果が表示される
-      cy.wait('@searchEntries', { timeout: 10000 });
       cy.get('table tbody', { timeout: 10000 }).should('exist');
     });
 
@@ -144,11 +133,9 @@ describe('US-JNL-005: 仕訳検索', () => {
 
       // When: 最小金額のみ指定
       cy.get('#journal-entry-filter-amount-from').type('50000');
-      cy.intercept('GET', '/api/journal-entries/search*amountFrom*').as('searchEntries');
       cy.contains('button', '検索').click();
 
       // Then: 検索結果が表示される
-      cy.wait('@searchEntries', { timeout: 10000 });
       cy.get('table tbody', { timeout: 10000 }).should('exist');
     });
   });
@@ -157,10 +144,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      cy.intercept('GET', '/api/journal-entries/search*').as('getJournalEntries');
-      cy.visit('/journal/entries');
-      cy.wait('@getJournalEntries', { timeout: 15000 });
-      cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+      visitJournalEntryList();
     });
 
     it('日付範囲と摘要を組み合わせて検索できる', () => {
@@ -170,11 +154,9 @@ describe('US-JNL-005: 仕訳検索', () => {
       cy.get('#journal-entry-filter-date-from').type('2024-04-01');
       cy.get('#journal-entry-filter-date-to').type('2024-04-30');
       cy.get('#journal-entry-filter-description').type('売上');
-      cy.intercept('GET', '/api/journal-entries/search*').as('searchEntries');
       cy.contains('button', '検索').click();
 
       // Then: 複合条件でフィルタリングされる
-      cy.wait('@searchEntries', { timeout: 10000 });
       cy.get('table tbody', { timeout: 10000 }).should('exist');
     });
 
@@ -184,11 +166,9 @@ describe('US-JNL-005: 仕訳検索', () => {
       // When: ステータスと金額範囲を指定して検索
       cy.get('#journal-entry-filter-status').select('DRAFT');
       cy.get('#journal-entry-filter-amount-from').type('10000');
-      cy.intercept('GET', '/api/journal-entries/search*').as('searchEntries');
       cy.contains('button', '検索').click();
 
       // Then: 複合条件でフィルタリングされる
-      cy.wait('@searchEntries', { timeout: 10000 });
       cy.get('table tbody', { timeout: 10000 }).should('exist');
     });
   });
@@ -197,10 +177,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      cy.intercept('GET', '/api/journal-entries/search*').as('getJournalEntries');
-      cy.visit('/journal/entries');
-      cy.wait('@getJournalEntries', { timeout: 15000 });
-      cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+      visitJournalEntryList();
     });
 
     it('リセットボタンで全検索条件がクリアされる', () => {
@@ -214,11 +191,9 @@ describe('US-JNL-005: 仕訳検索', () => {
       cy.contains('button', '検索').click();
 
       // When: リセットボタンをクリック
-      cy.intercept('GET', '/api/journal-entries/search*').as('getResetEntries');
       cy.contains('button', 'リセット').click();
 
       // Then: すべてのフィルタ条件がクリアされる
-      cy.wait('@getResetEntries', { timeout: 10000 });
       cy.get('#journal-entry-filter-status').should('have.value', '');
       cy.get('#journal-entry-filter-date-from').should('have.value', '');
       cy.get('#journal-entry-filter-date-to').should('have.value', '');
@@ -235,21 +210,17 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      cy.intercept('GET', '/api/journal-entries/search*').as('getJournalEntries');
-      cy.visit('/journal/entries');
-      cy.wait('@getJournalEntries', { timeout: 15000 });
-      cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+      visitJournalEntryList();
     });
 
     it('検索結果が一覧形式で表示される', () => {
       // Given: 仕訳一覧が表示されている
 
       // When: 検索を実行
-      cy.intercept('GET', '/api/journal-entries/search*').as('searchEntries');
       cy.contains('button', '検索').click();
 
       // Then: 検索結果が一覧表示される
-      cy.wait('@searchEntries', { timeout: 10000 });
+      cy.get('table tbody', { timeout: 10000 }).should('exist');
       cy.contains('th', '仕訳番号').should('be.visible');
       cy.contains('th', '仕訳日付').should('be.visible');
       cy.contains('th', '摘要').should('be.visible');
