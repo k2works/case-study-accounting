@@ -265,12 +265,12 @@ class JournalEntryApiIntegrationTest {
                     "2024-01-31", "不正な仕訳", debitAccountId, creditAccountId, "1000");
 
             // When / Then
-            assertThatThrownBy(() -> restClient.post()
+            var responseSpec = restClient.post()
                     .uri("/api/journal-entries")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(requestBody)
-                    .retrieve()
-                    .body(CreateJournalEntryResponse.class))
+                    .retrieve();
+            assertThatThrownBy(() -> responseSpec.body(CreateJournalEntryResponse.class))
                     .isInstanceOf(HttpClientErrorException.class)
                     .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
                     .extracting(HttpClientErrorException::getStatusCode)
@@ -345,17 +345,17 @@ class JournalEntryApiIntegrationTest {
             // Then
             assertThat(response).isNotNull();
             assertThat(response.content()).isNotNull();
-            assertThat(response.content().size()).isGreaterThanOrEqualTo(1);
+            assertThat(response.content()).hasSizeGreaterThanOrEqualTo(1);
         }
 
         @Test
         @DisplayName("認証なしでは仕訳一覧を取得できない")
         void shouldRejectFindAllWithoutAuth() {
             // When / Then
-            assertThatThrownBy(() -> restClient.get()
+            var responseSpec = restClient.get()
                     .uri("/api/journal-entries")
-                    .retrieve()
-                    .body(GetJournalEntriesResult.class))
+                    .retrieve();
+            assertThatThrownBy(() -> responseSpec.body(GetJournalEntriesResult.class))
                     .isInstanceOf(HttpClientErrorException.class)
                     .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
                     .extracting(HttpClientErrorException::getStatusCode)
@@ -417,10 +417,10 @@ class JournalEntryApiIntegrationTest {
         @DisplayName("認証なしでは仕訳詳細を取得できない")
         void shouldRejectFindByIdWithoutAuth() {
             // When / Then
-            assertThatThrownBy(() -> restClient.get()
+            var responseSpec = restClient.get()
                     .uri("/api/journal-entries/{id}", 1)
-                    .retrieve()
-                    .body(JournalEntryResponse.class))
+                    .retrieve();
+            assertThatThrownBy(() -> responseSpec.body(JournalEntryResponse.class))
                     .isInstanceOf(HttpClientErrorException.class)
                     .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
                     .extracting(HttpClientErrorException::getStatusCode)
@@ -520,12 +520,12 @@ class JournalEntryApiIntegrationTest {
                     debitAccountId, creditAccountId, "1000", 1);
 
             // When / Then
-            assertThatThrownBy(() -> restClient.put()
+            var responseSpec = restClient.put()
                     .uri("/api/journal-entries/{id}", 1)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(updateRequestBody)
-                    .retrieve()
-                    .body(UpdateJournalEntryResponse.class))
+                    .retrieve();
+            assertThatThrownBy(() -> responseSpec.body(UpdateJournalEntryResponse.class))
                     .isInstanceOf(HttpClientErrorException.class)
                     .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.type(HttpClientErrorException.class))
                     .extracting(HttpClientErrorException::getStatusCode)

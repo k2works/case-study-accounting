@@ -87,7 +87,8 @@ class UpdateJournalEntryCommandTest {
             ));
 
             assertThat(command.lines()).hasSize(1);
-            assertThatThrownBy(() -> command.lines().add(lines.get(0)))
+            UpdateJournalEntryCommand.JournalEntryLineInput firstLine = lines.get(0);
+            assertThatThrownBy(() -> command.lines().add(firstLine))
                     .isInstanceOf(UnsupportedOperationException.class);
         }
     }

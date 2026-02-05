@@ -302,7 +302,7 @@ public class JournalEntryController {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(UpdateJournalEntryResponse.failure(result.errorMessage()));
             }
-            return ResponseEntity.badRequest()
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(UpdateJournalEntryResponse.failure(result.errorMessage()));
         } catch (OptimisticLockException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT)

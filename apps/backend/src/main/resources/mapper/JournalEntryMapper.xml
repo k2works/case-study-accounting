@@ -256,90 +256,90 @@
         FROM journal_entries je
         LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
         <where>
-            <if test="statuses != null and statuses.size() > 0">
+            <if test="c.statuses != null and c.statuses.size() > 0">
                 je.status IN
-                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                <foreach collection="c.statuses" item="status" open="(" separator="," close=")">
                     #{status}
                 </foreach>
             </if>
-            <if test="dateFrom != null">
-                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            <if test="c.dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{c.dateFrom}
             </if>
-            <if test="dateTo != null">
-                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            <if test="c.dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{c.dateTo}
             </if>
-            <if test="accountId != null">
+            <if test="c.accountId != null">
                 AND je.id IN (
                     SELECT DISTINCT jel2.journal_entry_id
                     FROM journal_entry_lines jel2
-                    WHERE jel2.account_id = #{accountId}
+                    WHERE jel2.account_id = #{c.accountId}
                 )
             </if>
-            <if test="amountFrom != null">
+            <if test="c.amountFrom != null">
                 AND je.id IN (
                     SELECT jel3.journal_entry_id
                     FROM journal_entry_lines jel3
                     GROUP BY jel3.journal_entry_id
-                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{amountFrom}
+                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{c.amountFrom}
                 )
             </if>
-            <if test="amountTo != null">
+            <if test="c.amountTo != null">
                 AND je.id IN (
                     SELECT jel4.journal_entry_id
                     FROM journal_entry_lines jel4
                     GROUP BY jel4.journal_entry_id
-                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{amountTo}
+                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{c.amountTo}
                 )
             </if>
-            <if test="description != null and description != ''">
-                AND je.description LIKE CONCAT('%', #{description}, '%')
+            <if test="c.description != null and c.description != ''">
+                AND je.description LIKE CONCAT('%', #{c.description}, '%')
             </if>
         </where>
         ORDER BY je.id ASC, jel.line_number ASC
-        LIMIT #{limit} OFFSET #{offset}
+        LIMIT #{c.limit} OFFSET #{c.offset}
     </select>
 
     <select id="countBySearchConditions" resultType="long">
         SELECT COUNT(DISTINCT je.id)
         FROM journal_entries je
         <where>
-            <if test="statuses != null and statuses.size() > 0">
+            <if test="c.statuses != null and c.statuses.size() > 0">
                 je.status IN
-                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                <foreach collection="c.statuses" item="status" open="(" separator="," close=")">
                     #{status}
                 </foreach>
             </if>
-            <if test="dateFrom != null">
-                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            <if test="c.dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{c.dateFrom}
             </if>
-            <if test="dateTo != null">
-                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            <if test="c.dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{c.dateTo}
             </if>
-            <if test="accountId != null">
+            <if test="c.accountId != null">
                 AND je.id IN (
                     SELECT DISTINCT jel2.journal_entry_id
                     FROM journal_entry_lines jel2
-                    WHERE jel2.account_id = #{accountId}
+                    WHERE jel2.account_id = #{c.accountId}
                 )
             </if>
-            <if test="amountFrom != null">
+            <if test="c.amountFrom != null">
                 AND je.id IN (
                     SELECT jel3.journal_entry_id
                     FROM journal_entry_lines jel3
                     GROUP BY jel3.journal_entry_id
-                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{amountFrom}
+                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{c.amountFrom}
                 )
             </if>
-            <if test="amountTo != null">
+            <if test="c.amountTo != null">
                 AND je.id IN (
                     SELECT jel4.journal_entry_id
                     FROM journal_entry_lines jel4
                     GROUP BY jel4.journal_entry_id
-                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{amountTo}
+                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{c.amountTo}
                 )
             </if>
-            <if test="description != null and description != ''">
-                AND je.description LIKE CONCAT('%', #{description}, '%')
+            <if test="c.description != null and c.description != ''">
+                AND je.description LIKE CONCAT('%', #{c.description}, '%')
             </if>
         </where>
     </select>

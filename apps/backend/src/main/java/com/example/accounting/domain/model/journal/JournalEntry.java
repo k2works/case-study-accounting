@@ -103,6 +103,7 @@ public class JournalEntry {
      * @param updatedAt   更新日時
      * @return 復元された JournalEntry インスタンス
      */
+    @SuppressWarnings("java:S107") // DB 復元用ファクトリメソッドのため全フィールドが必須
     public static JournalEntry reconstruct(JournalEntryId id,
                                            LocalDate journalDate,
                                            String description,

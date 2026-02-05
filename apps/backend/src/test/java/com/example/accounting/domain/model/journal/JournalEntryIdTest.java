@@ -25,7 +25,7 @@ class JournalEntryIdTest {
         JournalEntryId second = JournalEntryId.of(200);
 
         assertThat(first).isEqualTo(second);
-        assertThat(first.hashCode()).isEqualTo(second.hashCode());
+        assertThat(first).hasSameHashCodeAs(second);
         assertThat(first.value()).isEqualTo(200);
     }
 

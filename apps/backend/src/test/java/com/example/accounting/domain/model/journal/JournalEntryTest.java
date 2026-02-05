@@ -268,17 +268,12 @@ class JournalEntryTest {
     @Test
     @DisplayName("reconstruct に null の lines を渡すと例外をスローする")
     void shouldThrowExceptionWhenReconstructWithNullLines() {
+        JournalEntryId id = JournalEntryId.of(1);
+        LocalDateTime now = LocalDateTime.now();
+
         assertThatThrownBy(() -> JournalEntry.reconstruct(
-                JournalEntryId.of(1),
-                JOURNAL_DATE,
-                "摘要",
-                JournalEntryStatus.DRAFT,
-                0,
-                null,
-                CREATED_BY,
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        ))
+                id, JOURNAL_DATE, "摘要", JournalEntryStatus.DRAFT,
+                0, null, CREATED_BY, now, now))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("明細は必須");
     }

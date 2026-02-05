@@ -5,6 +5,7 @@ import com.example.accounting.application.port.in.query.SearchJournalEntriesQuer
 import com.example.accounting.application.port.out.GetJournalEntriesResult;
 import com.example.accounting.application.port.out.GetJournalEntriesResult.JournalEntrySummary;
 import com.example.accounting.application.port.out.JournalEntryRepository;
+import com.example.accounting.application.port.out.JournalEntrySearchCriteria;
 import com.example.accounting.domain.model.journal.JournalEntry;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -22,19 +23,18 @@ public class SearchJournalEntriesService implements SearchJournalEntriesUseCase 
     @Override
     public GetJournalEntriesResult execute(SearchJournalEntriesQuery query) {
         int offset = query.page() * query.size();
-        long totalElements = journalEntryRepository.countBySearchConditions(
+        JournalEntrySearchCriteria criteria = new JournalEntrySearchCriteria(
                 query.statuses(), query.dateFrom(), query.dateTo(),
                 query.accountId(), query.amountFrom(), query.amountTo(),
-                query.description());
+                query.description(), offset, query.size());
+
+        long totalElements = journalEntryRepository.countBySearchConditions(criteria);
         if (totalElements == 0) {
             return GetJournalEntriesResult.empty(query.page(), query.size());
         }
 
         List<JournalEntry> journalEntries =
-                journalEntryRepository.searchByConditions(
-                        query.statuses(), query.dateFrom(), query.dateTo(),
-                        query.accountId(), query.amountFrom(), query.amountTo(),
-                        query.description(), offset, query.size());
+                journalEntryRepository.searchByConditions(criteria);
         List<JournalEntrySummary> summaries =
                 journalEntries.stream()
                         .map(journalEntry ->

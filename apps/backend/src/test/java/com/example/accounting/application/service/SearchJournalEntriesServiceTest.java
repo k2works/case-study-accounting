@@ -3,6 +3,7 @@ package com.example.accounting.application.service;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
 import com.example.accounting.application.port.out.GetJournalEntriesResult;
 import com.example.accounting.application.port.out.JournalEntryRepository;
+import com.example.accounting.application.port.out.JournalEntrySearchCriteria;
 import com.example.accounting.application.service.journal.SearchJournalEntriesService;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.journal.JournalEntry;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,21 +59,15 @@ class SearchJournalEntriesServiceTest {
             JournalEntry entry1 = createEntry(1, "売上計上", 1, new BigDecimal("1000"));
             JournalEntry entry2 = createEntry(2, "交通費", 3, new BigDecimal("2000"));
 
-            when(journalEntryRepository.countBySearchConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description()))
+            when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(2L);
-            when(journalEntryRepository.searchByConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description(), 0, query.size()))
+            when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(List.of(entry1, entry2));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
             assertThat(result.content()).hasSize(2);
-            assertThat(result.page()).isEqualTo(0);
+            assertThat(result.page()).isZero();
             assertThat(result.size()).isEqualTo(20);
             assertThat(result.totalElements()).isEqualTo(2L);
             assertThat(result.totalPages()).isEqualTo(1);
@@ -97,15 +93,9 @@ class SearchJournalEntriesServiceTest {
             );
             JournalEntry entry = createEntry(3, "交通費", 2, new BigDecimal("3000"));
 
-            when(journalEntryRepository.countBySearchConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description()))
+            when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(1L);
-            when(journalEntryRepository.searchByConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description(), 0, query.size()))
+            when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(List.of(entry));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
@@ -131,15 +121,9 @@ class SearchJournalEntriesServiceTest {
             );
             JournalEntry entry = createEntry(4, "売上計上", 1, new BigDecimal("5000"));
 
-            when(journalEntryRepository.countBySearchConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description()))
+            when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(1L);
-            when(journalEntryRepository.searchByConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description(), 0, query.size()))
+            when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(List.of(entry));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
@@ -165,15 +149,9 @@ class SearchJournalEntriesServiceTest {
             );
             JournalEntry entry = createEntry(5, "消耗品費", 4, new BigDecimal("3000"));
 
-            when(journalEntryRepository.countBySearchConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description()))
+            when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(1L);
-            when(journalEntryRepository.searchByConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description(), 0, query.size()))
+            when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(List.of(entry));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
@@ -199,15 +177,9 @@ class SearchJournalEntriesServiceTest {
             );
             JournalEntry entry = createEntry(6, "売上計上", 1, new BigDecimal("2000"));
 
-            when(journalEntryRepository.countBySearchConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description()))
+            when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(1L);
-            when(journalEntryRepository.searchByConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description(), 0, query.size()))
+            when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(List.of(entry));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
@@ -238,21 +210,15 @@ class SearchJournalEntriesServiceTest {
                     null
             );
 
-            when(journalEntryRepository.countBySearchConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description()))
+            when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(0L);
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
             assertThat(result.content()).isEmpty();
-            assertThat(result.totalElements()).isEqualTo(0L);
-            assertThat(result.totalPages()).isEqualTo(0);
-            verify(journalEntryRepository, never()).searchByConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description(), 0, query.size());
+            assertThat(result.totalElements()).isZero();
+            assertThat(result.totalPages()).isZero();
+            verify(journalEntryRepository, never()).searchByConditions(any(JournalEntrySearchCriteria.class));
         }
     }
 
@@ -276,15 +242,9 @@ class SearchJournalEntriesServiceTest {
             );
             JournalEntry entry = createEntry(7, "売上計上", 1, new BigDecimal("1000"));
 
-            when(journalEntryRepository.countBySearchConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description()))
+            when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(5L);
-            when(journalEntryRepository.searchByConditions(
-                    query.statuses(), query.dateFrom(), query.dateTo(),
-                    query.accountId(), query.amountFrom(), query.amountTo(),
-                    query.description(), 2, query.size()))
+            when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
                     .thenReturn(List.of(entry));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);

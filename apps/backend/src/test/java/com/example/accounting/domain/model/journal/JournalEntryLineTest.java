@@ -43,12 +43,11 @@ class JournalEntryLineTest {
     @Test
     @DisplayName("借方と貸方の両方が設定されている場合は例外をスローする")
     void shouldThrowExceptionWhenBothAmountsSet() {
-        assertThatThrownBy(() -> JournalEntryLine.of(
-                1,
-                AccountId.of(10),
-                Money.of(new BigDecimal("100")),
-                Money.of(new BigDecimal("100"))
-        ))
+        AccountId accountId = AccountId.of(10);
+        Money debit = Money.of(new BigDecimal("100"));
+        Money credit = Money.of(new BigDecimal("100"));
+
+        assertThatThrownBy(() -> JournalEntryLine.of(1, accountId, debit, credit))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("借方または貸方");
     }
@@ -56,12 +55,9 @@ class JournalEntryLineTest {
     @Test
     @DisplayName("借方と貸方の両方が null の場合は例外をスローする")
     void shouldThrowExceptionWhenBothAmountsNull() {
-        assertThatThrownBy(() -> JournalEntryLine.of(
-                1,
-                AccountId.of(10),
-                null,
-                null
-        ))
+        AccountId accountId = AccountId.of(10);
+
+        assertThatThrownBy(() -> JournalEntryLine.of(1, accountId, null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("借方または貸方");
     }
@@ -69,12 +65,10 @@ class JournalEntryLineTest {
     @Test
     @DisplayName("lineNumber が null の場合は例外をスローする")
     void shouldThrowExceptionWhenLineNumberIsNull() {
-        assertThatThrownBy(() -> JournalEntryLine.of(
-                null,
-                AccountId.of(10),
-                Money.of(new BigDecimal("100")),
-                null
-        ))
+        AccountId accountId = AccountId.of(10);
+        Money debit = Money.of(new BigDecimal("100"));
+
+        assertThatThrownBy(() -> JournalEntryLine.of(null, accountId, debit, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("行番号");
     }
@@ -82,12 +76,9 @@ class JournalEntryLineTest {
     @Test
     @DisplayName("accountId が null の場合は例外をスローする")
     void shouldThrowExceptionWhenAccountIdIsNull() {
-        assertThatThrownBy(() -> JournalEntryLine.of(
-                1,
-                null,
-                Money.of(new BigDecimal("100")),
-                null
-        ))
+        Money debit = Money.of(new BigDecimal("100"));
+
+        assertThatThrownBy(() -> JournalEntryLine.of(1, null, debit, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("勘定科目 ID");
     }

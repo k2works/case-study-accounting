@@ -35,7 +35,9 @@ class MoneyTest {
         @Test
         @DisplayName("負の金額の場合は例外をスローする")
         void shouldThrowExceptionForNegativeValue() {
-            assertThatThrownBy(() -> Money.of(new BigDecimal("-1")))
+            BigDecimal negativeValue = new BigDecimal("-1");
+
+            assertThatThrownBy(() -> Money.of(negativeValue))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("金額は 0 以上");
         }
@@ -85,8 +87,9 @@ class MoneyTest {
     @DisplayName("減算結果が負になる場合は例外をスローする")
     void shouldThrowExceptionWhenSubtractBecomesNegative() {
         Money base = Money.of(new BigDecimal("100"));
+        Money subtrahend = Money.of(new BigDecimal("200"));
 
-        assertThatThrownBy(() -> base.subtract(Money.of(new BigDecimal("200"))))
+        assertThatThrownBy(() -> base.subtract(subtrahend))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("金額は 0 以上");
     }
