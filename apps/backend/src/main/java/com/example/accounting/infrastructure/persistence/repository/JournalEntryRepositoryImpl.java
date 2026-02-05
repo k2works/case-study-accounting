@@ -1,5 +1,6 @@
 package com.example.accounting.infrastructure.persistence.repository;
 
+import com.example.accounting.application.port.out.GetGeneralLedgerResult.GeneralLedgerEntry;
 import com.example.accounting.application.port.out.JournalEntryRepository;
 import com.example.accounting.application.port.out.JournalEntrySearchCriteria;
 import com.example.accounting.domain.model.journal.JournalEntry;
@@ -7,9 +8,11 @@ import com.example.accounting.domain.model.journal.JournalEntryId;
 import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity;
+import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity;
 import com.example.accounting.infrastructure.persistence.mapper.JournalEntryMapper;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -94,5 +97,39 @@ public class JournalEntryRepositoryImpl implements JournalEntryRepository {
     @Override
     public long countBySearchConditions(JournalEntrySearchCriteria criteria) {
         return journalEntryMapper.countBySearchConditions(criteria);
+    }
+
+    @Override
+    public List<GeneralLedgerEntry> findPostedLinesByAccountAndPeriod(Integer accountId, LocalDate dateFrom,
+                                                                      LocalDate dateTo, int offset, int limit) {
+        return journalEntryMapper.findPostedLinesByAccountAndPeriod(accountId, dateFrom, dateTo, offset, limit)
+                .stream()
+                .map(this::toGeneralLedgerEntry)
+                .toList();
+    }
+
+    @Override
+    public long countPostedLinesByAccountAndPeriod(Integer accountId, LocalDate dateFrom, LocalDate dateTo) {
+        return journalEntryMapper.countPostedLinesByAccountAndPeriod(accountId, dateFrom, dateTo);
+    }
+
+    @Override
+    public BigDecimal calculateBalanceBeforeDate(Integer accountId, LocalDate date) {
+        return journalEntryMapper.calculateBalanceBeforeDate(accountId, date);
+    }
+
+    private GeneralLedgerEntry toGeneralLedgerEntry(JournalEntryLineWithHeaderEntity entity) {
+        String description = entity.getLineDescription();
+        if (description == null || description.isBlank()) {
+            description = entity.getDescription();
+        }
+        return new GeneralLedgerEntry(
+                entity.getJournalEntryId(),
+                entity.getJournalDate(),
+                description,
+                entity.getDebitAmount(),
+                entity.getCreditAmount(),
+                null
+        );
     }
 }

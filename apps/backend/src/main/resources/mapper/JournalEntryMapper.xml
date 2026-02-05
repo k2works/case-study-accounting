@@ -47,6 +47,16 @@
         <result property="lineDescription" column="line_description"/>
     </resultMap>
 
+    <resultMap id="journalEntryLineWithHeaderResultMap"
+               type="com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity">
+        <id property="journalEntryId" column="journal_entry_id"/>
+        <result property="journalDate" column="journal_date"/>
+        <result property="description" column="description"/>
+        <result property="lineDescription" column="line_description"/>
+        <result property="debitAmount" column="debit_amount"/>
+        <result property="creditAmount" column="credit_amount"/>
+    </resultMap>
+
     <!-- INSERT -->
     <insert id="insert" parameterType="com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity"
             useGeneratedKeys="true" keyProperty="id">
@@ -342,6 +352,55 @@
                 AND je.description LIKE CONCAT('%', #{c.description}, '%')
             </if>
         </where>
+    </select>
+
+    <select id="findPostedLinesByAccountAndPeriod" resultMap="journalEntryLineWithHeaderResultMap">
+        SELECT
+            je.id AS journal_entry_id,
+            je.journal_date,
+            je.description,
+            jel.line_description,
+            jel.debit_amount,
+            jel.credit_amount
+        FROM journal_entries je
+        INNER JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            je.status = 'POSTED'
+            AND jel.account_id = #{accountId}
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+        ORDER BY je.journal_date ASC, je.id ASC, jel.line_number ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countPostedLinesByAccountAndPeriod" resultType="long">
+        SELECT COUNT(*)
+        FROM journal_entries je
+        INNER JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            je.status = 'POSTED'
+            AND jel.account_id = #{accountId}
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+    </select>
+
+    <select id="calculateBalanceBeforeDate" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(jel.debit_amount - jel.credit_amount), 0)
+        FROM journal_entries je
+        INNER JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        WHERE je.status = 'POSTED'
+          AND jel.account_id = #{accountId}
+          AND je.journal_date <![CDATA[<]]> #{date}
     </select>
 
 </mapper>

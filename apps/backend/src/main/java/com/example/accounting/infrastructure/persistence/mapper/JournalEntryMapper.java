@@ -3,9 +3,11 @@ package com.example.accounting.infrastructure.persistence.mapper;
 import com.example.accounting.application.port.out.JournalEntrySearchCriteria;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity;
+import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -51,4 +53,23 @@ public interface JournalEntryMapper {
     List<JournalEntryEntity> searchByConditions(@Param("c") JournalEntrySearchCriteria criteria);
 
     long countBySearchConditions(@Param("c") JournalEntrySearchCriteria criteria);
+
+    List<JournalEntryLineWithHeaderEntity> findPostedLinesByAccountAndPeriod(
+            @Param("accountId") Integer accountId,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+    );
+
+    long countPostedLinesByAccountAndPeriod(
+            @Param("accountId") Integer accountId,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo
+    );
+
+    BigDecimal calculateBalanceBeforeDate(
+            @Param("accountId") Integer accountId,
+            @Param("date") LocalDate date
+    );
 }

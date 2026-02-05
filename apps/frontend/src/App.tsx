@@ -9,6 +9,7 @@ import EditAccountPage from './pages/EditAccountPage';
 import JournalEntryListPage from './pages/JournalEntryListPage';
 import CreateJournalEntryPage from './pages/CreateJournalEntryPage';
 import EditJournalEntryPage from './pages/EditJournalEntryPage';
+import GeneralLedgerPage from './pages/GeneralLedgerPage';
 import { Loading } from './views/common';
 
 /**
@@ -135,6 +136,14 @@ export const App = () => {
         element={
           <PrivateRoute>
             <EditJournalEntryPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/general-ledger"
+        element={
+          <PrivateRoute>
+            <GeneralLedgerPage />
           </PrivateRoute>
         }
       />

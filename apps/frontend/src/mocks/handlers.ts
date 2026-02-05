@@ -547,7 +547,157 @@ export const journalEntryHandlers = [
   }),
 ];
 
+// 総勘定元帳モックデータ
+interface GeneralLedgerEntry {
+  journalEntryId: number;
+  journalDate: string;
+  description: string;
+  debitAmount: number;
+  creditAmount: number;
+  runningBalance: number;
+}
+
+interface GeneralLedgerResult {
+  content: GeneralLedgerEntry[];
+  accountId: number;
+  accountCode: string;
+  accountName: string;
+  openingBalance: number;
+  debitTotal: number;
+  creditTotal: number;
+  closingBalance: number;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+const mockGeneralLedgerEntries: GeneralLedgerEntry[] = [
+  {
+    journalEntryId: 1,
+    journalDate: '2024-04-01',
+    description: '現金売上',
+    debitAmount: 10000,
+    creditAmount: 0,
+    runningBalance: 10000,
+  },
+  {
+    journalEntryId: 2,
+    journalDate: '2024-04-05',
+    description: '仕入支払',
+    debitAmount: 0,
+    creditAmount: 5000,
+    runningBalance: 5000,
+  },
+  {
+    journalEntryId: 3,
+    journalDate: '2024-04-10',
+    description: '売上入金',
+    debitAmount: 30000,
+    creditAmount: 0,
+    runningBalance: 35000,
+  },
+  {
+    journalEntryId: 4,
+    journalDate: '2024-06-01',
+    description: '元帳テスト仕訳',
+    debitAmount: 25000,
+    creditAmount: 0,
+    runningBalance: 60000,
+  },
+  {
+    journalEntryId: 5,
+    journalDate: '2024-06-15',
+    description: '詳細遷移テスト',
+    debitAmount: 30000,
+    creditAmount: 0,
+    runningBalance: 90000,
+  },
+];
+
+// 総勘定元帳ヘルパー関数
+const filterEntriesByDateRange = (
+  entries: GeneralLedgerEntry[],
+  dateFrom: string | null,
+  dateTo: string | null
+): GeneralLedgerEntry[] => {
+  let filtered = [...entries];
+  if (dateFrom) {
+    filtered = filtered.filter((entry) => entry.journalDate >= dateFrom);
+  }
+  if (dateTo) {
+    filtered = filtered.filter((entry) => entry.journalDate <= dateTo);
+  }
+  return filtered;
+};
+
+const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedgerEntry[] => {
+  let runningBalance = 0;
+  return entries.map((entry) => {
+    runningBalance = runningBalance + entry.debitAmount - entry.creditAmount;
+    return { ...entry, runningBalance };
+  });
+};
+
+const buildGeneralLedgerResult = (
+  content: GeneralLedgerEntry[],
+  accountId: number,
+  page: number,
+  size: number,
+  totalElements: number
+): GeneralLedgerResult => {
+  const debitTotal = content.reduce((sum, e) => sum + e.debitAmount, 0);
+  const creditTotal = content.reduce((sum, e) => sum + e.creditAmount, 0);
+  const closingBalance = content.length > 0 ? content[content.length - 1].runningBalance : 0;
+
+  return {
+    content,
+    accountId,
+    accountCode: accountId === 1 ? '1000' : '2000',
+    accountName: accountId === 1 ? '現金預金' : '買掛金',
+    openingBalance: 0,
+    debitTotal,
+    creditTotal,
+    closingBalance,
+    page,
+    size,
+    totalElements,
+    totalPages: Math.ceil(totalElements / size),
+  };
+};
+
+/**
+ * 総勘定元帳関連のハンドラー
+ */
+export const generalLedgerHandlers = [
+  http.get('*/general-ledger', ({ request }) => {
+    const url = new URL(request.url);
+    const accountId = parseInt(url.searchParams.get('accountId') || '0', 10);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+
+    if (!accountId) {
+      return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
+    }
+
+    const filtered = filterEntriesByDateRange(mockGeneralLedgerEntries, dateFrom, dateTo);
+    const withBalances = recalculateRunningBalances(filtered);
+    const start = page * size;
+    const content = withBalances.slice(start, start + size);
+    const result = buildGeneralLedgerResult(content, accountId, page, size, withBalances.length);
+
+    return HttpResponse.json(result);
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
-export const handlers = [...authHandlers, ...accountHandlers, ...journalEntryHandlers];
+export const handlers = [
+  ...authHandlers,
+  ...accountHandlers,
+  ...journalEntryHandlers,
+  ...generalLedgerHandlers,
+];
