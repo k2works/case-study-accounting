@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import EditJournalEntryPage from './EditJournalEntryPage';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { AuthContextType } from '../types/auth';
+import { createMockAuthContext } from '../test/testUtils';
 import { getAccounts } from '../api/getAccounts';
 import { getJournalEntry } from '../api/getJournalEntry';
 import type { JournalEntry } from '../api/getJournalEntry';
@@ -61,9 +61,9 @@ vi.mock('../views/common', () => ({
     onRetry?: () => void;
     onDismiss?: () => void;
   }) => (
-    <div data-testid="error-message" onClick={onRetry || onDismiss}>
+    <button data-testid="error-message" onClick={onRetry || onDismiss}>
       {message}
-    </div>
+    </button>
   ),
   ConfirmModal: ({
     isOpen,
@@ -128,16 +128,6 @@ const mockGetAccounts = vi.mocked(getAccounts);
 const mockGetJournalEntry = vi.mocked(getJournalEntry);
 const mockUpdateJournalEntry = vi.mocked(updateJournalEntry);
 const mockDeleteJournalEntry = vi.mocked(deleteJournalEntry);
-
-const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthContextType => ({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  login: vi.fn(),
-  logout: vi.fn(),
-  hasRole: vi.fn(() => false),
-  ...overrides,
-});
 
 const mockJournalEntry: JournalEntry = {
   journalEntryId: 1,

@@ -10,41 +10,6 @@
  * - 検索条件をクリアできる
  */
 
-/**
- * 仕訳を登録するヘルパー関数
- */
-const createTestJournalEntry = (date: string, description: string, amount: string) => {
-  cy.visit('/journal/entries/new');
-  cy.get('[data-testid="journal-entry-form"]').should('be.visible');
-
-  // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
-  cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 }).should(
-    'have.length.greaterThan',
-    1
-  );
-
-  cy.get('[data-testid="journal-entry-date-input"]').type(date);
-  cy.get('[data-testid="journal-entry-description-input"]').type(description);
-
-  cy.get('[data-testid="journal-entry-account-0"]').select(1);
-  cy.get('[data-testid="journal-entry-debit-0"]').type(amount);
-
-  cy.get('[data-testid="journal-entry-add-line"]').click();
-  cy.get('[data-testid="journal-entry-account-1"]').select(2);
-  cy.get('[data-testid="journal-entry-credit-1"]').type(amount);
-
-  cy.get('[data-testid="journal-entry-submit"]').click();
-};
-
-/**
- * 仕訳一覧ページに遷移してデータ読み込み完了を待つヘルパー
- */
-const visitJournalEntryList = () => {
-  cy.visit('/journal/entries');
-  cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
-  cy.get('table tbody', { timeout: 15000 }).should('exist');
-};
-
 describe('US-JNL-005: 仕訳検索', () => {
   before(() => {
     cy.clearAuth();
@@ -55,13 +20,13 @@ describe('US-JNL-005: 仕訳検索', () => {
     cy.login('admin', 'Password123!');
     cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
 
-    createTestJournalEntry('2024-04-01', '4月売上計上', '50000');
+    cy.createTestJournalEntry('2024-04-01', '4月売上計上', '50000');
     cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
 
-    createTestJournalEntry('2024-04-15', '4月仕入計上', '30000');
+    cy.createTestJournalEntry('2024-04-15', '4月仕入計上', '30000');
     cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
 
-    createTestJournalEntry('2024-05-01', '5月売上計上', '80000');
+    cy.createTestJournalEntry('2024-05-01', '5月売上計上', '80000');
     cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
 
     cy.clearAuth();
@@ -75,7 +40,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('拡張検索フォームが表示される', () => {
@@ -94,7 +59,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('摘要で検索できる', () => {
@@ -113,7 +78,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('金額範囲で検索できる', () => {
@@ -144,7 +109,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('日付範囲と摘要を組み合わせて検索できる', () => {
@@ -177,7 +142,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('リセットボタンで全検索条件がクリアされる', () => {
@@ -210,7 +175,7 @@ describe('US-JNL-005: 仕訳検索', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('検索結果が一覧形式で表示される', () => {

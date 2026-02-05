@@ -19,14 +19,14 @@ vi.mock('../../api/deleteJournalEntry', () => ({
 
 vi.mock('../common', () => ({
   ErrorMessage: ({ message, onDismiss }: { message: string; onDismiss?: () => void }) => (
-    <div data-testid="error-message" onClick={onDismiss}>
+    <button data-testid="error-message" onClick={onDismiss}>
       {message}
-    </div>
+    </button>
   ),
   SuccessNotification: ({ message, onDismiss }: { message: string; onDismiss: () => void }) => (
-    <div data-testid="success-notification" onClick={onDismiss}>
+    <button data-testid="success-notification" onClick={onDismiss}>
       {message}
-    </div>
+    </button>
   ),
   Table: ({
     columns,

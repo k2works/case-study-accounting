@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import JournalEntryListPage from './JournalEntryListPage';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
-import type { AuthContextType } from '../types/auth';
+import { createMockAuthContext } from '../test/testUtils';
 import { searchJournalEntries } from '../api/searchJournalEntries';
 import type { GetJournalEntriesResult } from '../api/getJournalEntries';
 
@@ -31,14 +31,14 @@ vi.mock('../views/common', () => ({
   ),
   Loading: ({ message }: { message?: string }) => <div data-testid="loading">{message}</div>,
   SuccessNotification: ({ message, onDismiss }: { message: string; onDismiss: () => void }) => (
-    <div data-testid="success-notification" onClick={onDismiss}>
+    <button data-testid="success-notification" onClick={onDismiss}>
       {message}
-    </div>
+    </button>
   ),
   ErrorMessage: ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
-    <div data-testid="error-message" onClick={onRetry}>
+    <button data-testid="error-message" onClick={onRetry}>
       {message}
-    </div>
+    </button>
   ),
   Button: ({
     children,
@@ -91,16 +91,6 @@ const mockUseAuth = vi.mocked(useAuth);
 const mockUseNavigate = vi.mocked(useNavigate);
 const mockUseLocation = vi.mocked(useLocation);
 const mockSearchJournalEntries = vi.mocked(searchJournalEntries);
-
-const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthContextType => ({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  login: vi.fn(),
-  logout: vi.fn(),
-  hasRole: vi.fn(() => false),
-  ...overrides,
-});
 
 const createMockResult = (
   overrides: Partial<GetJournalEntriesResult> = {}

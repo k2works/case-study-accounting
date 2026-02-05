@@ -11,41 +11,6 @@
  * - ページネーションに対応する
  */
 
-/**
- * 仕訳を登録するヘルパー関数
- */
-const createTestJournalEntry = (date: string, description: string, amount: string) => {
-  cy.visit('/journal/entries/new');
-  cy.get('[data-testid="journal-entry-form"]').should('be.visible');
-
-  // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
-  cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 }).should(
-    'have.length.greaterThan',
-    1
-  );
-
-  cy.get('[data-testid="journal-entry-date-input"]').type(date);
-  cy.get('[data-testid="journal-entry-description-input"]').type(description);
-
-  cy.get('[data-testid="journal-entry-account-0"]').select(1);
-  cy.get('[data-testid="journal-entry-debit-0"]').type(amount);
-
-  cy.get('[data-testid="journal-entry-add-line"]').click();
-  cy.get('[data-testid="journal-entry-account-1"]').select(2);
-  cy.get('[data-testid="journal-entry-credit-1"]').type(amount);
-
-  cy.get('[data-testid="journal-entry-submit"]').click();
-};
-
-/**
- * 仕訳一覧ページに遷移してデータ読み込み完了を待つヘルパー
- */
-const visitJournalEntryList = () => {
-  cy.visit('/journal/entries');
-  cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
-  cy.get('table tbody', { timeout: 15000 }).should('exist');
-};
-
 describe('US-JNL-004: 仕訳一覧表示', () => {
   // テストスイート開始前に勘定科目をセットアップ
   before(() => {
@@ -62,7 +27,7 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('仕訳番号、仕訳日付、摘要、金額、ステータスが一覧表示される', () => {
@@ -104,7 +69,7 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('ステータスでフィルタリングできる - 下書き', () => {
@@ -137,7 +102,7 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('日付範囲で絞り込みできる', () => {
@@ -179,7 +144,7 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('ステータスと日付範囲の複合フィルタリングができる', () => {
@@ -200,7 +165,7 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('リセットボタンでフィルタ条件がクリアされる', () => {
@@ -229,11 +194,11 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
 
       // 遷移テスト用の仕訳を作成
-      createTestJournalEntry('2024-06-01', '詳細遷移テスト仕訳', '15000');
+      cy.createTestJournalEntry('2024-06-01', '詳細遷移テスト仕訳', '15000');
       cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
 
       // 仕訳一覧ページに移動
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('一覧から編集画面に遷移できる', () => {
@@ -256,7 +221,7 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('ページネーションUIが表示される', () => {
@@ -301,7 +266,7 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     beforeEach(() => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-      visitJournalEntryList();
+      cy.visitJournalEntryList();
     });
 
     it('新規作成ボタンをクリックすると仕訳登録画面に遷移する', () => {

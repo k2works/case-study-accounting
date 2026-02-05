@@ -9,12 +9,48 @@ import { platform } from 'os';
  */
 
 /**
+ * 子プロセスを起動し、ライフサイクルイベントを管理する
+ * @param {string} cmd - 実行コマンド
+ * @param {string[]} args - コマンド引数
+ * @param {Object} options - spawn オプション
+ * @param {string} label - ログ表示用ラベル
+ * @param {Function} done - Gulp 完了コールバック
+ * @returns {import('child_process').ChildProcess}
+ */
+function spawnServer(cmd, args, options, label, done) {
+    const child = spawn(cmd, args, options);
+
+    child.on('error', (error) => {
+        console.error(`Error starting ${label}:`, error.message);
+        done(error);
+    });
+
+    child.on('close', (code) => {
+        if (code !== 0) {
+            console.error(`${label} process exited with code ${code}`);
+        }
+        done();
+    });
+
+    process.on('SIGINT', () => {
+        console.log(`\nStopping ${label} server...`);
+        child.kill();
+        process.exit();
+    });
+
+    return child;
+}
+
+/**
  * 開発環境関連の Gulp タスクを登録する
  * @param {import('gulp').Gulp} gulp
  */
 export default function (gulp) {
     const PROJECT_ROOT = process.cwd();
     const isWindows = platform() === 'win32';
+    const gradlewCmd = isWindows ? '.\\apps\\backend\\gradlew.bat' : './apps/backend/gradlew';
+    const npmCmd = isWindows ? 'npm.cmd' : 'npm';
+    const shellOpt = isWindows;
 
     /**
      * バックエンド開発サーバーを起動する
@@ -22,38 +58,13 @@ export default function (gulp) {
     gulp.task('dev:backend', (done) => {
         try {
             console.log('Starting backend development server...');
-
-            const gradlewCmd = isWindows
-                ? '.\\apps\\backend\\gradlew.bat'
-                : './apps/backend/gradlew';
-
-            const args = ['-p', 'apps/backend', 'bootRun'];
-
-            const backend = spawn(gradlewCmd, args, {
-                stdio: 'inherit',
-                cwd: PROJECT_ROOT,
-                shell: isWindows
-            });
-
-            backend.on('error', (error) => {
-                console.error('Error starting backend:', error.message);
-                done(error);
-            });
-
-            backend.on('close', (code) => {
-                if (code !== 0) {
-                    console.error(`Backend process exited with code ${code}`);
-                }
-                done();
-            });
-
-            // Ctrl+C でのクリーンな終了
-            process.on('SIGINT', () => {
-                console.log('\nStopping backend server...');
-                backend.kill();
-                process.exit();
-            });
-
+            spawnServer(
+                gradlewCmd,
+                ['-p', 'apps/backend', 'bootRun'],
+                { stdio: 'inherit', cwd: PROJECT_ROOT, shell: shellOpt },
+                'backend',
+                done
+            );
         } catch (error) {
             console.error('Error starting backend development server:', error.message);
             done(error);
@@ -66,35 +77,13 @@ export default function (gulp) {
     gulp.task('dev:frontend', (done) => {
         try {
             console.log('Starting frontend development server...');
-
-            const npmCmd = isWindows ? 'npm.cmd' : 'npm';
-            const args = ['run', 'dev'];
-
-            const frontend = spawn(npmCmd, args, {
-                stdio: 'inherit',
-                cwd: `${PROJECT_ROOT}/apps/frontend`,
-                shell: isWindows
-            });
-
-            frontend.on('error', (error) => {
-                console.error('Error starting frontend:', error.message);
-                done(error);
-            });
-
-            frontend.on('close', (code) => {
-                if (code !== 0) {
-                    console.error(`Frontend process exited with code ${code}`);
-                }
-                done();
-            });
-
-            // Ctrl+C でのクリーンな終了
-            process.on('SIGINT', () => {
-                console.log('\nStopping frontend server...');
-                frontend.kill();
-                process.exit();
-            });
-
+            spawnServer(
+                npmCmd,
+                ['run', 'dev'],
+                { stdio: 'inherit', cwd: `${PROJECT_ROOT}/apps/frontend`, shell: shellOpt },
+                'frontend',
+                done
+            );
         } catch (error) {
             console.error('Error starting frontend development server:', error.message);
             done(error);
@@ -107,35 +96,13 @@ export default function (gulp) {
     gulp.task('dev:frontend:e2e', (done) => {
         try {
             console.log('Starting frontend E2E development server...');
-
-            const npmCmd = isWindows ? 'npm.cmd' : 'npm';
-            const args = ['run', 'dev:e2e'];
-
-            const frontend = spawn(npmCmd, args, {
-                stdio: 'inherit',
-                cwd: `${PROJECT_ROOT}/apps/frontend`,
-                shell: isWindows
-            });
-
-            frontend.on('error', (error) => {
-                console.error('Error starting frontend E2E server:', error.message);
-                done(error);
-            });
-
-            frontend.on('close', (code) => {
-                if (code !== 0) {
-                    console.error(`Frontend E2E process exited with code ${code}`);
-                }
-                done();
-            });
-
-            // Ctrl+C でのクリーンな終了
-            process.on('SIGINT', () => {
-                console.log('\nStopping frontend E2E server...');
-                frontend.kill();
-                process.exit();
-            });
-
+            spawnServer(
+                npmCmd,
+                ['run', 'dev:e2e'],
+                { stdio: 'inherit', cwd: `${PROJECT_ROOT}/apps/frontend`, shell: shellOpt },
+                'frontend E2E',
+                done
+            );
         } catch (error) {
             console.error('Error starting frontend E2E development server:', error.message);
             done(error);
@@ -149,24 +116,16 @@ export default function (gulp) {
         try {
             console.log('Starting backend and frontend development servers...');
 
-            const gradlewCmd = isWindows
-                ? '.\\apps\\backend\\gradlew.bat'
-                : './apps/backend/gradlew';
-
-            const npmCmd = isWindows ? 'npm.cmd' : 'npm';
-
-            // バックエンド起動
             const backend = spawn(gradlewCmd, ['-p', 'apps/backend', 'bootRun'], {
                 stdio: 'inherit',
                 cwd: PROJECT_ROOT,
-                shell: isWindows
+                shell: shellOpt
             });
 
-            // フロントエンド起動
             const frontend = spawn(npmCmd, ['run', 'dev'], {
                 stdio: 'inherit',
                 cwd: `${PROJECT_ROOT}/apps/frontend`,
-                shell: isWindows
+                shell: shellOpt
             });
 
             backend.on('error', (error) => {
@@ -181,7 +140,6 @@ export default function (gulp) {
                 done(error);
             });
 
-            // いずれかが終了したら両方終了
             backend.on('close', (code) => {
                 if (code !== 0) {
                     console.error(`Backend process exited with code ${code}`);
@@ -198,7 +156,6 @@ export default function (gulp) {
                 done();
             });
 
-            // Ctrl+C でのクリーンな終了
             process.on('SIGINT', () => {
                 console.log('\nStopping development servers...');
                 backend.kill();

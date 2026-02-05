@@ -13,53 +13,6 @@
  * - 下書き状態の仕訳のみ編集可能
  */
 
-/**
- * 仕訳を登録するヘルパー関数
- * 勘定科目リストから動的に選択する
- */
-const createTestJournalEntry = (date: string, description: string, amount: string) => {
-  cy.visit('/journal/entries/new');
-  cy.get('[data-testid="journal-entry-form"]').should('be.visible');
-
-  // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
-  cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 })
-    .should('have.length.greaterThan', 1);
-
-  cy.get('[data-testid="journal-entry-date-input"]').type(date);
-  cy.get('[data-testid="journal-entry-description-input"]').type(description);
-
-  // 最初の有効な勘定科目を選択（index 1 = 最初のoption以外）
-  cy.get('[data-testid="journal-entry-account-0"]').select(1);
-  cy.get('[data-testid="journal-entry-debit-0"]').type(amount);
-
-  // 行を追加して2番目の勘定科目を選択
-  cy.get('[data-testid="journal-entry-add-line"]').click();
-  cy.get('[data-testid="journal-entry-account-1"]').select(2);
-  cy.get('[data-testid="journal-entry-credit-1"]').type(amount);
-
-  cy.get('[data-testid="journal-entry-submit"]').click();
-};
-
-/**
- * 仕訳一覧ページから仕訳の編集画面に遷移するヘルパー
- * MSW 環境でも cy.intercept を使わずに動作する
- * @param filterDescription 摘要でフィルタして特定の仕訳を見つける（省略時は先頭行）
- */
-const navigateToEditViaList = (filterDescription?: string) => {
-  cy.visit('/journal/entries');
-  cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
-  cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
-
-  if (filterDescription) {
-    cy.get('#journal-entry-filter-description').type(filterDescription);
-    cy.contains('button', '検索').click();
-    cy.get('table tbody tr', { timeout: 10000 }).should('have.length.at.least', 1);
-  }
-
-  cy.get('table tbody tr').first().contains('button', '編集').click();
-  cy.get('[data-testid="journal-entry-edit-form"]', { timeout: 15000 }).should('be.visible');
-};
-
 describe('US-JNL-002: 仕訳編集', () => {
   // テストスイート開始前に勘定科目をセットアップ
   before(() => {
@@ -90,11 +43,11 @@ describe('US-JNL-002: 仕訳編集', () => {
       cy.login('user', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      createTestJournalEntry('2024-01-15', 'ユーザーテスト仕訳', '5000');
+      cy.createTestJournalEntry('2024-01-15', 'ユーザーテスト仕訳', '5000');
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
 
       // When: 仕訳一覧から摘要で検索して編集画面に遷移
-      navigateToEditViaList('ユーザーテスト仕訳');
+      cy.navigateToEditJournalEntry('ユーザーテスト仕訳');
 
       // Then: 編集ページが表示される
       cy.get('[data-testid="edit-journal-entry-page"]').should('be.visible');
@@ -119,11 +72,11 @@ describe('US-JNL-002: 仕訳編集', () => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      createTestJournalEntry('2024-02-01', '編集テスト用仕訳', '10000');
+      cy.createTestJournalEntry('2024-02-01', '編集テスト用仕訳', '10000');
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
 
       // 仕訳一覧から摘要で検索して編集画面に遷移
-      navigateToEditViaList('編集テスト用仕訳');
+      cy.navigateToEditJournalEntry('編集テスト用仕訳');
     });
 
     it('既存の仕訳情報が表示される', () => {
@@ -173,11 +126,11 @@ describe('US-JNL-002: 仕訳編集', () => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      createTestJournalEntry('2024-03-01', 'バランステスト仕訳', '5000');
+      cy.createTestJournalEntry('2024-03-01', 'バランステスト仕訳', '5000');
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
 
       // 仕訳一覧から摘要で検索して編集画面に遷移
-      navigateToEditViaList('バランステスト仕訳');
+      cy.navigateToEditJournalEntry('バランステスト仕訳');
     });
 
     it('貸借が一致している場合、保存ボタンが有効になる', () => {
@@ -202,11 +155,11 @@ describe('US-JNL-002: 仕訳編集', () => {
       cy.login('admin', 'Password123!');
       cy.get('[data-testid="dashboard"]').should('be.visible');
 
-      createTestJournalEntry('2024-04-01', '保存テスト仕訳', '8000');
+      cy.createTestJournalEntry('2024-04-01', '保存テスト仕訳', '8000');
       cy.get('[data-testid="journal-entry-success"]').should('be.visible');
 
       // 仕訳一覧から摘要で検索して編集画面に遷移
-      navigateToEditViaList('保存テスト仕訳');
+      cy.navigateToEditJournalEntry('保存テスト仕訳');
     });
 
     it('編集した仕訳を保存できる', () => {

@@ -31,6 +31,25 @@ declare global {
        * テスト用の基本勘定科目をセットアップする
        */
       setupTestAccounts(): Chainable<void>;
+
+      /**
+       * テスト用の仕訳を登録する
+       * @param date - 仕訳日（YYYY-MM-DD）
+       * @param description - 摘要
+       * @param amount - 金額（借方・貸方同額）
+       */
+      createTestJournalEntry(date: string, description: string, amount: string): Chainable<void>;
+
+      /**
+       * 仕訳一覧ページに遷移してデータ読み込み完了を待つ
+       */
+      visitJournalEntryList(): Chainable<void>;
+
+      /**
+       * 仕訳一覧ページから編集画面に遷移する
+       * @param filterDescription - 摘要でフィルタして特定の仕訳を見つける（省略時は先頭行）
+       */
+      navigateToEditJournalEntry(filterDescription?: string): Chainable<void>;
     }
   }
 }
@@ -109,6 +128,64 @@ Cypress.Commands.add('setupTestAccounts', () => {
 
   // 負債科目
   cy.createAccount('2001', '買掛金', 'LIABILITY');
+});
+
+/**
+ * テスト用仕訳登録コマンド
+ * 勘定科目リストから動的に選択して仕訳を作成する
+ */
+Cypress.Commands.add('createTestJournalEntry', (date: string, description: string, amount: string) => {
+  cy.visit('/journal/entries/new');
+  cy.get('[data-testid="journal-entry-form"]').should('be.visible');
+
+  // 勘定科目が読み込まれるのを待つ（MSW 環境でも安定動作）
+  cy.get('[data-testid="journal-entry-account-0"] option', { timeout: 15000 }).should(
+    'have.length.greaterThan',
+    1
+  );
+
+  cy.get('[data-testid="journal-entry-date-input"]').type(date);
+  cy.get('[data-testid="journal-entry-description-input"]').type(description);
+
+  // 最初の有効な勘定科目を選択（index 1 = 最初の option 以外）
+  cy.get('[data-testid="journal-entry-account-0"]').select(1);
+  cy.get('[data-testid="journal-entry-debit-0"]').type(amount);
+
+  // 行を追加して 2 番目の勘定科目を選択
+  cy.get('[data-testid="journal-entry-add-line"]').click();
+  cy.get('[data-testid="journal-entry-account-1"]').select(2);
+  cy.get('[data-testid="journal-entry-credit-1"]').type(amount);
+
+  cy.get('[data-testid="journal-entry-submit"]').click();
+});
+
+/**
+ * 仕訳一覧ページ遷移コマンド
+ * 一覧ページに遷移しデータ読み込み完了を待機する
+ */
+Cypress.Commands.add('visitJournalEntryList', () => {
+  cy.visit('/journal/entries');
+  cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+  cy.get('table tbody', { timeout: 15000 }).should('exist');
+});
+
+/**
+ * 仕訳編集画面遷移コマンド
+ * 仕訳一覧ページから編集画面に遷移する
+ */
+Cypress.Commands.add('navigateToEditJournalEntry', (filterDescription?: string) => {
+  cy.visit('/journal/entries');
+  cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
+  cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
+
+  if (filterDescription) {
+    cy.get('#journal-entry-filter-description').type(filterDescription);
+    cy.contains('button', '検索').click();
+    cy.get('table tbody tr', { timeout: 10000 }).should('have.length.at.least', 1);
+  }
+
+  cy.get('table tbody tr').first().contains('button', '編集').click();
+  cy.get('[data-testid="journal-entry-edit-form"]', { timeout: 15000 }).should('be.visible');
 });
 
 export {};
