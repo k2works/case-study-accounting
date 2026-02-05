@@ -47,6 +47,38 @@ class JournalEntryTest {
             assertThat(entry.getCreatedAt()).isEqualTo(now);
             assertThat(entry.getUpdatedAt()).isEqualTo(now);
         }
+
+        @Test
+        @DisplayName("仕訳日が null の場合は例外をスローする")
+        void shouldThrowExceptionWhenJournalDateIsNull() {
+            assertThatThrownBy(() -> JournalEntry.create(null, "摘要", CREATED_BY, 0))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("仕訳日は必須");
+        }
+
+        @Test
+        @DisplayName("摘要が null の場合は例外をスローする")
+        void shouldThrowExceptionWhenDescriptionIsNull() {
+            assertThatThrownBy(() -> JournalEntry.create(JOURNAL_DATE, null, CREATED_BY, 0))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("摘要は必須");
+        }
+
+        @Test
+        @DisplayName("作成者が null の場合は例外をスローする")
+        void shouldThrowExceptionWhenCreatedByIsNull() {
+            assertThatThrownBy(() -> JournalEntry.create(JOURNAL_DATE, "摘要", null, 0))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("作成者は必須");
+        }
+
+        @Test
+        @DisplayName("時刻取得関数が null の場合は例外をスローする")
+        void shouldThrowExceptionWhenClockSupplierIsNull() {
+            assertThatThrownBy(() -> JournalEntry.create(JOURNAL_DATE, "摘要", CREATED_BY, 0, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("時刻取得関数は必須");
+        }
     }
 
     @Nested
@@ -201,6 +233,16 @@ class JournalEntryTest {
     }
 
     @Test
+    @DisplayName("addLine に null を渡すと例外をスローする")
+    void shouldThrowExceptionWhenAddLineIsNull() {
+        JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "追加", CREATED_BY, 0);
+
+        assertThatThrownBy(() -> entry.addLine(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("明細行は必須");
+    }
+
+    @Test
     @DisplayName("removeLine で指定行を削除できる")
     void shouldRemoveLine() {
         JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "削除", CREATED_BY, 0)
@@ -211,6 +253,34 @@ class JournalEntryTest {
 
         assertThat(updated.getLines()).hasSize(1);
         assertThat(updated.getLines().get(0).lineNumber()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("removeLine に null を渡すと例外をスローする")
+    void shouldThrowExceptionWhenRemoveLineIsNull() {
+        JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "削除", CREATED_BY, 0);
+
+        assertThatThrownBy(() -> entry.removeLine(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("行番号は必須");
+    }
+
+    @Test
+    @DisplayName("reconstruct に null の lines を渡すと例外をスローする")
+    void shouldThrowExceptionWhenReconstructWithNullLines() {
+        assertThatThrownBy(() -> JournalEntry.reconstruct(
+                JournalEntryId.of(1),
+                JOURNAL_DATE,
+                "摘要",
+                JournalEntryStatus.DRAFT,
+                0,
+                null,
+                CREATED_BY,
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("明細は必須");
     }
 
     @Test

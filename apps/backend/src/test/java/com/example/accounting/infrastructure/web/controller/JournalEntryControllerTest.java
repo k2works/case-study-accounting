@@ -7,7 +7,13 @@ import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
+import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
+import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
+import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
+import com.example.accounting.application.port.out.DeleteJournalEntryResult;
+import com.example.accounting.application.port.out.GetJournalEntriesResult;
+import com.example.accounting.application.port.out.JournalEntryDetailResult;
 import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.Email;
@@ -16,10 +22,14 @@ import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
+import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.DeleteJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.JournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryResponse;
+import com.example.accounting.infrastructure.web.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,6 +49,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,6 +59,7 @@ import static org.mockito.Mockito.when;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("仕訳登録コントローラ")
+@SuppressWarnings("PMD.ExcessiveImports")
 class JournalEntryControllerTest {
 
     @Mock
@@ -299,6 +311,201 @@ class JournalEntryControllerTest {
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("仕訳のバージョンが一致しません");
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳一覧取得")
+    class FindAllPaged {
+
+        @Test
+        @DisplayName("デフォルトパラメータで一覧を取得できる")
+        void shouldReturnPagedResults() {
+            GetJournalEntriesResult result = GetJournalEntriesResult.empty(0, 20);
+            when(getJournalEntriesUseCase.execute(any(GetJournalEntriesQuery.class))).thenReturn(result);
+
+            ResponseEntity<GetJournalEntriesResult> response =
+                    journalEntryController.findAllPaged(0, 20, null, null, null);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().content()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("ステータスフィルタ付きで一覧を取得できる")
+        void shouldReturnPagedResultsWithStatusFilter() {
+            GetJournalEntriesResult result = GetJournalEntriesResult.empty(0, 20);
+            when(getJournalEntriesUseCase.execute(any(GetJournalEntriesQuery.class))).thenReturn(result);
+
+            ResponseEntity<GetJournalEntriesResult> response =
+                    journalEntryController.findAllPaged(0, 20, List.of("DRAFT"), null, null);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
+
+        @Test
+        @DisplayName("日付範囲フィルタ付きで一覧を取得できる")
+        void shouldReturnPagedResultsWithDateFilter() {
+            GetJournalEntriesResult result = GetJournalEntriesResult.empty(0, 20);
+            when(getJournalEntriesUseCase.execute(any(GetJournalEntriesQuery.class))).thenReturn(result);
+
+            ResponseEntity<GetJournalEntriesResult> response =
+                    journalEntryController.findAllPaged(0, 20, null,
+                            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳検索")
+    class SearchJournalEntries {
+
+        @Test
+        @DisplayName("全条件指定で検索できる")
+        void shouldSearchWithAllCriteria() {
+            GetJournalEntriesResult result = GetJournalEntriesResult.empty(0, 20);
+            when(searchJournalEntriesUseCase.execute(any(SearchJournalEntriesQuery.class))).thenReturn(result);
+
+            ResponseEntity<GetJournalEntriesResult> response =
+                    journalEntryController.search(0, 20, List.of("DRAFT"),
+                            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31),
+                            100, new BigDecimal("1000"), new BigDecimal("5000"), "売上");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("条件なしで検索できる")
+        void shouldSearchWithNoCriteria() {
+            GetJournalEntriesResult result = GetJournalEntriesResult.empty(0, 20);
+            when(searchJournalEntriesUseCase.execute(any(SearchJournalEntriesQuery.class))).thenReturn(result);
+
+            ResponseEntity<GetJournalEntriesResult> response =
+                    journalEntryController.search(0, 20, null, null, null, null, null, null, null);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳詳細取得")
+    class FindById {
+
+        @Test
+        @DisplayName("IDで仕訳詳細を取得できる")
+        void shouldReturnJournalEntryById() {
+            JournalEntryDetailResult detail = new JournalEntryDetailResult(
+                    1, LocalDate.of(2024, 1, 31), "売上計上", "DRAFT", 1,
+                    List.of(new JournalEntryDetailResult.JournalEntryLineDetail(
+                            1, 100, "1101", "現金", new BigDecimal("1000"), null
+                    ))
+            );
+            when(getJournalEntryUseCase.findById(1)).thenReturn(Optional.of(detail));
+
+            ResponseEntity<JournalEntryResponse> response = journalEntryController.findById(1);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("存在しない場合は404を返す")
+        void shouldReturn404WhenNotFound() {
+            when(getJournalEntryUseCase.findById(999)).thenReturn(Optional.empty());
+
+            ResponseEntity<JournalEntryResponse> response = journalEntryController.findById(999);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳削除")
+    class DeleteJournalEntry {
+
+        @Test
+        @DisplayName("削除成功時は200を返す")
+        void shouldReturnOkWhenDeleteSucceeds() {
+            when(deleteJournalEntryUseCase.execute(any(DeleteJournalEntryCommand.class)))
+                    .thenReturn(DeleteJournalEntryResult.ofSuccess());
+
+            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(1);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isTrue();
+        }
+
+        @Test
+        @DisplayName("仕訳が見つからない場合は404を返す")
+        void shouldReturn404WhenNotFound() {
+            when(deleteJournalEntryUseCase.execute(any(DeleteJournalEntryCommand.class)))
+                    .thenReturn(DeleteJournalEntryResult.ofFailure("仕訳が見つかりません"));
+
+            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(999);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("削除不可の場合は400を返す")
+        void shouldReturn400WhenDeleteNotAllowed() {
+            when(deleteJournalEntryUseCase.execute(any(DeleteJournalEntryCommand.class)))
+                    .thenReturn(DeleteJournalEntryResult.ofFailure("下書き状態の仕訳のみ削除可能です"));
+
+            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(1);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳編集 - OptimisticLockException")
+    class UpdateJournalEntryOptimisticLock {
+
+        @Test
+        @DisplayName("OptimisticLockException発生時は409を返す")
+        void shouldReturn409WhenOptimisticLockExceptionThrown() {
+            UpdateJournalEntryRequest request = new UpdateJournalEntryRequest(
+                    LocalDate.of(2024, 2, 10), "摘要更新",
+                    List.of(new UpdateJournalEntryRequest.JournalEntryLineRequest(1, 1,
+                            new BigDecimal("2000"), null)),
+                    1
+            );
+            when(updateJournalEntryUseCase.execute(any()))
+                    .thenThrow(new OptimisticLockException("他のユーザーが更新済み"));
+
+            ResponseEntity<UpdateJournalEntryResponse> response =
+                    journalEntryController.update(10, request, principal("user1"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().errorMessage()).isEqualTo("他のユーザーが更新済み");
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳登録 - ユーザー不在")
+    class CreateJournalEntryUserNotFound {
+
+        @Test
+        @DisplayName("ユーザーが見つからない場合はBusinessExceptionをスローする")
+        void shouldThrowWhenUserNotFound() {
+            CreateJournalEntryRequest request = new CreateJournalEntryRequest(
+                    LocalDate.of(2024, 1, 31), "売上計上",
+                    List.of(new CreateJournalEntryRequest.JournalEntryLineRequest(1, 1,
+                            new BigDecimal("1000"), null))
+            );
+            when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> journalEntryController.create(request, principal("unknown")))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("ユーザーが存在しません");
         }
     }
 

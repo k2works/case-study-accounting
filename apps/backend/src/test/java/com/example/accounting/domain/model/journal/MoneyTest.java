@@ -62,6 +62,26 @@ class MoneyTest {
     }
 
     @Test
+    @DisplayName("add に null を渡すと例外をスローする")
+    void shouldThrowExceptionWhenAddNull() {
+        Money base = Money.of(new BigDecimal("100"));
+
+        assertThatThrownBy(() -> base.add(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("加算対象の金額は必須");
+    }
+
+    @Test
+    @DisplayName("subtract に null を渡すと例外をスローする")
+    void shouldThrowExceptionWhenSubtractNull() {
+        Money base = Money.of(new BigDecimal("100"));
+
+        assertThatThrownBy(() -> base.subtract(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("減算対象の金額は必須");
+    }
+
+    @Test
     @DisplayName("減算結果が負になる場合は例外をスローする")
     void shouldThrowExceptionWhenSubtractBecomesNegative() {
         Money base = Money.of(new BigDecimal("100"));
