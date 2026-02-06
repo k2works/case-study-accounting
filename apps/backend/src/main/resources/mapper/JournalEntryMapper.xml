@@ -57,6 +57,14 @@
         <result property="creditAmount" column="credit_amount"/>
     </resultMap>
 
+    <resultMap id="dailyBalanceEntryResultMap"
+               type="com.example.accounting.infrastructure.persistence.entity.DailyBalanceEntryEntity">
+        <result property="date" column="date"/>
+        <result property="debitTotal" column="debit_total"/>
+        <result property="creditTotal" column="credit_total"/>
+        <result property="transactionCount" column="transaction_count"/>
+    </resultMap>
+
     <!-- INSERT -->
     <insert id="insert" parameterType="com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity"
             useGeneratedKeys="true" keyProperty="id">
@@ -401,6 +409,28 @@
         WHERE je.status = 'POSTED'
           AND jel.account_id = #{accountId}
           AND je.journal_date <![CDATA[<]]> #{date}
+    </select>
+
+    <select id="findDailyBalanceByAccountAndPeriod" resultMap="dailyBalanceEntryResultMap">
+        SELECT
+            je.journal_date AS date,
+            SUM(jel.debit_amount) AS debit_total,
+            SUM(jel.credit_amount) AS credit_total,
+            COUNT(DISTINCT je.id) AS transaction_count
+        FROM journal_entries je
+        INNER JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            je.status = 'POSTED'
+            AND jel.account_id = #{accountId}
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+        GROUP BY je.journal_date
+        ORDER BY je.journal_date ASC
     </select>
 
 </mapper>

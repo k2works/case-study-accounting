@@ -615,6 +615,64 @@ const mockGeneralLedgerEntries: GeneralLedgerEntry[] = [
   },
 ];
 
+// 日次残高モックデータ
+interface DailyBalanceEntry {
+  date: string;
+  debitTotal: number;
+  creditTotal: number;
+  balance: number;
+  transactionCount: number;
+}
+
+interface DailyBalanceResult {
+  accountId: number;
+  accountCode: string;
+  accountName: string;
+  openingBalance: number;
+  debitTotal: number;
+  creditTotal: number;
+  closingBalance: number;
+  entries: DailyBalanceEntry[];
+}
+
+const mockDailyBalanceEntries: DailyBalanceEntry[] = [
+  {
+    date: '2024-04-01',
+    debitTotal: 10000,
+    creditTotal: 0,
+    balance: 10000,
+    transactionCount: 2,
+  },
+  {
+    date: '2024-04-02',
+    debitTotal: 5000,
+    creditTotal: 2000,
+    balance: 13000,
+    transactionCount: 3,
+  },
+  {
+    date: '2024-04-03',
+    debitTotal: 0,
+    creditTotal: 4000,
+    balance: 9000,
+    transactionCount: 1,
+  },
+  {
+    date: '2024-04-04',
+    debitTotal: 15000,
+    creditTotal: 0,
+    balance: 24000,
+    transactionCount: 4,
+  },
+  {
+    date: '2024-04-05',
+    debitTotal: 2000,
+    creditTotal: 7000,
+    balance: 19000,
+    transactionCount: 2,
+  },
+];
+
 // 総勘定元帳ヘルパー関数
 const filterEntriesByDateRange = (
   entries: GeneralLedgerEntry[],
@@ -636,6 +694,29 @@ const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedge
   return entries.map((entry) => {
     runningBalance = runningBalance + entry.debitAmount - entry.creditAmount;
     return { ...entry, runningBalance };
+  });
+};
+
+const filterDailyEntriesByDateRange = (
+  entries: DailyBalanceEntry[],
+  dateFrom: string | null,
+  dateTo: string | null
+): DailyBalanceEntry[] => {
+  let filtered = [...entries];
+  if (dateFrom) {
+    filtered = filtered.filter((entry) => entry.date >= dateFrom);
+  }
+  if (dateTo) {
+    filtered = filtered.filter((entry) => entry.date <= dateTo);
+  }
+  return filtered;
+};
+
+const recalculateDailyBalances = (entries: DailyBalanceEntry[]): DailyBalanceEntry[] => {
+  let balance = 0;
+  return entries.map((entry) => {
+    balance = balance + entry.debitTotal - entry.creditTotal;
+    return { ...entry, balance };
   });
 };
 
@@ -666,6 +747,26 @@ const buildGeneralLedgerResult = (
   };
 };
 
+const buildDailyBalanceResult = (
+  entries: DailyBalanceEntry[],
+  accountId: number
+): DailyBalanceResult => {
+  const debitTotal = entries.reduce((sum, e) => sum + e.debitTotal, 0);
+  const creditTotal = entries.reduce((sum, e) => sum + e.creditTotal, 0);
+  const closingBalance = entries.length > 0 ? entries[entries.length - 1].balance : 0;
+
+  return {
+    accountId,
+    accountCode: accountId === 1 ? '1000' : '2000',
+    accountName: accountId === 1 ? '現金預金' : '買掛金',
+    openingBalance: 0,
+    debitTotal,
+    creditTotal,
+    closingBalance,
+    entries,
+  };
+};
+
 /**
  * 総勘定元帳関連のハンドラー
  */
@@ -693,6 +794,28 @@ export const generalLedgerHandlers = [
 ];
 
 /**
+ * 日次残高関連のハンドラー
+ */
+export const dailyBalanceHandlers = [
+  http.get('*/daily-balance', ({ request }) => {
+    const url = new URL(request.url);
+    const accountId = parseInt(url.searchParams.get('accountId') || '0', 10);
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+
+    if (!accountId) {
+      return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
+    }
+
+    const filtered = filterDailyEntriesByDateRange(mockDailyBalanceEntries, dateFrom, dateTo);
+    const withBalances = recalculateDailyBalances(filtered);
+    const result = buildDailyBalanceResult(withBalances, accountId);
+
+    return HttpResponse.json(result);
+  }),
+];
+
+/**
  * すべてのハンドラー
  */
 export const handlers = [
@@ -700,4 +823,5 @@ export const handlers = [
   ...accountHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
+  ...dailyBalanceHandlers,
 ];
