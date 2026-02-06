@@ -20,18 +20,13 @@ const MENU_ITEMS: MenuItem[] = [
     icon: 'dashboard',
   },
   {
-    id: 'journals',
-    label: '仕訳管理',
+    id: 'journal-entry',
+    label: '仕訳',
     icon: 'book',
+    roles: ['ADMIN', 'MANAGER', 'USER'],
     children: [
-      { id: 'journals-list', label: '仕訳一覧', path: '/journals' },
-      { id: 'journals-new', label: '仕訳入力', path: '/journals/new' },
-      {
-        id: 'journals-approval',
-        label: '承認待ち',
-        path: '/journals/approval',
-        roles: ['ADMIN', 'MANAGER'],
-      },
+      { id: 'journal-entry-list', label: '仕訳一覧', path: '/journal/entries' },
+      { id: 'journal-entry-new', label: '仕訳入力', path: '/journal/entries/new' },
     ],
   },
   {
@@ -39,7 +34,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: '元帳・残高',
     icon: 'ledger',
     children: [
-      { id: 'ledger-general', label: '総勘定元帳', path: '/ledger/general' },
+      { id: 'ledger-general', label: '総勘定元帳', path: '/general-ledger' },
       { id: 'ledger-subsidiary', label: '補助元帳', path: '/ledger/subsidiary' },
       { id: 'ledger-trial-balance', label: '残高試算表', path: '/ledger/trial-balance' },
     ],

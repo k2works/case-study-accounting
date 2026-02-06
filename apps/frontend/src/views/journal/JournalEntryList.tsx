@@ -1,0 +1,188 @@
+import React, { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { JournalEntrySummary } from '../../api/getJournalEntries';
+import { deleteJournalEntry, deleteJournalEntryErrorMessage } from '../../api/deleteJournalEntry';
+import {
+  ErrorMessage,
+  SuccessNotification,
+  Table,
+  TableColumn,
+  Button,
+  Pagination,
+} from '../common';
+import { JournalEntryFilter, JournalEntryFilterValues } from './JournalEntryFilter';
+import './JournalEntryList.css';
+
+interface JournalEntryListProps {
+  entries: JournalEntrySummary[];
+  filterValues: JournalEntryFilterValues;
+  onFilterChange: (values: JournalEntryFilterValues) => void;
+  onSearch: () => void;
+  onReset: () => void;
+  onDelete: () => void;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (size: number) => void;
+}
+
+const statusLabels: Record<string, string> = {
+  DRAFT: '下書き',
+  PENDING: '承認待ち',
+  APPROVED: '承認済み',
+  CONFIRMED: '確定',
+};
+
+const formatAmount = (amount: number): string => {
+  return amount.toLocaleString('ja-JP', { maximumFractionDigits: 0 });
+};
+
+/**
+ * 仕訳一覧コンポーネント
+ */
+export const JournalEntryList: React.FC<JournalEntryListProps> = ({
+  entries,
+  filterValues,
+  onFilterChange,
+  onSearch,
+  onReset,
+  onDelete,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  onItemsPerPageChange,
+}) => {
+  const navigate = useNavigate();
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
+  const [deletingEntryId, setDeletingEntryId] = useState<number | null>(null);
+
+  const handleEdit = useCallback(
+    (entry: JournalEntrySummary) => {
+      navigate(`/journal/entries/${entry.journalEntryId}/edit`);
+    },
+    [navigate]
+  );
+
+  const handleDelete = useCallback(
+    async (entry: JournalEntrySummary) => {
+      const isConfirmed = window.confirm(`仕訳「${entry.description}」を削除しますか？`);
+      if (!isConfirmed) {
+        return;
+      }
+
+      setDeleteErrorMessage(null);
+      setDeleteSuccessMessage(null);
+      setDeletingEntryId(entry.journalEntryId);
+
+      try {
+        const response = await deleteJournalEntry(entry.journalEntryId);
+        if (!response.success) {
+          throw new Error(response.errorMessage || '仕訳の削除に失敗しました');
+        }
+        setDeleteSuccessMessage(response.message || '仕訳を削除しました');
+        onDelete();
+      } catch (error) {
+        setDeleteErrorMessage(deleteJournalEntryErrorMessage(error));
+      } finally {
+        setDeletingEntryId(null);
+      }
+    },
+    [onDelete]
+  );
+
+  const columns = useMemo<TableColumn<JournalEntrySummary>[]>(
+    () => [
+      { key: 'journalEntryId', header: '仕訳番号', width: '100px' },
+      { key: 'journalDate', header: '仕訳日付', width: '120px' },
+      { key: 'description', header: '摘要' },
+      {
+        key: 'totalDebitAmount',
+        header: '借方金額',
+        width: '130px',
+        align: 'right',
+        render: (value) => <>{formatAmount(value as number)}</>,
+      },
+      {
+        key: 'totalCreditAmount',
+        header: '貸方金額',
+        width: '130px',
+        align: 'right',
+        render: (value) => <>{formatAmount(value as number)}</>,
+      },
+      {
+        key: 'status',
+        header: 'ステータス',
+        width: '110px',
+        render: (value) => <>{statusLabels[value as string] || String(value)}</>,
+      },
+      {
+        key: 'actions',
+        header: '操作',
+        width: '180px',
+        align: 'center',
+        render: (_, row) => (
+          <div className="journal-entry-list__actions">
+            <Button variant="text" size="small" onClick={() => handleEdit(row)}>
+              編集
+            </Button>
+            <Button
+              variant="danger"
+              size="small"
+              onClick={() => void handleDelete(row)}
+              disabled={deletingEntryId === row.journalEntryId || row.status !== 'DRAFT'}
+            >
+              削除
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [deletingEntryId, handleDelete, handleEdit]
+  );
+
+  return (
+    <div className="journal-entry-list" data-testid="journal-entry-list">
+      <JournalEntryFilter
+        values={filterValues}
+        onChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+      />
+      {deleteSuccessMessage && (
+        <div className="journal-entry-list__notification">
+          <SuccessNotification
+            message={deleteSuccessMessage}
+            onDismiss={() => setDeleteSuccessMessage(null)}
+          />
+        </div>
+      )}
+      {deleteErrorMessage && (
+        <div className="journal-entry-list__notification">
+          <ErrorMessage
+            message={deleteErrorMessage}
+            onDismiss={() => setDeleteErrorMessage(null)}
+          />
+        </div>
+      )}
+      <Table
+        columns={columns}
+        data={entries}
+        keyField="journalEntryId"
+        emptyMessage="仕訳が登録されていません"
+      />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={onPageChange}
+        onItemsPerPageChange={onItemsPerPageChange}
+      />
+    </div>
+  );
+};

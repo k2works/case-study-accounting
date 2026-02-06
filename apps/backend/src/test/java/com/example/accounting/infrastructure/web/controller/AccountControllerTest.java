@@ -1,6 +1,9 @@
 package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateAccountUseCase;
+import com.example.accounting.application.port.in.DeleteAccountCommand;
+import com.example.accounting.application.port.in.DeleteAccountResult;
+import com.example.accounting.application.port.in.DeleteAccountUseCase;
 import com.example.accounting.application.port.in.UpdateAccountUseCase;
 import com.example.accounting.application.port.in.command.CreateAccountCommand;
 import com.example.accounting.application.port.in.command.UpdateAccountCommand;
@@ -14,8 +17,10 @@ import com.example.accounting.domain.model.account.AccountType;
 import com.example.accounting.infrastructure.web.dto.AccountResponse;
 import com.example.accounting.infrastructure.web.dto.CreateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
+import com.example.accounting.infrastructure.web.dto.DeleteAccountResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountResponse;
+import com.example.accounting.infrastructure.web.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,7 +36,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,13 +56,21 @@ class AccountControllerTest {
     private UpdateAccountUseCase updateAccountUseCase;
 
     @Mock
+    private DeleteAccountUseCase deleteAccountUseCase;
+
+    @Mock
     private AccountRepository accountRepository;
 
     private AccountController accountController;
 
     @BeforeEach
     void setUp() {
-        accountController = new AccountController(createAccountUseCase, updateAccountUseCase, accountRepository);
+        accountController = new AccountController(
+                createAccountUseCase,
+                updateAccountUseCase,
+                deleteAccountUseCase,
+                accountRepository
+        );
     }
 
     @Nested
@@ -233,7 +248,7 @@ class AccountControllerTest {
             when(accountRepository.findAll()).thenReturn(List.of(account1, account2));
 
             // When
-            ResponseEntity<List<AccountResponse>> response = accountController.findAll();
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, null);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -252,7 +267,7 @@ class AccountControllerTest {
             when(accountRepository.findAll()).thenReturn(List.of());
 
             // When
-            ResponseEntity<List<AccountResponse>> response = accountController.findAll();
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, null);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -300,6 +315,122 @@ class AccountControllerTest {
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("勘定科目削除")
+    class DeleteAccount {
+
+        @Test
+        @DisplayName("削除成功時は200を返す")
+        void shouldReturnOkWhenDeleteSucceeds() {
+            when(deleteAccountUseCase.execute(any(DeleteAccountCommand.class)))
+                    .thenReturn(DeleteAccountResult.success(1));
+
+            ResponseEntity<DeleteAccountResponse> response = accountController.deleteAccount(1);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isTrue();
+            assertThat(response.getBody().accountId()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("勘定科目が見つからない場合は404を返す")
+        void shouldReturn404WhenAccountNotFound() {
+            when(deleteAccountUseCase.execute(any(DeleteAccountCommand.class)))
+                    .thenReturn(DeleteAccountResult.failure("勘定科目が見つかりません"));
+
+            ResponseEntity<DeleteAccountResponse> response = accountController.deleteAccount(999);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+        }
+
+        @Test
+        @DisplayName("使用中の勘定科目の場合は409を返す")
+        void shouldReturn409WhenAccountInUse() {
+            when(deleteAccountUseCase.execute(any(DeleteAccountCommand.class)))
+                    .thenReturn(DeleteAccountResult.failure("この勘定科目は仕訳で使用されているため削除できません"));
+
+            ResponseEntity<DeleteAccountResponse> response = accountController.deleteAccount(1);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+        }
+
+        @Test
+        @DisplayName("その他のエラーの場合は400を返す")
+        void shouldReturn400WhenOtherError() {
+            when(deleteAccountUseCase.execute(any(DeleteAccountCommand.class)))
+                    .thenReturn(DeleteAccountResult.failure("不明なエラー"));
+
+            ResponseEntity<DeleteAccountResponse> response = accountController.deleteAccount(1);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Nested
+    @DisplayName("勘定科目検索")
+    class SearchAccounts {
+
+        @Test
+        @DisplayName("タイプで検索できる")
+        void shouldSearchByType() {
+            Account account = Account.reconstruct(
+                    AccountId.of(1), AccountCode.of("1100"), "現金", AccountType.ASSET);
+            when(accountRepository.search(eq(AccountType.ASSET), eq(null)))
+                    .thenReturn(List.of(account));
+
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll("ASSET", null);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("キーワードで検索できる")
+        void shouldSearchByKeyword() {
+            Account account = Account.reconstruct(
+                    AccountId.of(1), AccountCode.of("1100"), "現金", AccountType.ASSET);
+            when(accountRepository.search(eq(null), eq("現金")))
+                    .thenReturn(List.of(account));
+
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, "現金");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("空文字のタイプは無視される")
+        void shouldIgnoreBlankType() {
+            when(accountRepository.findAll()).thenReturn(List.of());
+
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll("  ", null);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
+
+        @Test
+        @DisplayName("空文字のキーワードは無視される")
+        void shouldIgnoreBlankKeyword() {
+            when(accountRepository.findAll()).thenReturn(List.of());
+
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, "  ");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
+
+        @Test
+        @DisplayName("不正なタイプの場合はBusinessExceptionをスローする")
+        void shouldThrowBusinessExceptionForInvalidType() {
+            assertThatThrownBy(() -> accountController.findAll("INVALID", null))
+                    .isInstanceOf(BusinessException.class);
         }
     }
 }

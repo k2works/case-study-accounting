@@ -100,12 +100,17 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       title={title}
       actions={
         <>
-          <button className="modal__btn modal__btn--secondary" onClick={onClose}>
+          <button
+            className="modal__btn modal__btn--secondary"
+            onClick={onClose}
+            data-testid="confirm-modal-cancel"
+          >
             {cancelLabel}
           </button>
           <button
             className={`modal__btn ${isDestructive ? 'modal__btn--danger' : 'modal__btn--primary'}`}
             onClick={onConfirm}
+            data-testid="confirm-modal-confirm"
           >
             {confirmLabel}
           </button>

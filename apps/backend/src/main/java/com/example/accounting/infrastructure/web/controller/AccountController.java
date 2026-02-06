@@ -1,6 +1,8 @@
 package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateAccountUseCase;
+import com.example.accounting.application.port.in.DeleteAccountCommand;
+import com.example.accounting.application.port.in.DeleteAccountUseCase;
 import com.example.accounting.application.port.in.UpdateAccountUseCase;
 import com.example.accounting.application.port.in.command.CreateAccountCommand;
 import com.example.accounting.application.port.in.command.UpdateAccountCommand;
@@ -9,9 +11,12 @@ import com.example.accounting.application.port.out.CreateAccountResult;
 import com.example.accounting.application.port.out.UpdateAccountResult;
 import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountId;
+import com.example.accounting.domain.model.account.AccountType;
+import com.example.accounting.infrastructure.web.exception.BusinessException;
 import com.example.accounting.infrastructure.web.dto.AccountResponse;
 import com.example.accounting.infrastructure.web.dto.CreateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
+import com.example.accounting.infrastructure.web.dto.DeleteAccountResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,14 +26,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -41,13 +49,16 @@ public class AccountController {
 
     private final CreateAccountUseCase createAccountUseCase;
     private final UpdateAccountUseCase updateAccountUseCase;
+    private final DeleteAccountUseCase deleteAccountUseCase;
     private final AccountRepository accountRepository;
 
     public AccountController(CreateAccountUseCase createAccountUseCase,
                              UpdateAccountUseCase updateAccountUseCase,
+                             DeleteAccountUseCase deleteAccountUseCase,
                              AccountRepository accountRepository) {
         this.createAccountUseCase = createAccountUseCase;
         this.updateAccountUseCase = updateAccountUseCase;
+        this.deleteAccountUseCase = deleteAccountUseCase;
         this.accountRepository = accountRepository;
     }
 
@@ -113,11 +124,40 @@ public class AccountController {
     )
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<AccountResponse>> findAll() {
-        List<AccountResponse> responses = accountRepository.findAll().stream()
+    public ResponseEntity<List<AccountResponse>> findAll(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String keyword) {
+        AccountType accountType = parseAccountType(type);
+        String normalizedKeyword = normalizeKeyword(keyword);
+
+        List<Account> accounts = fetchAccounts(accountType, normalizedKeyword);
+
+        List<AccountResponse> responses = accounts.stream()
                 .map(this::toResponse)
                 .toList();
         return ResponseEntity.ok(responses);
+    }
+
+    private AccountType parseAccountType(String type) {
+        if (type == null || type.isBlank()) {
+            return null;
+        }
+        try {
+            return AccountType.fromCode(type);
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException("Invalid Parameter", ex.getMessage(), ex);
+        }
+    }
+
+    private String normalizeKeyword(String keyword) {
+        return (keyword != null && !keyword.isBlank()) ? keyword : null;
+    }
+
+    private List<Account> fetchAccounts(AccountType accountType, String keyword) {
+        if (accountType != null || keyword != null) {
+            return accountRepository.search(accountType, keyword);
+        }
+        return accountRepository.findAll();
     }
 
     /**
@@ -193,6 +233,52 @@ public class AccountController {
             ));
         }
         return ResponseEntity.badRequest().body(UpdateAccountResponse.failure(result.errorMessage()));
+    }
+
+    /**
+     * 勘定科目削除
+     */
+    @Operation(
+            summary = "勘定科目削除",
+            description = "指定されたIDの勘定科目を削除します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "削除成功",
+            content = @Content(schema = @Schema(implementation = DeleteAccountResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "勘定科目が存在しない",
+            content = @Content(schema = @Schema(implementation = DeleteAccountResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "409",
+            description = "使用中の勘定科目",
+            content = @Content(schema = @Schema(implementation = DeleteAccountResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "403",
+            description = "権限不足",
+            content = @Content
+    )
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<DeleteAccountResponse> deleteAccount(@PathVariable Integer id) {
+        DeleteAccountCommand command = new DeleteAccountCommand(id);
+        var result = deleteAccountUseCase.execute(command);
+        DeleteAccountResponse response = DeleteAccountResponse.from(result);
+
+        if (result.success()) {
+            return ResponseEntity.ok(response);
+        }
+        if ("勘定科目が見つかりません".equals(result.errorMessage())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        if ("この勘定科目は仕訳で使用されているため削除できません".equals(result.errorMessage())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+        return ResponseEntity.badRequest().body(response);
     }
 
     private AccountResponse toResponse(Account account) {

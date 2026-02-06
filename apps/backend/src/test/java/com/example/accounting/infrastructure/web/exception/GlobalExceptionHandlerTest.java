@@ -1,5 +1,6 @@
 package com.example.accounting.infrastructure.web.exception;
 
+import com.example.accounting.domain.shared.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -218,6 +219,21 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody().status()).isEqualTo(403);
         assertThat(response.getBody().error()).isEqualTo("Access Denied");
         assertThat(response.getBody().message()).isEqualTo("You do not have permission to access this resource");
+        assertThat(response.getBody().path()).isEqualTo("/api/test");
+    }
+
+    @Test
+    @DisplayName("OptimisticLockExceptionを409で返す")
+    void shouldReturn409ForOptimisticLockException() {
+        OptimisticLockException ex = new OptimisticLockException("他のユーザーによって更新されています");
+
+        ResponseEntity<ErrorResponse> response = handler.handleOptimisticLockException(ex, request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().status()).isEqualTo(409);
+        assertThat(response.getBody().error()).isEqualTo("Optimistic Lock Error");
+        assertThat(response.getBody().message()).isEqualTo("他のユーザーによって更新されています");
         assertThat(response.getBody().path()).isEqualTo("/api/test");
     }
 

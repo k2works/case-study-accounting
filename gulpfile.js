@@ -11,6 +11,7 @@ import sonarTasks from './ops/scripts/sonar.js';
 import schemaspyTasks from './ops/scripts/schemaspy.js';
 import deployTasks from './ops/scripts/deploy.js';
 import buildTasks from './ops/scripts/build.js';
+import devTasks from './ops/scripts/dev.js';
 
 // Load gulp tasks from script modules
 mkdocsTasks(gulp);
@@ -19,6 +20,7 @@ sonarTasks(gulp);
 schemaspyTasks(gulp);
 deployTasks(gulp);
 buildTasks(gulp);
+devTasks(gulp);
 
 export const dev = gulp.series('mkdocs:serve', 'mkdocs:open', 'sonar:start', 'schemaspy:regenerate', 'build:dev:start');
 

@@ -176,6 +176,42 @@ export const accountHandlers = [
     });
   }),
 
+  // 勘定科目削除（正規表現で明確にマッチ）
+  http.delete(/\/accounts\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/accounts\/(\d+)$/);
+    const id = match ? match[1] : '0';
+
+    // 存在しない勘定科目のチェック（ID が 999 の場合はエラー）
+    if (id === '999') {
+      return HttpResponse.json(
+        {
+          success: false,
+          errorMessage: '勘定科目が見つかりません',
+        },
+        { status: 404 }
+      );
+    }
+
+    // 使用中勘定科目のチェック（ID が 888 の場合は使用中エラー）
+    if (id === '888') {
+      return HttpResponse.json(
+        {
+          success: false,
+          errorMessage: 'この勘定科目は仕訳で使用されているため削除できません',
+        },
+        { status: 409 }
+      );
+    }
+
+    // 成功ケース
+    return HttpResponse.json({
+      success: true,
+      accountId: Number(id),
+      message: '勘定科目を削除しました',
+    });
+  }),
+
   // 勘定科目登録
   http.post('*/accounts', async ({ request }) => {
     const body = (await request.json()) as {
@@ -223,7 +259,445 @@ export const accountHandlers = [
   }),
 ];
 
+// モック仕訳データ
+interface JournalEntrySummary {
+  journalEntryId: number;
+  journalDate: string;
+  description: string;
+  totalDebitAmount: number;
+  totalCreditAmount: number;
+  status: string;
+  version: number;
+}
+
+const mockJournalEntries: JournalEntrySummary[] = [
+  {
+    journalEntryId: 1,
+    journalDate: '2024-04-01',
+    description: '現金売上',
+    totalDebitAmount: 10000,
+    totalCreditAmount: 10000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 2,
+    journalDate: '2024-04-05',
+    description: '仕入支払',
+    totalDebitAmount: 5000,
+    totalCreditAmount: 5000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 3,
+    journalDate: '2024-04-10',
+    description: '経費精算',
+    totalDebitAmount: 3000,
+    totalCreditAmount: 3000,
+    status: 'APPROVED',
+    version: 1,
+  },
+  {
+    journalEntryId: 4,
+    journalDate: '2024-04-15',
+    description: '給与支払',
+    totalDebitAmount: 200000,
+    totalCreditAmount: 200000,
+    status: 'CONFIRMED',
+    version: 1,
+  },
+  {
+    journalEntryId: 5,
+    journalDate: '2024-04-20',
+    description: '備品購入',
+    totalDebitAmount: 50000,
+    totalCreditAmount: 50000,
+    status: 'PENDING',
+    version: 1,
+  },
+];
+
+let nextJournalEntryId = 6;
+
+type MockEntry = (typeof mockJournalEntries)[number];
+
+const applySearchFilters = (entries: MockEntry[], params: URLSearchParams): MockEntry[] => {
+  let filtered = [...entries];
+  const statusParams = params.getAll('status');
+  if (statusParams.length > 0) {
+    filtered = filtered.filter((e) => statusParams.includes(e.status));
+  }
+  const dateFrom = params.get('dateFrom');
+  if (dateFrom) filtered = filtered.filter((e) => e.journalDate >= dateFrom);
+  const dateTo = params.get('dateTo');
+  if (dateTo) filtered = filtered.filter((e) => e.journalDate <= dateTo);
+  return filtered;
+};
+
+const applyAmountAndDescriptionFilters = (
+  entries: MockEntry[],
+  params: URLSearchParams
+): MockEntry[] => {
+  let filtered = [...entries];
+  const amountFrom = params.get('amountFrom');
+  if (amountFrom) filtered = filtered.filter((e) => e.totalDebitAmount >= parseFloat(amountFrom));
+  const amountTo = params.get('amountTo');
+  if (amountTo) filtered = filtered.filter((e) => e.totalDebitAmount <= parseFloat(amountTo));
+  const description = params.get('description');
+  if (description) {
+    const desc = description.toLowerCase();
+    filtered = filtered.filter((e) => e.description.toLowerCase().includes(desc));
+  }
+  return filtered;
+};
+
+/**
+ * 仕訳関連のハンドラー
+ */
+export const journalEntryHandlers = [
+  // 仕訳検索 (US-JNL-005) - must be before the list handler
+  http.get(/\/journal-entries\/search/, ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+
+    let filtered = applySearchFilters(mockJournalEntries, url.searchParams);
+    filtered = applyAmountAndDescriptionFilters(filtered, url.searchParams);
+
+    const totalElements = filtered.length;
+    const totalPages = Math.ceil(totalElements / size);
+    const start = page * size;
+    const content = filtered.slice(start, start + size);
+
+    return HttpResponse.json({
+      content,
+      page,
+      size,
+      totalElements,
+      totalPages,
+    });
+  }),
+  // 仕訳一覧取得（ページネーション対応）
+  http.get(/\/journal-entries\/?$/, ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+    const statusFilter = url.searchParams.getAll('status');
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+
+    // フィルタリング
+    let filtered = [...mockJournalEntries];
+    if (statusFilter.length > 0) {
+      filtered = filtered.filter((entry) => statusFilter.includes(entry.status));
+    }
+    if (dateFrom) {
+      filtered = filtered.filter((entry) => entry.journalDate >= dateFrom);
+    }
+    if (dateTo) {
+      filtered = filtered.filter((entry) => entry.journalDate <= dateTo);
+    }
+
+    // ページネーション
+    const totalElements = filtered.length;
+    const totalPages = Math.ceil(totalElements / size);
+    const start = page * size;
+    const content = filtered.slice(start, start + size);
+
+    return HttpResponse.json({
+      content,
+      page,
+      size,
+      totalElements,
+      totalPages,
+    });
+  }),
+
+  // 仕訳詳細取得
+  http.get(/\/journal-entries\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json({ message: '仕訳が見つかりません' }, { status: 404 });
+    }
+
+    return HttpResponse.json({
+      journalEntryId: entry.journalEntryId,
+      journalDate: entry.journalDate,
+      description: entry.description,
+      status: entry.status,
+      version: entry.version,
+      lines: [
+        {
+          lineNumber: 1,
+          accountId: 1,
+          accountCode: '1000',
+          accountName: '現金預金',
+          debitAmount: entry.totalDebitAmount,
+          creditAmount: 0,
+        },
+        {
+          lineNumber: 2,
+          accountId: 2,
+          accountCode: '4000',
+          accountName: '売上高',
+          debitAmount: 0,
+          creditAmount: entry.totalCreditAmount,
+        },
+      ],
+    });
+  }),
+
+  // 仕訳登録（mockJournalEntries に永続化して一覧・詳細取得で参照可能にする）
+  http.post('*/journal-entries', async ({ request }) => {
+    const body = (await request.json()) as {
+      journalDate: string;
+      description: string;
+      lines?: Array<{
+        lineNumber: number;
+        accountId: number;
+        debitAmount?: number;
+        creditAmount?: number;
+      }>;
+    };
+    const journalEntryId = nextJournalEntryId++;
+
+    const totalDebit = body.lines?.reduce((sum, l) => sum + (l.debitAmount || 0), 0) || 0;
+    const totalCredit = body.lines?.reduce((sum, l) => sum + (l.creditAmount || 0), 0) || 0;
+
+    const newEntry: JournalEntrySummary = {
+      journalEntryId,
+      journalDate: body.journalDate,
+      description: body.description,
+      totalDebitAmount: totalDebit,
+      totalCreditAmount: totalCredit,
+      status: 'DRAFT',
+      version: 1,
+    };
+    mockJournalEntries.unshift(newEntry);
+
+    return HttpResponse.json({
+      success: true,
+      journalEntryId,
+      journalDate: body.journalDate,
+      description: body.description,
+      status: 'DRAFT',
+    });
+  }),
+
+  // 仕訳更新
+  http.put(/\/journal-entries\/(\d+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+    const body = (await request.json()) as {
+      journalDate: string;
+      description: string;
+      version: number;
+    };
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: id,
+      journalDate: body.journalDate,
+      description: body.description,
+      status: entry.status,
+      version: entry.version + 1,
+      message: '仕訳を更新しました',
+    });
+  }),
+
+  // 仕訳削除
+  http.delete(/\/journal-entries\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    if (entry.status !== 'DRAFT') {
+      return HttpResponse.json(
+        { success: false, errorMessage: '下書きステータスの仕訳のみ削除できます' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({
+      success: true,
+      message: '仕訳を削除しました',
+    });
+  }),
+];
+
+// 総勘定元帳モックデータ
+interface GeneralLedgerEntry {
+  journalEntryId: number;
+  journalDate: string;
+  description: string;
+  debitAmount: number;
+  creditAmount: number;
+  runningBalance: number;
+}
+
+interface GeneralLedgerResult {
+  content: GeneralLedgerEntry[];
+  accountId: number;
+  accountCode: string;
+  accountName: string;
+  openingBalance: number;
+  debitTotal: number;
+  creditTotal: number;
+  closingBalance: number;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+const mockGeneralLedgerEntries: GeneralLedgerEntry[] = [
+  {
+    journalEntryId: 1,
+    journalDate: '2024-04-01',
+    description: '現金売上',
+    debitAmount: 10000,
+    creditAmount: 0,
+    runningBalance: 10000,
+  },
+  {
+    journalEntryId: 2,
+    journalDate: '2024-04-05',
+    description: '仕入支払',
+    debitAmount: 0,
+    creditAmount: 5000,
+    runningBalance: 5000,
+  },
+  {
+    journalEntryId: 3,
+    journalDate: '2024-04-10',
+    description: '売上入金',
+    debitAmount: 30000,
+    creditAmount: 0,
+    runningBalance: 35000,
+  },
+  {
+    journalEntryId: 4,
+    journalDate: '2024-06-01',
+    description: '元帳テスト仕訳',
+    debitAmount: 25000,
+    creditAmount: 0,
+    runningBalance: 60000,
+  },
+  {
+    journalEntryId: 5,
+    journalDate: '2024-06-15',
+    description: '詳細遷移テスト',
+    debitAmount: 30000,
+    creditAmount: 0,
+    runningBalance: 90000,
+  },
+];
+
+// 総勘定元帳ヘルパー関数
+const filterEntriesByDateRange = (
+  entries: GeneralLedgerEntry[],
+  dateFrom: string | null,
+  dateTo: string | null
+): GeneralLedgerEntry[] => {
+  let filtered = [...entries];
+  if (dateFrom) {
+    filtered = filtered.filter((entry) => entry.journalDate >= dateFrom);
+  }
+  if (dateTo) {
+    filtered = filtered.filter((entry) => entry.journalDate <= dateTo);
+  }
+  return filtered;
+};
+
+const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedgerEntry[] => {
+  let runningBalance = 0;
+  return entries.map((entry) => {
+    runningBalance = runningBalance + entry.debitAmount - entry.creditAmount;
+    return { ...entry, runningBalance };
+  });
+};
+
+const buildGeneralLedgerResult = (
+  content: GeneralLedgerEntry[],
+  accountId: number,
+  page: number,
+  size: number,
+  totalElements: number
+): GeneralLedgerResult => {
+  const debitTotal = content.reduce((sum, e) => sum + e.debitAmount, 0);
+  const creditTotal = content.reduce((sum, e) => sum + e.creditAmount, 0);
+  const closingBalance = content.length > 0 ? content[content.length - 1].runningBalance : 0;
+
+  return {
+    content,
+    accountId,
+    accountCode: accountId === 1 ? '1000' : '2000',
+    accountName: accountId === 1 ? '現金預金' : '買掛金',
+    openingBalance: 0,
+    debitTotal,
+    creditTotal,
+    closingBalance,
+    page,
+    size,
+    totalElements,
+    totalPages: Math.ceil(totalElements / size),
+  };
+};
+
+/**
+ * 総勘定元帳関連のハンドラー
+ */
+export const generalLedgerHandlers = [
+  http.get('*/general-ledger', ({ request }) => {
+    const url = new URL(request.url);
+    const accountId = parseInt(url.searchParams.get('accountId') || '0', 10);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+
+    if (!accountId) {
+      return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
+    }
+
+    const filtered = filterEntriesByDateRange(mockGeneralLedgerEntries, dateFrom, dateTo);
+    const withBalances = recalculateRunningBalances(filtered);
+    const start = page * size;
+    const content = withBalances.slice(start, start + size);
+    const result = buildGeneralLedgerResult(content, accountId, page, size, withBalances.length);
+
+    return HttpResponse.json(result);
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
-export const handlers = [...authHandlers, ...accountHandlers];
+export const handlers = [
+  ...authHandlers,
+  ...accountHandlers,
+  ...journalEntryHandlers,
+  ...generalLedgerHandlers,
+];

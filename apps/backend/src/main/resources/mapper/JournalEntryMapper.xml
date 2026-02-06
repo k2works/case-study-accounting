@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.accounting.infrastructure.persistence.mapper.JournalEntryMapper">
+
+    <!-- ResultMap 定義 -->
+    <resultMap id="journalEntryResultMap" type="com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity">
+        <id property="id" column="id"/>
+        <result property="journalDate" column="journal_date"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="version" column="version"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="voucherNumber" column="voucher_number"/>
+        <result property="inputDate" column="input_date"/>
+        <result property="closingEntryFlag" column="is_closing_entry"/>
+        <result property="singleEntryFlag" column="is_single_entry"/>
+        <result property="voucherType" column="voucher_type"/>
+        <result property="recurringFlag" column="is_recurring"/>
+        <result property="employeeCode" column="employee_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="redSlipFlag" column="is_red_slip"/>
+        <result property="redBlackVoucherNumber" column="red_black_voucher_number"/>
+        <collection property="lines"
+                    ofType="com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity"
+                    notNullColumn="line_id">
+            <id property="id" column="line_id"/>
+            <result property="journalEntryId" column="line_journal_entry_id"/>
+            <result property="lineNumber" column="line_number"/>
+            <result property="accountId" column="account_id"/>
+            <result property="debitAmount" column="debit_amount"/>
+            <result property="creditAmount" column="credit_amount"/>
+            <result property="lineDescription" column="line_description"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="journalEntryLineResultMap" type="com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity">
+        <id property="id" column="id"/>
+        <result property="journalEntryId" column="journal_entry_id"/>
+        <result property="lineNumber" column="line_number"/>
+        <result property="accountId" column="account_id"/>
+        <result property="debitAmount" column="debit_amount"/>
+        <result property="creditAmount" column="credit_amount"/>
+        <result property="lineDescription" column="line_description"/>
+    </resultMap>
+
+    <resultMap id="journalEntryLineWithHeaderResultMap"
+               type="com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity">
+        <id property="journalEntryId" column="journal_entry_id"/>
+        <result property="journalDate" column="journal_date"/>
+        <result property="description" column="description"/>
+        <result property="lineDescription" column="line_description"/>
+        <result property="debitAmount" column="debit_amount"/>
+        <result property="creditAmount" column="credit_amount"/>
+    </resultMap>
+
+    <!-- INSERT -->
+    <insert id="insert" parameterType="com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO journal_entries (
+            journal_date, description, status, created_by, version
+        ) VALUES (
+            #{journalDate}, #{description}, #{status}, #{createdBy}, 1
+        )
+    </insert>
+
+    <insert id="insertLines" parameterType="java.util.List">
+        INSERT INTO journal_entry_lines (
+            journal_entry_id, line_number, account_id, debit_amount, credit_amount
+        ) VALUES
+        <foreach collection="list" item="line" separator=",">
+            (#{line.journalEntryId}, #{line.lineNumber}, #{line.accountId}, #{line.debitAmount}, #{line.creditAmount})
+        </foreach>
+    </insert>
+
+    <!-- UPDATE -->
+    <update id="update" parameterType="com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity">
+        UPDATE journal_entries SET
+            journal_date = #{journalDate},
+            description = #{description},
+            status = #{status},
+            created_by = #{createdBy},
+            updated_at = CURRENT_TIMESTAMP,
+            version = version + 1
+        WHERE id = #{id}
+          AND version = #{version}
+    </update>
+
+    <delete id="deleteLines">
+        DELETE FROM journal_entry_lines WHERE journal_entry_id = #{journalEntryId}
+    </delete>
+
+    <!-- SELECT by ID -->
+    <select id="findById" resultMap="journalEntryResultMap">
+        SELECT
+            je.id,
+            je.journal_date,
+            je.description,
+            je.status,
+            je.version,
+            je.created_by,
+            je.created_at,
+            je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
+            jel.id AS line_id,
+            jel.journal_entry_id AS line_journal_entry_id,
+            jel.line_number,
+            jel.account_id,
+            jel.debit_amount,
+            jel.credit_amount,
+            jel.line_description
+        FROM journal_entries je
+        LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        WHERE je.id = #{id}
+        ORDER BY jel.line_number ASC
+    </select>
+
+    <!-- SELECT All -->
+    <select id="findAll" resultMap="journalEntryResultMap">
+        SELECT
+            je.id,
+            je.journal_date,
+            je.description,
+            je.status,
+            je.version,
+            je.created_by,
+            je.created_at,
+            je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
+            jel.id AS line_id,
+            jel.journal_entry_id AS line_journal_entry_id,
+            jel.line_number,
+            jel.account_id,
+            jel.debit_amount,
+            jel.credit_amount,
+            jel.line_description
+        FROM journal_entries je
+        LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        ORDER BY je.id ASC, jel.line_number ASC
+    </select>
+
+    <select id="findLinesByJournalEntryId" resultMap="journalEntryLineResultMap">
+        SELECT * FROM journal_entry_lines WHERE journal_entry_id = #{journalEntryId} ORDER BY line_number ASC
+    </select>
+
+    <!-- DELETE by ID -->
+    <delete id="deleteById">
+        DELETE FROM journal_entries WHERE id = #{id}
+    </delete>
+
+    <select id="findByConditions" resultMap="journalEntryResultMap">
+        SELECT
+            je.id,
+            je.journal_date,
+            je.description,
+            je.status,
+            je.version,
+            je.created_by,
+            je.created_at,
+            je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
+            jel.id AS line_id,
+            jel.journal_entry_id AS line_journal_entry_id,
+            jel.line_number,
+            jel.account_id,
+            jel.debit_amount,
+            jel.credit_amount,
+            jel.line_description
+        FROM journal_entries je
+        LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            <if test="statuses != null and statuses.size() > 0">
+                je.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+        ORDER BY je.id ASC, jel.line_number ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByConditions" resultType="long">
+        SELECT COUNT(DISTINCT je.id)
+        FROM journal_entries je
+        <where>
+            <if test="statuses != null and statuses.size() > 0">
+                je.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+    </select>
+
+    <!-- 仕訳検索 (US-JNL-005) -->
+    <select id="searchByConditions" resultMap="journalEntryResultMap">
+        SELECT DISTINCT
+            je.id,
+            je.journal_date,
+            je.description,
+            je.status,
+            je.version,
+            je.created_by,
+            je.created_at,
+            je.updated_at,
+            je.voucher_number,
+            je.input_date,
+            je.is_closing_entry,
+            je.is_single_entry,
+            je.voucher_type,
+            je.is_recurring,
+            je.employee_code,
+            je.department_code,
+            je.is_red_slip,
+            je.red_black_voucher_number,
+            jel.id AS line_id,
+            jel.journal_entry_id AS line_journal_entry_id,
+            jel.line_number,
+            jel.account_id,
+            jel.debit_amount,
+            jel.credit_amount,
+            jel.line_description
+        FROM journal_entries je
+        LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            <if test="c.statuses != null and c.statuses.size() > 0">
+                je.status IN
+                <foreach collection="c.statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="c.dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{c.dateFrom}
+            </if>
+            <if test="c.dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{c.dateTo}
+            </if>
+            <if test="c.accountId != null">
+                AND je.id IN (
+                    SELECT DISTINCT jel2.journal_entry_id
+                    FROM journal_entry_lines jel2
+                    WHERE jel2.account_id = #{c.accountId}
+                )
+            </if>
+            <if test="c.amountFrom != null">
+                AND je.id IN (
+                    SELECT jel3.journal_entry_id
+                    FROM journal_entry_lines jel3
+                    GROUP BY jel3.journal_entry_id
+                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{c.amountFrom}
+                )
+            </if>
+            <if test="c.amountTo != null">
+                AND je.id IN (
+                    SELECT jel4.journal_entry_id
+                    FROM journal_entry_lines jel4
+                    GROUP BY jel4.journal_entry_id
+                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{c.amountTo}
+                )
+            </if>
+            <if test="c.description != null and c.description != ''">
+                AND je.description LIKE CONCAT('%', #{c.description}, '%')
+            </if>
+        </where>
+        ORDER BY je.id ASC, jel.line_number ASC
+        LIMIT #{c.limit} OFFSET #{c.offset}
+    </select>
+
+    <select id="countBySearchConditions" resultType="long">
+        SELECT COUNT(DISTINCT je.id)
+        FROM journal_entries je
+        <where>
+            <if test="c.statuses != null and c.statuses.size() > 0">
+                je.status IN
+                <foreach collection="c.statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="c.dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{c.dateFrom}
+            </if>
+            <if test="c.dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{c.dateTo}
+            </if>
+            <if test="c.accountId != null">
+                AND je.id IN (
+                    SELECT DISTINCT jel2.journal_entry_id
+                    FROM journal_entry_lines jel2
+                    WHERE jel2.account_id = #{c.accountId}
+                )
+            </if>
+            <if test="c.amountFrom != null">
+                AND je.id IN (
+                    SELECT jel3.journal_entry_id
+                    FROM journal_entry_lines jel3
+                    GROUP BY jel3.journal_entry_id
+                    HAVING SUM(jel3.debit_amount) <![CDATA[>=]]> #{c.amountFrom}
+                )
+            </if>
+            <if test="c.amountTo != null">
+                AND je.id IN (
+                    SELECT jel4.journal_entry_id
+                    FROM journal_entry_lines jel4
+                    GROUP BY jel4.journal_entry_id
+                    HAVING SUM(jel4.debit_amount) <![CDATA[<=]]> #{c.amountTo}
+                )
+            </if>
+            <if test="c.description != null and c.description != ''">
+                AND je.description LIKE CONCAT('%', #{c.description}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findPostedLinesByAccountAndPeriod" resultMap="journalEntryLineWithHeaderResultMap">
+        SELECT
+            je.id AS journal_entry_id,
+            je.journal_date,
+            je.description,
+            jel.line_description,
+            jel.debit_amount,
+            jel.credit_amount
+        FROM journal_entries je
+        INNER JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            je.status = 'POSTED'
+            AND jel.account_id = #{accountId}
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+        ORDER BY je.journal_date ASC, je.id ASC, jel.line_number ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countPostedLinesByAccountAndPeriod" resultType="long">
+        SELECT COUNT(*)
+        FROM journal_entries je
+        INNER JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        <where>
+            je.status = 'POSTED'
+            AND jel.account_id = #{accountId}
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+    </select>
+
+    <select id="calculateBalanceBeforeDate" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(jel.debit_amount - jel.credit_amount), 0)
+        FROM journal_entries je
+        INNER JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
+        WHERE je.status = 'POSTED'
+          AND jel.account_id = #{accountId}
+          AND je.journal_date <![CDATA[<]]> #{date}
+    </select>
+
+</mapper>

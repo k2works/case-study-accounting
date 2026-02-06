@@ -1,0 +1,119 @@
+.journal-entry-form {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.journal-entry-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.journal-entry-form__label {
+  font-weight: 600;
+}
+
+.journal-entry-form__required {
+  color: var(--color-danger);
+}
+
+.journal-entry-form__input,
+.journal-entry-form__select {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  background-color: var(--color-background);
+}
+
+.journal-entry-form__input:disabled,
+.journal-entry-form__select:disabled {
+  background-color: var(--color-muted);
+  color: var(--color-text-secondary);
+}
+
+.journal-entry-form__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+}
+
+.journal-entry-form__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.journal-entry-form__th,
+.journal-entry-form__td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.journal-entry-form__th {
+  background-color: var(--color-muted);
+  font-weight: 600;
+}
+
+.journal-entry-form__th--number,
+.journal-entry-form__td--number {
+  width: 80px;
+  text-align: center;
+}
+
+.journal-entry-form__th--amount,
+.journal-entry-form__td--amount {
+  width: 140px;
+  text-align: right;
+}
+
+.journal-entry-form__th--action,
+.journal-entry-form__td--action {
+  width: 120px;
+  text-align: center;
+}
+
+.journal-entry-form__input--amount {
+  text-align: right;
+  width: 100%;
+}
+
+.journal-entry-form__totals {
+  background-color: var(--color-background);
+  font-weight: 600;
+}
+
+.journal-entry-form__difference {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.journal-entry-form__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.journal-entry-form__footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.journal-entry-form__error {
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .journal-entry-form__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -68,6 +68,14 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
+    public List<Account> search(AccountType type, String keyword) {
+        String accountTypeStr = type != null ? type.name() : null;
+        return accountMapper.search(accountTypeStr, keyword).stream()
+                .map(AccountEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public void deleteById(AccountId id) {
         accountMapper.deleteById(id.value());
     }

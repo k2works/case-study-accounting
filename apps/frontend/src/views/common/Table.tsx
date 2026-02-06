@@ -123,6 +123,40 @@ const renderCell = <T extends Record<string, unknown>>(
   );
 };
 
+const ensureArray = <T,>(data: T[] | undefined | null): T[] => {
+  return Array.isArray(data) ? data : [];
+};
+
+const createSelectAllHandler = <T extends Record<string, unknown>>(
+  data: T[],
+  keyField: keyof T,
+  onSelectionChange?: (selectedKeys: Set<string | number>) => void
+) => {
+  return (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!onSelectionChange) return;
+    const newKeys = e.target.checked
+      ? new Set(data.map((row) => row[keyField] as string | number))
+      : new Set<string | number>();
+    onSelectionChange(newKeys);
+  };
+};
+
+const createSelectRowHandler = (
+  selectedKeys: Set<string | number>,
+  onSelectionChange?: (selectedKeys: Set<string | number>) => void
+) => {
+  return (key: string | number) => {
+    if (!onSelectionChange) return;
+    const newSelectedKeys = new Set(selectedKeys);
+    if (newSelectedKeys.has(key)) {
+      newSelectedKeys.delete(key);
+    } else {
+      newSelectedKeys.add(key);
+    }
+    onSelectionChange(newSelectedKeys);
+  };
+};
+
 /**
  * テーブルコンポーネント
  *
@@ -139,27 +173,12 @@ export function Table<T extends Record<string, unknown>>({
   selectedKeys = new Set(),
   onSelectionChange,
 }: TableProps<T>): React.ReactElement {
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!onSelectionChange) return;
-    const newKeys = e.target.checked
-      ? new Set(data.map((row) => row[keyField] as string | number))
-      : new Set<string | number>();
-    onSelectionChange(newKeys);
-  };
-
-  const handleSelectRow = (key: string | number) => {
-    if (!onSelectionChange) return;
-    const newSelectedKeys = new Set(selectedKeys);
-    if (newSelectedKeys.has(key)) {
-      newSelectedKeys.delete(key);
-    } else {
-      newSelectedKeys.add(key);
-    }
-    onSelectionChange(newSelectedKeys);
-  };
-
+  const safeData = ensureArray(data);
+  const handleSelectAll = createSelectAllHandler(safeData, keyField, onSelectionChange);
+  const handleSelectRow = createSelectRowHandler(selectedKeys, onSelectionChange);
   const isAllSelected =
-    data.length > 0 && data.every((row) => selectedKeys.has(row[keyField] as string | number));
+    safeData.length > 0 &&
+    safeData.every((row) => selectedKeys.has(row[keyField] as string | number));
 
   return (
     <div className="table-container">
@@ -190,7 +209,7 @@ export function Table<T extends Record<string, unknown>>({
         <tbody className="table__body">
           <TableBodyContent
             columns={columns}
-            data={data}
+            data={safeData}
             keyField={keyField}
             selectable={selectable}
             selectedKeys={selectedKeys}

@@ -10,6 +10,15 @@
         <result property="code" column="code"/>
         <result property="name" column="name"/>
         <result property="accountType" column="account_type"/>
+        <result property="kana" column="kana"/>
+        <result property="bsplCategory" column="bspl_category"/>
+        <result property="transactionElementCategory" column="transaction_element_category"/>
+        <result property="expenseCategory" column="expense_category"/>
+        <result property="summaryAccount" column="is_summary_account"/>
+        <result property="displayOrder" column="display_order"/>
+        <result property="aggregationTarget" column="is_aggregation_target"/>
+        <result property="balance" column="balance"/>
+        <result property="taxTransactionCode" column="tax_transaction_code"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
@@ -52,6 +61,20 @@
     <!-- SELECT by Type -->
     <select id="findByType" resultMap="accountResultMap">
         SELECT * FROM accounts WHERE account_type = #{accountType} ORDER BY code ASC
+    </select>
+
+    <!-- Search with optional filters -->
+    <select id="search" resultMap="accountResultMap">
+        SELECT * FROM accounts
+        <where>
+            <if test="accountType != null and accountType != ''">
+                account_type = #{accountType}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (code LIKE CONCAT(#{keyword}, '%') OR name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY code ASC
     </select>
 
     <!-- DELETE by ID -->

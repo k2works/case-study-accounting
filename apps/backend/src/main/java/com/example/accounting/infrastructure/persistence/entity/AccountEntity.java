@@ -10,12 +10,22 @@ import java.time.OffsetDateTime;
 /**
  * 勘定科目エンティティ（永続化用）
  */
+@SuppressWarnings({"PMD.BooleanGetMethodName"})
 public class AccountEntity {
 
     private Integer id;
     private String code;
     private String name;
     private String accountType;
+    private String kana;
+    private String bsplCategory;
+    private String transactionElementCategory;
+    private String expenseCategory;
+    private Boolean summaryAccount;
+    private Integer displayOrder;
+    private Boolean aggregationTarget;
+    private java.math.BigDecimal balance;
+    private String taxTransactionCode;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
@@ -93,5 +103,77 @@ public class AccountEntity {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getKana() {
+        return kana;
+    }
+
+    public void setKana(String kana) {
+        this.kana = kana;
+    }
+
+    public String getBsplCategory() {
+        return bsplCategory;
+    }
+
+    public void setBsplCategory(String bsplCategory) {
+        this.bsplCategory = bsplCategory;
+    }
+
+    public String getTransactionElementCategory() {
+        return transactionElementCategory;
+    }
+
+    public void setTransactionElementCategory(String transactionElementCategory) {
+        this.transactionElementCategory = transactionElementCategory;
+    }
+
+    public String getExpenseCategory() {
+        return expenseCategory;
+    }
+
+    public void setExpenseCategory(String expenseCategory) {
+        this.expenseCategory = expenseCategory;
+    }
+
+    public Boolean getSummaryAccount() {
+        return summaryAccount;
+    }
+
+    public void setSummaryAccount(Boolean summaryAccount) {
+        this.summaryAccount = summaryAccount;
+    }
+
+    public Integer getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
+    public Boolean getAggregationTarget() {
+        return aggregationTarget;
+    }
+
+    public void setAggregationTarget(Boolean aggregationTarget) {
+        this.aggregationTarget = aggregationTarget;
+    }
+
+    public java.math.BigDecimal getBalance() {
+        return balance;
+    }
+
+    public void setBalance(java.math.BigDecimal balance) {
+        this.balance = balance;
+    }
+
+    public String getTaxTransactionCode() {
+        return taxTransactionCode;
+    }
+
+    public void setTaxTransactionCode(String taxTransactionCode) {
+        this.taxTransactionCode = taxTransactionCode;
     }
 }

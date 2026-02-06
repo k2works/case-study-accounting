@@ -78,7 +78,15 @@
     <!-- コントローラーは Spring/Swagger アノテーション、DTO、ユースケース等で多くのインポートが必要 -->
     <rule ref="category/java/design.xml/ExcessiveImports">
         <properties>
-            <property name="minimum" value="40"/>
+            <property name="minimum" value="45"/>
+        </properties>
+    </rule>
+
+    <!-- CouplingBetweenObjects のカスタム設定 -->
+    <!-- コントローラーは Spring アノテーション、DTO、ドメインモデル等との結合が多くなる -->
+    <rule ref="category/java/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="threshold" value="25"/>
         </properties>
     </rule>
 
