@@ -27,6 +27,10 @@
 - [データモデル](./design/data-model.md) - データベース設計
 - [ドメインモデル](./design/domain-model.md) - ドメイン駆動設計
 
+### ユースケース設計
+
+- [仕訳一覧取得ユースケース設計](./design/usecase/JNL-004-01_GetJournalEntries_UseCase_Design.md) - 仕訳一覧取得機能の詳細設計
+
 ### その他
 
 - [UI 設計](./design/ui-design.md) - ユーザーインターフェース設計
