@@ -5,12 +5,13 @@ import { Button, Table, TableColumn } from '../common';
 interface UserListProps {
   users: User[];
   onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
 /**
  * ユーザー一覧コンポーネント
  */
-export const UserList: React.FC<UserListProps> = ({ users, onEdit }) => {
+export const UserList: React.FC<UserListProps> = ({ users, onEdit, onDelete }) => {
   const columns = useMemo<TableColumn<User>[]>(
     () => [
       { key: 'id', header: 'ユーザー ID', width: '160px' },
@@ -21,21 +22,31 @@ export const UserList: React.FC<UserListProps> = ({ users, onEdit }) => {
       {
         key: 'actions',
         header: '操作',
-        width: '120px',
+        width: '160px',
         align: 'center',
         render: (_, row) => (
-          <Button
-            variant="text"
-            size="small"
-            onClick={() => onEdit(row)}
-            data-testid={`user-edit-${row.id}`}
-          >
-            編集
-          </Button>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => onEdit(row)}
+              data-testid={`user-edit-${row.id}`}
+            >
+              編集
+            </Button>
+            <Button
+              variant="danger"
+              size="small"
+              onClick={() => onDelete(row)}
+              data-testid={`user-delete-${row.id}`}
+            >
+              削除
+            </Button>
+          </div>
         ),
       },
     ],
-    [onEdit]
+    [onDelete, onEdit]
   );
 
   return (

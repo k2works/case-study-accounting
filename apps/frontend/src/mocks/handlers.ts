@@ -262,6 +262,29 @@ export const userHandlers = [
       role: user.role,
     });
   }),
+
+  // ユーザー削除（論理削除）
+  http.delete(/\/users\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/users\/([^/]+)$/);
+    const id = match ? decodeURIComponent(match[1]) : '';
+
+    const userIndex = mockUserRecords.findIndex((user) => user.id === id);
+    if (userIndex === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: 'ユーザーが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    // 論理削除: mockUserRecords から削除（フロントエンドでは一覧から消える）
+    mockUserRecords.splice(userIndex, 1);
+
+    return HttpResponse.json({
+      success: true,
+      errorMessage: null,
+    });
+  }),
 ];
 
 // 既存の勘定科目コードを追跡（重複チェック用）
