@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getUsers, getUsersErrorMessage } from '../api/getUsers';
-import type { User } from '../api/getUsers';
+import type { User, GetUsersParams } from '../api/getUsers';
 import { deleteUser, getDeleteUserErrorMessage } from '../api/deleteUser';
 import { MainLayout, Loading, ErrorMessage, SuccessNotification } from '../views/common';
 import { UserList } from '../views/auth/UserList';
+import { UserFilter, UserFilterValues } from '../views/auth/UserFilter';
 import { DeleteUserConfirmDialog } from '../views/auth/DeleteUserConfirmDialog';
 
 interface UserListLocationState {
@@ -24,13 +25,19 @@ const initialState: UserListState = {
   errorMessage: null,
 };
 
+const initialFilterValues: UserFilterValues = {
+  role: '',
+  keyword: '',
+};
+
 const useUserListFetch = () => {
   const [state, setState] = useState<UserListState>(initialState);
+  const [filterValues, setFilterValues] = useState<UserFilterValues>(initialFilterValues);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (params?: GetUsersParams) => {
     setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
     try {
-      const data = await getUsers();
+      const data = await getUsers(params);
       setState({ users: data, isLoading: false, errorMessage: null });
     } catch (error) {
       setState((prev) => ({
@@ -45,7 +52,19 @@ const useUserListFetch = () => {
     void fetchUsers();
   }, [fetchUsers]);
 
-  return { state, fetchUsers };
+  const handleSearch = useCallback(() => {
+    const params: GetUsersParams = {};
+    if (filterValues.role) params.role = filterValues.role;
+    if (filterValues.keyword) params.keyword = filterValues.keyword;
+    void fetchUsers(params);
+  }, [filterValues, fetchUsers]);
+
+  const handleReset = useCallback(() => {
+    setFilterValues(initialFilterValues);
+    void fetchUsers();
+  }, [fetchUsers]);
+
+  return { state, fetchUsers, filterValues, setFilterValues, handleSearch, handleReset };
 };
 
 /**
@@ -55,7 +74,7 @@ const breadcrumbItems = [{ label: 'ホーム' }, { label: 'ユーザー管理' }
 
 const UserListPageContent: React.FC<{
   state: UserListState;
-  fetchUsers: () => Promise<void>;
+  fetchUsers: (params?: GetUsersParams) => Promise<void>;
   navigate: ReturnType<typeof useNavigate>;
   successMessage: string | null;
   setSuccessMessage: React.Dispatch<React.SetStateAction<string | null>>;
@@ -64,6 +83,10 @@ const UserListPageContent: React.FC<{
   onDismissDeleteSuccess: () => void;
   onDismissDeleteError: () => void;
   onDeleteClick: (user: User) => void;
+  filterValues: UserFilterValues;
+  onFilterChange: (values: UserFilterValues) => void;
+  onSearch: () => void;
+  onReset: () => void;
 }> = ({
   state,
   fetchUsers,
@@ -75,6 +98,10 @@ const UserListPageContent: React.FC<{
   onDismissDeleteSuccess,
   onDismissDeleteError,
   onDeleteClick,
+  filterValues,
+  onFilterChange,
+  onSearch,
+  onReset,
 }) => (
   <MainLayout breadcrumbs={breadcrumbItems}>
     <div data-testid="user-list-page">
@@ -94,9 +121,15 @@ const UserListPageContent: React.FC<{
           <ErrorMessage message={deleteErrorMessage} onDismiss={onDismissDeleteError} />
         </div>
       )}
+      <UserFilter
+        values={filterValues}
+        onChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+      />
       {state.isLoading && state.users.length === 0 && <Loading message="ユーザーを読み込み中..." />}
       {state.errorMessage ? (
-        <ErrorMessage message={state.errorMessage} onRetry={fetchUsers} />
+        <ErrorMessage message={state.errorMessage} onRetry={() => fetchUsers()} />
       ) : (
         <UserList
           users={state.users}
@@ -110,7 +143,8 @@ const UserListPageContent: React.FC<{
 
 const UserListPage: React.FC = () => {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
-  const { state, fetchUsers } = useUserListFetch();
+  const { state, fetchUsers, filterValues, setFilterValues, handleSearch, handleReset } =
+    useUserListFetch();
   const location = useLocation();
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState<string | null>(() => {
@@ -168,6 +202,10 @@ const UserListPage: React.FC = () => {
         onDismissDeleteSuccess={() => setDeleteSuccessMessage(null)}
         onDismissDeleteError={() => setDeleteErrorMessage(null)}
         onDeleteClick={(user) => setDeleteTarget(user)}
+        filterValues={filterValues}
+        onFilterChange={setFilterValues}
+        onSearch={handleSearch}
+        onReset={handleReset}
       />
       <DeleteUserConfirmDialog
         user={deleteTarget}

@@ -95,6 +95,42 @@ vi.mock('../views/auth/UserList', () => ({
   ),
 }));
 
+vi.mock('../views/auth/UserFilter', () => ({
+  UserFilter: ({
+    values,
+    onChange,
+    onSearch,
+    onReset,
+  }: {
+    values: { role: string; keyword: string };
+    onChange: (values: { role: string; keyword: string }) => void;
+    onSearch: () => void;
+    onReset: () => void;
+  }) => (
+    <div data-testid="user-filter-mock">
+      <select
+        data-testid="filter-role"
+        value={values.role}
+        onChange={(e) => onChange({ ...values, role: e.target.value })}
+      >
+        <option value="">すべて</option>
+        <option value="ADMIN">管理者</option>
+      </select>
+      <input
+        data-testid="filter-keyword"
+        value={values.keyword}
+        onChange={(e) => onChange({ ...values, keyword: e.target.value })}
+      />
+      <button data-testid="filter-search" onClick={onSearch}>
+        検索
+      </button>
+      <button data-testid="filter-reset" onClick={onReset}>
+        リセット
+      </button>
+    </div>
+  ),
+}));
+
 vi.mock('../views/auth/DeleteUserConfirmDialog', () => ({
   DeleteUserConfirmDialog: ({
     user,
@@ -146,6 +182,7 @@ const mockUsers = [
     email: 'admin@example.com',
     displayName: '管理者',
     role: 'ADMIN',
+    lastLoginAt: '2024-01-15T10:30:00',
   },
   {
     id: 'user-2',
@@ -153,6 +190,7 @@ const mockUsers = [
     email: 'user@example.com',
     displayName: 'ユーザー',
     role: 'USER',
+    lastLoginAt: null,
   },
 ];
 

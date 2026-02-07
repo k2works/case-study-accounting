@@ -7,10 +7,22 @@ export interface User extends Record<string, unknown> {
   email: string;
   displayName: string;
   role: string;
+  lastLoginAt: string | null;
 }
 
-export const getUsers = async (): Promise<User[]> => {
-  const { data } = await axiosInstance.get<User[]>('/api/users');
+export interface GetUsersParams {
+  role?: string;
+  keyword?: string;
+}
+
+export const getUsers = async (params?: GetUsersParams): Promise<User[]> => {
+  const searchParams = new URLSearchParams();
+  if (params?.role) searchParams.append('role', params.role);
+  if (params?.keyword) searchParams.append('keyword', params.keyword);
+
+  const query = searchParams.toString();
+  const url = query ? `/api/users?${query}` : '/api/users';
+  const { data } = await axiosInstance.get<User[]>(url);
   return data;
 };
 

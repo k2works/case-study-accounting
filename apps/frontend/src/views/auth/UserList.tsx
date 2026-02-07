@@ -20,6 +20,15 @@ export const UserList: React.FC<UserListProps> = ({ users, onEdit, onDelete }) =
       { key: 'displayName', header: '表示名', width: '160px' },
       { key: 'role', header: 'ロール', width: '120px' },
       {
+        key: 'lastLoginAt',
+        header: '最終ログイン',
+        width: '180px',
+        render: (value) => {
+          if (!value) return '-';
+          return new Date(value as string).toLocaleString('ja-JP');
+        },
+      },
+      {
         key: 'actions',
         header: '操作',
         width: '160px',

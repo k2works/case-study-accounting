@@ -55,6 +55,7 @@ interface UserRecord {
   email: string;
   displayName: string;
   role: string;
+  lastLoginAt: string | null;
 }
 
 const mockUserRecords: UserRecord[] = [
@@ -64,6 +65,7 @@ const mockUserRecords: UserRecord[] = [
     email: 'nav@example.com',
     displayName: 'ナビゲーション',
     role: 'USER',
+    lastLoginAt: '2024-01-15T10:30:00',
   },
   {
     id: '102',
@@ -71,6 +73,7 @@ const mockUserRecords: UserRecord[] = [
     email: 'readonly@example.com',
     displayName: 'リードオンリー',
     role: 'MANAGER',
+    lastLoginAt: '2024-02-10T14:00:00',
   },
   {
     id: '103',
@@ -78,6 +81,7 @@ const mockUserRecords: UserRecord[] = [
     email: 'display@example.com',
     displayName: '表示名テスト',
     role: 'USER',
+    lastLoginAt: null,
   },
   {
     id: '104',
@@ -85,6 +89,7 @@ const mockUserRecords: UserRecord[] = [
     email: 'role@example.com',
     displayName: 'ロールテスト',
     role: 'VIEWER',
+    lastLoginAt: '2024-03-05T09:15:00',
   },
   {
     id: '105',
@@ -92,6 +97,7 @@ const mockUserRecords: UserRecord[] = [
     email: 'password@example.com',
     displayName: 'パスワードテスト',
     role: 'ADMIN',
+    lastLoginAt: '2024-03-20T16:45:00',
   },
   {
     id: '106',
@@ -99,6 +105,7 @@ const mockUserRecords: UserRecord[] = [
     email: 'validate@example.com',
     displayName: 'バリデーション',
     role: 'USER',
+    lastLoginAt: '2024-01-01T08:00:00',
   },
 ];
 
@@ -212,9 +219,30 @@ export const authHandlers = [
  * ユーザー関連のハンドラー
  */
 export const userHandlers = [
-  // ユーザー一覧取得
-  http.get(/\/users\/?$/, () => {
-    return HttpResponse.json<UserRecord[]>(mockUserRecords);
+  // ユーザー一覧取得（フィルター/検索対応）
+  http.get(/\/users\/?$/, ({ request }) => {
+    const url = new URL(request.url);
+    const role = url.searchParams.get('role');
+    const keyword = url.searchParams.get('keyword');
+
+    let filtered = [...mockUserRecords];
+
+    // ロールでフィルタリング
+    if (role) {
+      filtered = filtered.filter((user) => user.role === role);
+    }
+
+    // キーワードで検索（ユーザーIDまたは表示名）
+    if (keyword) {
+      const lowerKeyword = keyword.toLowerCase();
+      filtered = filtered.filter(
+        (user) =>
+          user.username.toLowerCase().includes(lowerKeyword) ||
+          user.displayName.toLowerCase().includes(lowerKeyword)
+      );
+    }
+
+    return HttpResponse.json<UserRecord[]>(filtered);
   }),
 
   // ユーザー詳細取得
