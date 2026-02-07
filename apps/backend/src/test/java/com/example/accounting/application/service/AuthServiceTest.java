@@ -195,7 +195,7 @@ class AuthServiceTest {
 
             // Then
             assertThat(result.success()).isFalse();
-            assertThat(result.errorMessage()).contains("アカウントが無効化されています");
+            assertThat(result.errorMessage()).contains("アカウントが無効です");
 
             verify(jwtService, never()).generateToken(anyString(), anyMap());
         }
