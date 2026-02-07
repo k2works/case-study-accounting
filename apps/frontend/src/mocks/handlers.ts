@@ -26,6 +26,21 @@ interface Account {
   accountType: string;
 }
 
+// モック勘定科目データ（テスト用に複数種別を用意）
+const mockAccounts: Account[] = [
+  { accountId: 1, accountCode: '1000', accountName: '現金預金', accountType: 'ASSET' },
+  { accountId: 2, accountCode: '1001', accountName: '現金', accountType: 'ASSET' },
+  { accountId: 3, accountCode: '2000', accountName: '買掛金', accountType: 'LIABILITY' },
+  { accountId: 4, accountCode: '2001', accountName: '未払金', accountType: 'LIABILITY' },
+  { accountId: 5, accountCode: '3001', accountName: '資本金', accountType: 'EQUITY' },
+  { accountId: 6, accountCode: '4001', accountName: '売上高', accountType: 'REVENUE' },
+  { accountId: 7, accountCode: '5001', accountName: '仕入高', accountType: 'EXPENSE' },
+  { accountId: 8, accountCode: '5002', accountName: '給与手当', accountType: 'EXPENSE' },
+  { accountId: 9, accountCode: '9991', accountName: '削除テスト用科目', accountType: 'ASSET' },
+  // E2E テスト用（使用中勘定科目の削除制限テスト）
+  { accountId: 11, accountCode: '8999', accountName: '使用中削除テスト用', accountType: 'ASSET' },
+];
+
 // モックユーザー定義
 const mockUsers: Record<string, { password: string; role: string }> = {
   admin: { password: 'Password123!', role: 'ADMIN' },
@@ -138,8 +153,8 @@ export const authHandlers = [
 ];
 
 // 既存の勘定科目コードを追跡（重複チェック用）
-const existingAccountCodes = new Set(['1000', '2000']);
-let nextAccountId = 3;
+const existingAccountCodes = new Set(mockAccounts.map((a) => a.accountCode));
+let nextAccountId = mockAccounts.length + 1;
 
 /**
  * 勘定科目関連のハンドラー
@@ -180,10 +195,10 @@ export const accountHandlers = [
   http.delete(/\/accounts\/(\d+)$/, ({ request }) => {
     const url = new URL(request.url);
     const match = url.pathname.match(/\/accounts\/(\d+)$/);
-    const id = match ? match[1] : '0';
+    const id = match ? parseInt(match[1], 10) : 0;
 
     // 存在しない勘定科目のチェック（ID が 999 の場合はエラー）
-    if (id === '999') {
+    if (id === 999) {
       return HttpResponse.json(
         {
           success: false,
@@ -193,8 +208,8 @@ export const accountHandlers = [
       );
     }
 
-    // 使用中勘定科目のチェック（ID が 888 の場合は使用中エラー）
-    if (id === '888') {
+    // 使用中勘定科目のチェック（ID が 10 は使用中削除テスト用）
+    if (id === 10) {
       return HttpResponse.json(
         {
           success: false,
@@ -204,10 +219,15 @@ export const accountHandlers = [
       );
     }
 
-    // 成功ケース
+    // 成功ケース - mockAccounts から削除
+    const index = mockAccounts.findIndex((a) => a.accountId === id);
+    if (index !== -1) {
+      mockAccounts.splice(index, 1);
+    }
+
     return HttpResponse.json({
       success: true,
-      accountId: Number(id),
+      accountId: id,
       message: '勘定科目を削除しました',
     });
   }),
@@ -228,9 +248,17 @@ export const accountHandlers = [
       });
     }
 
-    // 成功ケース
+    // 成功ケース - mockAccounts にも追加
     existingAccountCodes.add(body.accountCode);
     const accountId = nextAccountId++;
+    const newAccount: Account = {
+      accountId,
+      accountCode: body.accountCode,
+      accountName: body.accountName,
+      accountType: body.accountType,
+    };
+    mockAccounts.push(newAccount);
+
     return HttpResponse.json({
       success: true,
       accountId,
@@ -240,22 +268,31 @@ export const accountHandlers = [
     });
   }),
 
-  // 勘定科目一覧取得（:id なしの /accounts のみにマッチ）
-  http.get(/\/accounts\/?$/, () => {
-    return HttpResponse.json<Account[]>([
-      {
-        accountId: 1,
-        accountCode: '1000',
-        accountName: '現金預金',
-        accountType: 'ASSET',
-      },
-      {
-        accountId: 2,
-        accountCode: '2000',
-        accountName: '買掛金',
-        accountType: 'LIABILITY',
-      },
-    ]);
+  // 勘定科目一覧取得（:id なしの /accounts のみにマッチ、フィルタリング対応）
+  http.get(/\/accounts\/?$/, ({ request }) => {
+    const url = new URL(request.url);
+    // フロントエンドは 'type' パラメータを使用
+    const accountType = url.searchParams.get('type');
+    const keyword = url.searchParams.get('keyword');
+
+    let filtered = [...mockAccounts];
+
+    // 勘定科目種別でフィルタリング
+    if (accountType) {
+      filtered = filtered.filter((a) => a.accountType === accountType);
+    }
+
+    // キーワードで検索（科目コードまたは科目名）
+    if (keyword) {
+      const lowerKeyword = keyword.toLowerCase();
+      filtered = filtered.filter(
+        (a) =>
+          a.accountCode.toLowerCase().includes(lowerKeyword) ||
+          a.accountName.toLowerCase().includes(lowerKeyword)
+      );
+    }
+
+    return HttpResponse.json<Account[]>(filtered);
   }),
 ];
 
@@ -316,9 +353,83 @@ const mockJournalEntries: JournalEntrySummary[] = [
     status: 'PENDING',
     version: 1,
   },
+  // テスト用仕訳エントリ（E2E テストで使用）
+  {
+    journalEntryId: 100,
+    journalDate: '2024-01-15',
+    description: 'ユーザーテスト仕訳',
+    totalDebitAmount: 5000,
+    totalCreditAmount: 5000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 101,
+    journalDate: '2024-02-01',
+    description: '編集テスト用仕訳',
+    totalDebitAmount: 10000,
+    totalCreditAmount: 10000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 102,
+    journalDate: '2024-03-01',
+    description: '削除テスト用仕訳',
+    totalDebitAmount: 8000,
+    totalCreditAmount: 8000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 103,
+    journalDate: '2024-03-01',
+    description: 'バランステスト仕訳',
+    totalDebitAmount: 5000,
+    totalCreditAmount: 5000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 104,
+    journalDate: '2024-04-01',
+    description: '保存テスト仕訳',
+    totalDebitAmount: 8000,
+    totalCreditAmount: 8000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  // 削除テスト用エントリ
+  {
+    journalEntryId: 105,
+    journalDate: '2024-05-02',
+    description: 'ダイアログテスト仕訳',
+    totalDebitAmount: 4000,
+    totalCreditAmount: 4000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 106,
+    journalDate: '2024-05-03',
+    description: '削除実行テスト仕訳',
+    totalDebitAmount: 5000,
+    totalCreditAmount: 5000,
+    status: 'DRAFT',
+    version: 1,
+  },
+  {
+    journalEntryId: 107,
+    journalDate: '2024-05-04',
+    description: 'ユーザー削除テスト',
+    totalDebitAmount: 2000,
+    totalCreditAmount: 2000,
+    status: 'DRAFT',
+    version: 1,
+  },
 ];
 
-let nextJournalEntryId = 6;
+let nextJournalEntryId = 200;
 
 type MockEntry = (typeof mockJournalEntries)[number];
 
@@ -615,6 +726,64 @@ const mockGeneralLedgerEntries: GeneralLedgerEntry[] = [
   },
 ];
 
+// 日次残高モックデータ
+interface DailyBalanceEntry {
+  date: string;
+  debitTotal: number;
+  creditTotal: number;
+  balance: number;
+  transactionCount: number;
+}
+
+interface DailyBalanceResult {
+  accountId: number;
+  accountCode: string;
+  accountName: string;
+  openingBalance: number;
+  debitTotal: number;
+  creditTotal: number;
+  closingBalance: number;
+  entries: DailyBalanceEntry[];
+}
+
+const mockDailyBalanceEntries: DailyBalanceEntry[] = [
+  {
+    date: '2024-04-01',
+    debitTotal: 10000,
+    creditTotal: 0,
+    balance: 10000,
+    transactionCount: 2,
+  },
+  {
+    date: '2024-04-02',
+    debitTotal: 5000,
+    creditTotal: 2000,
+    balance: 13000,
+    transactionCount: 3,
+  },
+  {
+    date: '2024-04-03',
+    debitTotal: 0,
+    creditTotal: 4000,
+    balance: 9000,
+    transactionCount: 1,
+  },
+  {
+    date: '2024-04-04',
+    debitTotal: 15000,
+    creditTotal: 0,
+    balance: 24000,
+    transactionCount: 4,
+  },
+  {
+    date: '2024-04-05',
+    debitTotal: 2000,
+    creditTotal: 7000,
+    balance: 19000,
+    transactionCount: 2,
+  },
+];
+
 // 総勘定元帳ヘルパー関数
 const filterEntriesByDateRange = (
   entries: GeneralLedgerEntry[],
@@ -636,6 +805,29 @@ const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedge
   return entries.map((entry) => {
     runningBalance = runningBalance + entry.debitAmount - entry.creditAmount;
     return { ...entry, runningBalance };
+  });
+};
+
+const filterDailyEntriesByDateRange = (
+  entries: DailyBalanceEntry[],
+  dateFrom: string | null,
+  dateTo: string | null
+): DailyBalanceEntry[] => {
+  let filtered = [...entries];
+  if (dateFrom) {
+    filtered = filtered.filter((entry) => entry.date >= dateFrom);
+  }
+  if (dateTo) {
+    filtered = filtered.filter((entry) => entry.date <= dateTo);
+  }
+  return filtered;
+};
+
+const recalculateDailyBalances = (entries: DailyBalanceEntry[]): DailyBalanceEntry[] => {
+  let balance = 0;
+  return entries.map((entry) => {
+    balance = balance + entry.debitTotal - entry.creditTotal;
+    return { ...entry, balance };
   });
 };
 
@@ -666,6 +858,26 @@ const buildGeneralLedgerResult = (
   };
 };
 
+const buildDailyBalanceResult = (
+  entries: DailyBalanceEntry[],
+  accountId: number
+): DailyBalanceResult => {
+  const debitTotal = entries.reduce((sum, e) => sum + e.debitTotal, 0);
+  const creditTotal = entries.reduce((sum, e) => sum + e.creditTotal, 0);
+  const closingBalance = entries.length > 0 ? entries[entries.length - 1].balance : 0;
+
+  return {
+    accountId,
+    accountCode: accountId === 1 ? '1000' : '2000',
+    accountName: accountId === 1 ? '現金預金' : '買掛金',
+    openingBalance: 0,
+    debitTotal,
+    creditTotal,
+    closingBalance,
+    entries,
+  };
+};
+
 /**
  * 総勘定元帳関連のハンドラー
  */
@@ -693,6 +905,28 @@ export const generalLedgerHandlers = [
 ];
 
 /**
+ * 日次残高関連のハンドラー
+ */
+export const dailyBalanceHandlers = [
+  http.get('*/daily-balance', ({ request }) => {
+    const url = new URL(request.url);
+    const accountId = parseInt(url.searchParams.get('accountId') || '0', 10);
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+
+    if (!accountId) {
+      return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
+    }
+
+    const filtered = filterDailyEntriesByDateRange(mockDailyBalanceEntries, dateFrom, dateTo);
+    const withBalances = recalculateDailyBalances(filtered);
+    const result = buildDailyBalanceResult(withBalances, accountId);
+
+    return HttpResponse.json(result);
+  }),
+];
+
+/**
  * すべてのハンドラー
  */
 export const handlers = [
@@ -700,4 +934,5 @@ export const handlers = [
   ...accountHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
+  ...dailyBalanceHandlers,
 ];

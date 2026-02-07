@@ -76,6 +76,8 @@ nav:
       - モデル設計:
           - データモデル: design/data-model.md
           - ドメインモデル: design/domain-model.md
+      - ユースケース設計:
+          - 仕訳一覧取得: design/usecase/JNL-004-01_GetJournalEntries_UseCase_Design.md
       - UI 設計: design/ui-design.md
       - テスト戦略: design/test_strategy.md
       - 非機能要件: design/non_functional.md
@@ -92,6 +94,7 @@ nav:
           - イテレーション1: development/retrospective-1.md
           - イテレーション2: development/retrospective-2.md
           - イテレーション3: development/retrospective-3.md
+          - イテレーション4: development/retrospective-4.md
   - 運用:
       - 開発環境解説: operation/dev_env.md
       - 開発コンテナ構築手順書: operation/dev_container.md

@@ -50,6 +50,34 @@ declare global {
        * @param filterDescription - 摘要でフィルタして特定の仕訳を見つける（省略時は先頭行）
        */
       navigateToEditJournalEntry(filterDescription?: string): Chainable<void>;
+
+      /**
+       * 元帳系ページにログインして遷移するコマンド
+       * @param username - ユーザー名
+       * @param password - パスワード
+       * @param path - 遷移先パス
+       * @param pageTestId - ページの data-testid
+       */
+      visitLedgerPage(
+        username: string,
+        password: string,
+        path: string,
+        pageTestId: string
+      ): Chainable<void>;
+
+      /**
+       * 勘定科目ドロップダウンから選択するコマンド
+       * @param selectId - select要素のID
+       * @param index - 選択するオプションのインデックス（デフォルト: 1）
+       */
+      selectAccountOption(selectId: string, index?: number): Chainable<void>;
+
+      /**
+       * 元帳系ページでの勘定科目選択と結果待機
+       * @param selectId - select要素のID
+       * @param tableTestId - 結果テーブルのdata-testid
+       */
+      selectAccountAndWaitForTable(selectId: string, tableTestId: string): Chainable<void>;
     }
   }
 }
@@ -186,6 +214,39 @@ Cypress.Commands.add('navigateToEditJournalEntry', (filterDescription?: string) 
 
   cy.get('table tbody tr').first().contains('button', '編集').click();
   cy.get('[data-testid="journal-entry-edit-form"]', { timeout: 15000 }).should('be.visible');
+});
+
+/**
+ * 元帳系ページにログインして遷移するコマンド
+ * ログイン → ダッシュボード待機 → ページ遷移 → ページ表示待機
+ */
+Cypress.Commands.add(
+  'visitLedgerPage',
+  (username: string, password: string, path: string, pageTestId: string) => {
+    cy.login(username, password);
+    cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+    cy.visit(path);
+    cy.get(`[data-testid="${pageTestId}"]`, { timeout: 15000 }).should('be.visible');
+  }
+);
+
+/**
+ * 勘定科目ドロップダウンから選択するコマンド
+ * オプションが読み込まれるのを待ってから選択
+ */
+Cypress.Commands.add('selectAccountOption', (selectId: string, index: number = 1) => {
+  cy.get(`#${selectId} option`, { timeout: 15000 }).should('have.length.greaterThan', 1);
+  cy.get(`#${selectId}`).select(index);
+});
+
+/**
+ * 元帳系ページでの勘定科目選択と結果待機
+ * 勘定科目選択後、テーブル表示を待機
+ */
+Cypress.Commands.add('selectAccountAndWaitForTable', (selectId: string, tableTestId: string) => {
+  cy.selectAccountOption(selectId);
+  cy.wait(1000);
+  cy.get(`[data-testid="${tableTestId}"]`, { timeout: 15000 }).should('be.visible');
 });
 
 export {};

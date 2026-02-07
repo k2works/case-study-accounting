@@ -1,6 +1,7 @@
 package com.example.accounting.infrastructure.persistence.repository;
 
 import com.example.accounting.application.port.out.GetGeneralLedgerResult.GeneralLedgerEntry;
+import com.example.accounting.application.port.out.GetDailyBalanceResult.DailyBalanceEntry;
 import com.example.accounting.application.port.out.JournalEntryRepository;
 import com.example.accounting.application.port.out.JournalEntrySearchCriteria;
 import com.example.accounting.domain.model.journal.JournalEntry;
@@ -9,6 +10,7 @@ import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity;
+import com.example.accounting.infrastructure.persistence.entity.DailyBalanceEntryEntity;
 import com.example.accounting.infrastructure.persistence.mapper.JournalEntryMapper;
 import org.springframework.stereotype.Repository;
 
@@ -118,6 +120,16 @@ public class JournalEntryRepositoryImpl implements JournalEntryRepository {
         return journalEntryMapper.calculateBalanceBeforeDate(accountId, date);
     }
 
+    @Override
+    public List<DailyBalanceEntry> findDailyBalanceByAccountAndPeriod(Integer accountId,
+                                                                      LocalDate dateFrom,
+                                                                      LocalDate dateTo) {
+        return journalEntryMapper.findDailyBalanceByAccountAndPeriod(accountId, dateFrom, dateTo)
+                .stream()
+                .map(this::toDailyBalanceEntry)
+                .toList();
+    }
+
     private GeneralLedgerEntry toGeneralLedgerEntry(JournalEntryLineWithHeaderEntity entity) {
         String description = entity.getLineDescription();
         if (description == null || description.isBlank()) {
@@ -130,6 +142,16 @@ public class JournalEntryRepositoryImpl implements JournalEntryRepository {
                 entity.getDebitAmount(),
                 entity.getCreditAmount(),
                 null
+        );
+    }
+
+    private DailyBalanceEntry toDailyBalanceEntry(DailyBalanceEntryEntity entity) {
+        return new DailyBalanceEntry(
+                entity.getDate(),
+                entity.getDebitTotal(),
+                entity.getCreditTotal(),
+                null,
+                entity.getTransactionCount() == null ? 0L : entity.getTransactionCount()
         );
     }
 }

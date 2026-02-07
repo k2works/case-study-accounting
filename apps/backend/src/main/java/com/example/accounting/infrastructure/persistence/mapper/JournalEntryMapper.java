@@ -4,6 +4,7 @@ import com.example.accounting.application.port.out.JournalEntrySearchCriteria;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineEntity;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity;
+import com.example.accounting.infrastructure.persistence.entity.DailyBalanceEntryEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -71,5 +72,11 @@ public interface JournalEntryMapper {
     BigDecimal calculateBalanceBeforeDate(
             @Param("accountId") Integer accountId,
             @Param("date") LocalDate date
+    );
+
+    List<DailyBalanceEntryEntity> findDailyBalanceByAccountAndPeriod(
+            @Param("accountId") Integer accountId,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo
     );
 }

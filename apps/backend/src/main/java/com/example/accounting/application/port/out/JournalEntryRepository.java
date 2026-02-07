@@ -3,6 +3,7 @@ package com.example.accounting.application.port.out;
 import com.example.accounting.domain.model.journal.JournalEntry;
 import com.example.accounting.domain.model.journal.JournalEntryId;
 import com.example.accounting.application.port.out.GetGeneralLedgerResult.GeneralLedgerEntry;
+import com.example.accounting.application.port.out.GetDailyBalanceResult.DailyBalanceEntry;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -111,6 +112,20 @@ public interface JournalEntryRepository {
      * @return 件数
      */
     long countPostedLinesByAccountAndPeriod(Integer accountId, LocalDate dateFrom, LocalDate dateTo);
+
+    /**
+     * 日次残高集計を取得する
+     *
+     * @param accountId 勘定科目 ID
+     * @param dateFrom 仕訳日付開始（null 可）
+     * @param dateTo 仕訳日付終了（null 可）
+     * @return 日次残高一覧
+     */
+    List<DailyBalanceEntry> findDailyBalanceByAccountAndPeriod(
+            Integer accountId,
+            LocalDate dateFrom,
+            LocalDate dateTo
+    );
 
     /**
      * 指定日より前の残高を計算する

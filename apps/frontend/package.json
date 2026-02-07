@@ -46,6 +46,7 @@
     "react-router-dom": "^6.26.0",
     "react-spinners": "^0.14.0",
     "react-tabs": "^6.0.0",
+    "recharts": "^3.7.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
