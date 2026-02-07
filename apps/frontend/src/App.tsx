@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import RegisterUserPage from './pages/RegisterUserPage';
+import UserListPage from './pages/UserListPage';
 import AccountListPage from './pages/AccountListPage';
 import CreateAccountPage from './pages/CreateAccountPage';
 import EditAccountPage from './pages/EditAccountPage';
@@ -11,6 +12,7 @@ import CreateJournalEntryPage from './pages/CreateJournalEntryPage';
 import EditJournalEntryPage from './pages/EditJournalEntryPage';
 import GeneralLedgerPage from './pages/GeneralLedgerPage';
 import DailyBalancePage from './pages/DailyBalancePage';
+import UserEditPage from './pages/UserEditPage';
 import { Loading } from './views/common';
 
 /**
@@ -90,6 +92,22 @@ export const App = () => {
           <AdminRoute>
             <RegisterUserPage />
           </AdminRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <AdminRoute>
+            <UserListPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/users/:id/edit"
+        element={
+          <PrivateRoute>
+            <UserEditPage />
+          </PrivateRoute>
         }
       />
       <Route

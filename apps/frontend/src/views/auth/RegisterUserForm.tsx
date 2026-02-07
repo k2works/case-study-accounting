@@ -122,9 +122,10 @@ interface FormFieldProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   testId: string;
   errorTestId: string;
+  required?: boolean;
 }
 
-const FormField: React.FC<FormFieldProps> = ({
+export const FormField: React.FC<FormFieldProps> = ({
   id,
   label,
   type,
@@ -136,10 +137,11 @@ const FormField: React.FC<FormFieldProps> = ({
   onChange,
   testId,
   errorTestId,
+  required = true,
 }) => (
   <div className="register-form__field">
     <label htmlFor={id} className="register-form__label">
-      {label} <span className="register-form__required">*</span>
+      {label} {required && <span className="register-form__required">*</span>}
     </label>
     <input
       id={id}
@@ -166,9 +168,18 @@ interface RoleSelectProps {
   error?: string;
   disabled: boolean;
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+  testId: string;
+  errorTestId: string;
 }
 
-const RoleSelect: React.FC<RoleSelectProps> = ({ value, error, disabled, onChange }) => (
+export const RoleSelect: React.FC<RoleSelectProps> = ({
+  value,
+  error,
+  disabled,
+  onChange,
+  testId,
+  errorTestId,
+}) => (
   <div className="register-form__field">
     <label htmlFor="role" className="register-form__label">
       ロール <span className="register-form__required">*</span>
@@ -180,7 +191,7 @@ const RoleSelect: React.FC<RoleSelectProps> = ({ value, error, disabled, onChang
       value={value}
       onChange={onChange}
       disabled={disabled}
-      data-testid="register-role-select"
+      data-testid={testId}
     >
       <option value="">選択してください</option>
       <option value="ADMIN">ADMIN</option>
@@ -189,7 +200,7 @@ const RoleSelect: React.FC<RoleSelectProps> = ({ value, error, disabled, onChang
       <option value="VIEWER">VIEWER</option>
     </select>
     {error && (
-      <span className="register-form__field-error" data-testid="role-error">
+      <span className="register-form__field-error" data-testid={errorTestId}>
         {error}
       </span>
     )}
@@ -346,6 +357,8 @@ export const RegisterUserForm: React.FC = () => {
         error={errors.role}
         disabled={isSubmitting}
         onChange={handleChange}
+        testId="register-role-select"
+        errorTestId="role-error"
       />
 
       <button

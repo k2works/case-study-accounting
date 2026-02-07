@@ -71,7 +71,7 @@ const MENU_ITEMS: MenuItem[] = [
     icon: 'admin',
     roles: ['ADMIN'],
     children: [
-      { id: 'system-users', label: 'ユーザー', path: '/system/users' },
+      { id: 'system-users', label: 'ユーザー一覧', path: '/users' },
       { id: 'system-audit', label: '監査ログ', path: '/system/audit' },
     ],
   },

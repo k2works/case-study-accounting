@@ -49,6 +49,62 @@ const mockUsers: Record<string, { password: string; role: string }> = {
   viewer: { password: 'Password123!', role: 'VIEWER' },
 };
 
+interface UserRecord {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  role: string;
+}
+
+const mockUserRecords: UserRecord[] = [
+  {
+    id: '101',
+    username: 'user_edit_nav',
+    email: 'nav@example.com',
+    displayName: 'ナビゲーション',
+    role: 'USER',
+  },
+  {
+    id: '102',
+    username: 'user_edit_readonly',
+    email: 'readonly@example.com',
+    displayName: 'リードオンリー',
+    role: 'MANAGER',
+  },
+  {
+    id: '103',
+    username: 'user_edit_display',
+    email: 'display@example.com',
+    displayName: '表示名テスト',
+    role: 'USER',
+  },
+  {
+    id: '104',
+    username: 'user_edit_role',
+    email: 'role@example.com',
+    displayName: 'ロールテスト',
+    role: 'VIEWER',
+  },
+  {
+    id: '105',
+    username: 'user_edit_password',
+    email: 'password@example.com',
+    displayName: 'パスワードテスト',
+    role: 'ADMIN',
+  },
+  {
+    id: '106',
+    username: 'user_edit_validate',
+    email: 'validate@example.com',
+    displayName: 'バリデーション',
+    role: 'USER',
+  },
+];
+
+const findUserRecord = (id: string): UserRecord | undefined =>
+  mockUserRecords.find((user) => user.id === id);
+
 // エラーユーザー定義
 const errorUsers: Record<string, string> = {
   locked:
@@ -148,6 +204,62 @@ export const authHandlers = [
       email: body.email,
       displayName: body.displayName,
       role: body.role,
+    });
+  }),
+];
+
+/**
+ * ユーザー関連のハンドラー
+ */
+export const userHandlers = [
+  // ユーザー一覧取得
+  http.get(/\/users\/?$/, () => {
+    return HttpResponse.json<UserRecord[]>(mockUserRecords);
+  }),
+
+  // ユーザー詳細取得
+  http.get(/\/users\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/users\/([^/]+)$/);
+    const id = match ? decodeURIComponent(match[1]) : '';
+    const user = findUserRecord(id);
+
+    if (!user) {
+      return HttpResponse.json({ errorMessage: 'ユーザーが見つかりません' }, { status: 404 });
+    }
+
+    return HttpResponse.json<UserRecord>(user);
+  }),
+
+  // ユーザー更新
+  http.put(/\/users\/([^/]+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/users\/([^/]+)$/);
+    const id = match ? decodeURIComponent(match[1]) : '';
+    const body = (await request.json()) as {
+      displayName: string;
+      role: string;
+      password?: string;
+    };
+
+    const user = findUserRecord(id);
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, errorMessage: 'ユーザーが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    user.displayName = body.displayName;
+    user.role = body.role;
+
+    return HttpResponse.json({
+      success: true,
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName,
+      role: user.role,
     });
   }),
 ];
@@ -931,6 +1043,7 @@ export const dailyBalanceHandlers = [
  */
 export const handlers = [
   ...authHandlers,
+  ...userHandlers,
   ...accountHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
