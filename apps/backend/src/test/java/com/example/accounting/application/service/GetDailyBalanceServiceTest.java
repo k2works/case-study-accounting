@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -124,6 +127,114 @@ class GetDailyBalanceServiceTest {
             assertThat(result.creditTotal()).isEqualByComparingTo("400");
             assertThat(result.closingBalance()).isEqualByComparingTo("600");
             assertThat(result.entries().get(0).balance()).isEqualByComparingTo("600");
+        }
+
+        @Test
+        @DisplayName("勘定科目が存在しない場合は例外を投げる")
+        void shouldThrowWhenAccountNotFound() {
+            LocalDate dateFrom = LocalDate.of(2024, 2, 1);
+            LocalDate dateTo = LocalDate.of(2024, 2, 29);
+            GetDailyBalanceQuery query = new GetDailyBalanceQuery(99, dateFrom, dateTo);
+
+            when(accountRepository.findById(AccountId.of(99)))
+                    .thenReturn(Optional.empty());
+
+            assertThrows(IllegalArgumentException.class, () -> service.execute(query));
+        }
+
+        @Test
+        @DisplayName("dateFrom が null の場合は期首残高を 0 として扱う")
+        void shouldUseZeroOpeningBalanceWhenDateFromIsNull() {
+            LocalDate dateTo = LocalDate.of(2024, 3, 31);
+            GetDailyBalanceQuery query = new GetDailyBalanceQuery(3, null, dateTo);
+
+            Account account = Account.reconstruct(
+                    AccountId.of(3), AccountCode.of("1102"), "普通預金", AccountType.ASSET);
+
+            when(accountRepository.findById(AccountId.of(3)))
+                    .thenReturn(Optional.of(account));
+            when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(3, null, dateTo))
+                    .thenReturn(List.of());
+
+            GetDailyBalanceResult result = service.execute(query);
+
+            assertThat(result.openingBalance()).isEqualByComparingTo("0");
+            assertThat(result.debitTotal()).isEqualByComparingTo("0");
+            assertThat(result.creditTotal()).isEqualByComparingTo("0");
+            assertThat(result.closingBalance()).isEqualByComparingTo("0");
+            verify(journalEntryRepository, never()).calculateBalanceBeforeDate(3, null);
+        }
+
+        @Test
+        @DisplayName("期首残高が null の場合は 0 として計算する")
+        void shouldTreatNullOpeningBalanceAsZero() {
+            LocalDate dateFrom = LocalDate.of(2024, 5, 1);
+            LocalDate dateTo = LocalDate.of(2024, 5, 31);
+            GetDailyBalanceQuery query = new GetDailyBalanceQuery(4, dateFrom, dateTo);
+
+            Account account = Account.reconstruct(
+                    AccountId.of(4), AccountCode.of("1103"), "当座預金", AccountType.ASSET);
+
+            when(accountRepository.findById(AccountId.of(4)))
+                    .thenReturn(Optional.of(account));
+            when(journalEntryRepository.calculateBalanceBeforeDate(4, dateFrom))
+                    .thenReturn(null);
+            when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(4, dateFrom, dateTo))
+                    .thenReturn(List.of(
+                            new DailyBalanceEntry(
+                                    LocalDate.of(2024, 5, 10),
+                                    null,
+                                    null,
+                                    null,
+                                    2L
+                            )
+                    ));
+
+            GetDailyBalanceResult result = service.execute(query);
+
+            assertThat(result.openingBalance()).isEqualByComparingTo("0");
+            assertThat(result.debitTotal()).isEqualByComparingTo("0");
+            assertThat(result.creditTotal()).isEqualByComparingTo("0");
+            assertThat(result.closingBalance()).isEqualByComparingTo("0");
+            assertThat(result.entries()).hasSize(1);
+            assertThat(result.entries().get(0).debitTotal()).isEqualByComparingTo("0");
+            assertThat(result.entries().get(0).creditTotal()).isEqualByComparingTo("0");
+            assertThat(result.entries().get(0).balance()).isEqualByComparingTo("0");
+        }
+
+        @Test
+        @DisplayName("貸方勘定でも null の金額は 0 として計算する")
+        void shouldDefaultNullAmountsForCreditAccount() {
+            LocalDate dateFrom = LocalDate.of(2024, 6, 1);
+            LocalDate dateTo = LocalDate.of(2024, 6, 30);
+            GetDailyBalanceQuery query = new GetDailyBalanceQuery(5, dateFrom, dateTo);
+
+            Account account = Account.reconstruct(
+                    AccountId.of(5), AccountCode.of("2201"), "未払費用", AccountType.LIABILITY);
+
+            when(accountRepository.findById(AccountId.of(5)))
+                    .thenReturn(Optional.of(account));
+            when(journalEntryRepository.calculateBalanceBeforeDate(5, dateFrom))
+                    .thenReturn(new BigDecimal("-500"));
+            when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(5, dateFrom, dateTo))
+                    .thenReturn(List.of(
+                            new DailyBalanceEntry(
+                                    LocalDate.of(2024, 6, 10),
+                                    null,
+                                    null,
+                                    null,
+                                    1L
+                            )
+                    ));
+
+            GetDailyBalanceResult result = service.execute(query);
+
+            assertThat(result.openingBalance()).isEqualByComparingTo("500");
+            assertThat(result.debitTotal()).isEqualByComparingTo("0");
+            assertThat(result.creditTotal()).isEqualByComparingTo("0");
+            assertThat(result.closingBalance()).isEqualByComparingTo("500");
+            assertThat(result.entries()).hasSize(1);
+            assertThat(result.entries().get(0).balance()).isEqualByComparingTo("500");
         }
     }
 }
