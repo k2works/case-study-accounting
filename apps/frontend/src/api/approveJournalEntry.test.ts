@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AxiosError } from 'axios';
 import { axiosInstance } from './axios-instance';
 import { approveJournalEntry, approveJournalEntryErrorMessage } from './approveJournalEntry';
+import { createErrorMessageTestCases } from './api-test-helpers';
 
 vi.mock('./axios-instance', () => ({
   axiosInstance: {
@@ -30,37 +30,13 @@ describe('approveJournalEntry', () => {
 });
 
 describe('approveJournalEntryErrorMessage', () => {
-  it('404 の場合は仕訳が見つかりませんを返す', () => {
-    const error = new AxiosError('Not found');
-    error.response = {
-      data: {},
-      status: 404,
-      statusText: 'Not Found',
-      headers: {},
-      config: {} as never,
-    };
-
-    expect(approveJournalEntryErrorMessage(error)).toBe('仕訳が見つかりません');
+  const testCases = createErrorMessageTestCases(approveJournalEntryErrorMessage, {
+    notFoundMessage: '仕訳が見つかりません',
+    customErrorMessage: '承認できません',
+    defaultErrorMessage: '承認に失敗しました',
   });
 
-  it('API の errorMessage を優先して返す', () => {
-    const error = new AxiosError('Bad Request');
-    error.response = {
-      data: { errorMessage: '承認できません' },
-      status: 400,
-      statusText: 'Bad Request',
-      headers: {},
-      config: {} as never,
-    };
-
-    expect(approveJournalEntryErrorMessage(error)).toBe('承認できません');
-  });
-
-  it('汎用 Error の message を返す', () => {
-    expect(approveJournalEntryErrorMessage(new Error('failure'))).toBe('failure');
-  });
-
-  it('未知のエラーはデフォルトメッセージを返す', () => {
-    expect(approveJournalEntryErrorMessage('unknown')).toBe('承認に失敗しました');
+  testCases.forEach(({ name, run }) => {
+    it(name, run);
   });
 });

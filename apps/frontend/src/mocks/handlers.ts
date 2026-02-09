@@ -596,6 +596,71 @@ let nextJournalEntryId = 200;
 
 type MockEntry = (typeof mockJournalEntries)[number];
 
+// 仕訳ステータス変更ハンドラー設定
+interface StatusChangeConfig {
+  action: string;
+  requiredStatus: string;
+  newStatus: string;
+  errorMessage: string;
+  successMessage: string;
+  additionalFields?: Record<string, unknown>;
+}
+
+const createJournalStatusHandler = (config: StatusChangeConfig) => {
+  const { action, requiredStatus, newStatus, errorMessage, successMessage, additionalFields } =
+    config;
+  const pattern = new RegExp(`\\/journal-entries\\/(\\d+)\\/${action}$`);
+
+  return http.post(pattern, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(pattern);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    if (entry.status !== requiredStatus) {
+      return HttpResponse.json({ success: false, errorMessage }, { status: 400 });
+    }
+
+    entry.status = newStatus;
+
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: id,
+      status: newStatus,
+      message: successMessage,
+      ...additionalFields,
+    });
+  });
+};
+
+const createJournalStatusHandlers = () => [
+  createJournalStatusHandler({
+    action: 'submit',
+    requiredStatus: 'DRAFT',
+    newStatus: 'PENDING',
+    errorMessage: '下書き状態の仕訳のみ承認申請可能です',
+    successMessage: '仕訳を承認申請しました',
+  }),
+  createJournalStatusHandler({
+    action: 'approve',
+    requiredStatus: 'PENDING',
+    newStatus: 'APPROVED',
+    errorMessage: '承認待ち状態の仕訳のみ承認可能です',
+    successMessage: '仕訳を承認しました',
+    additionalFields: {
+      approvedBy: 'manager',
+      approvedAt: new Date().toISOString(),
+    },
+  }),
+];
+
 const applySearchFilters = (entries: MockEntry[], params: URLSearchParams): MockEntry[] => {
   let filtered = [...entries];
   const statusParams = params.getAll('status');
@@ -820,70 +885,8 @@ export const journalEntryHandlers = [
     });
   }),
 
-  // 仕訳承認申請 (US-JNL-007)
-  http.post(/\/journal-entries\/(\d+)\/submit$/, ({ request }) => {
-    const url = new URL(request.url);
-    const match = url.pathname.match(/\/journal-entries\/(\d+)\/submit$/);
-    const id = match ? parseInt(match[1], 10) : 0;
-
-    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
-    if (!entry) {
-      return HttpResponse.json(
-        { success: false, errorMessage: '仕訳が見つかりません' },
-        { status: 404 }
-      );
-    }
-
-    if (entry.status !== 'DRAFT') {
-      return HttpResponse.json(
-        { success: false, errorMessage: '下書き状態の仕訳のみ承認申請可能です' },
-        { status: 400 }
-      );
-    }
-
-    // ステータスを更新
-    entry.status = 'PENDING';
-
-    return HttpResponse.json({
-      success: true,
-      journalEntryId: id,
-      status: 'PENDING',
-      message: '仕訳を承認申請しました',
-    });
-  }),
-  // 仕訳承認 (US-JNL-008)
-  http.post(/\/journal-entries\/(\d+)\/approve$/, ({ request }) => {
-    const url = new URL(request.url);
-    const match = url.pathname.match(/\/journal-entries\/(\d+)\/approve$/);
-    const id = match ? parseInt(match[1], 10) : 0;
-
-    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
-    if (!entry) {
-      return HttpResponse.json(
-        { success: false, errorMessage: '仕訳が見つかりません' },
-        { status: 404 }
-      );
-    }
-
-    if (entry.status !== 'PENDING') {
-      return HttpResponse.json(
-        { success: false, errorMessage: '承認待ち状態の仕訳のみ承認可能です' },
-        { status: 400 }
-      );
-    }
-
-    // ステータスを更新
-    entry.status = 'APPROVED';
-
-    return HttpResponse.json({
-      success: true,
-      journalEntryId: id,
-      status: 'APPROVED',
-      approvedBy: 'manager',
-      approvedAt: new Date().toISOString(),
-      message: '仕訳を承認しました',
-    });
-  }),
+  // 仕訳ステータス変更ハンドラーのファクトリ
+  ...createJournalStatusHandlers(),
 ];
 
 // 総勘定元帳モックデータ
@@ -1012,22 +1015,24 @@ const mockDailyBalanceEntries: DailyBalanceEntry[] = [
   },
 ];
 
-// 総勘定元帳ヘルパー関数
-const filterEntriesByDateRange = (
-  entries: GeneralLedgerEntry[],
+// 日付範囲フィルタリング共通関数
+const filterByDateRange = <T>(
+  entries: T[],
   dateFrom: string | null,
-  dateTo: string | null
-): GeneralLedgerEntry[] => {
+  dateTo: string | null,
+  getDate: (entry: T) => string
+): T[] => {
   let filtered = [...entries];
   if (dateFrom) {
-    filtered = filtered.filter((entry) => entry.journalDate >= dateFrom);
+    filtered = filtered.filter((entry) => getDate(entry) >= dateFrom);
   }
   if (dateTo) {
-    filtered = filtered.filter((entry) => entry.journalDate <= dateTo);
+    filtered = filtered.filter((entry) => getDate(entry) <= dateTo);
   }
   return filtered;
 };
 
+// 総勘定元帳ヘルパー関数
 const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedgerEntry[] => {
   let runningBalance = 0;
   return entries.map((entry) => {
@@ -1036,21 +1041,7 @@ const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedge
   });
 };
 
-const filterDailyEntriesByDateRange = (
-  entries: DailyBalanceEntry[],
-  dateFrom: string | null,
-  dateTo: string | null
-): DailyBalanceEntry[] => {
-  let filtered = [...entries];
-  if (dateFrom) {
-    filtered = filtered.filter((entry) => entry.date >= dateFrom);
-  }
-  if (dateTo) {
-    filtered = filtered.filter((entry) => entry.date <= dateTo);
-  }
-  return filtered;
-};
-
+// 日次残高ヘルパー関数
 const recalculateDailyBalances = (entries: DailyBalanceEntry[]): DailyBalanceEntry[] => {
   let balance = 0;
   return entries.map((entry) => {
@@ -1122,7 +1113,12 @@ export const generalLedgerHandlers = [
       return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
     }
 
-    const filtered = filterEntriesByDateRange(mockGeneralLedgerEntries, dateFrom, dateTo);
+    const filtered = filterByDateRange(
+      mockGeneralLedgerEntries,
+      dateFrom,
+      dateTo,
+      (e) => e.journalDate
+    );
     const withBalances = recalculateRunningBalances(filtered);
     const start = page * size;
     const content = withBalances.slice(start, start + size);
@@ -1146,7 +1142,7 @@ export const dailyBalanceHandlers = [
       return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
     }
 
-    const filtered = filterDailyEntriesByDateRange(mockDailyBalanceEntries, dateFrom, dateTo);
+    const filtered = filterByDateRange(mockDailyBalanceEntries, dateFrom, dateTo, (e) => e.date);
     const withBalances = recalculateDailyBalances(filtered);
     const result = buildDailyBalanceResult(withBalances, accountId);
 
