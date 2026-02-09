@@ -63,6 +63,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<User> search(String role, String keyword) {
+        return userMapper.search(role, keyword).stream()
+                .map(UserEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public void deleteById(UserId id) {
         userMapper.deleteById(id.value());
     }

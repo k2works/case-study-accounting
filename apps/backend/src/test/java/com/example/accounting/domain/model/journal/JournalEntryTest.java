@@ -163,6 +163,8 @@ class JournalEntryTest {
                     1,
                     List.of(),
                     CREATED_BY,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -209,6 +211,8 @@ class JournalEntryTest {
                 3,
                 lines,
                 CREATED_BY,
+                UserId.of("approver-1"),
+                LocalDateTime.of(2024, 1, 2, 12, 0, 0),
                 createdAt,
                 updatedAt
         );
@@ -273,7 +277,7 @@ class JournalEntryTest {
 
         assertThatThrownBy(() -> JournalEntry.reconstruct(
                 id, JOURNAL_DATE, "摘要", JournalEntryStatus.DRAFT,
-                0, null, CREATED_BY, now, now))
+                0, null, CREATED_BY, null, null, now, now))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("明細は必須");
     }
@@ -337,6 +341,118 @@ class JournalEntryTest {
             assertThatThrownBy(entry::validateForSave)
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("貸借一致");
+        }
+    }
+
+    @Nested
+    @DisplayName("submitForApproval")
+    class SubmitForApproval {
+
+        @Test
+        @DisplayName("下書き状態の仕訳を承認申請できる")
+        void shouldSubmitDraftJournalEntry() {
+            JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "承認申請", CREATED_BY, 0);
+
+            JournalEntry submitted = entry.submitForApproval();
+
+            assertThat(submitted.getStatus()).isEqualTo(JournalEntryStatus.PENDING);
+            assertThat(entry.getStatus()).isEqualTo(JournalEntryStatus.DRAFT);
+        }
+
+        @Test
+        @DisplayName("下書き以外のステータスでは承認申請できない")
+        void shouldThrowExceptionWhenStatusIsNotDraft() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "承認申請",
+                    JournalEntryStatus.APPROVED,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(entry::submitForApproval)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("下書き状態の仕訳のみ承認申請可能です");
+        }
+    }
+
+    @Nested
+    @DisplayName("approve")
+    class Approve {
+
+        @Test
+        @DisplayName("承認待ち状態の仕訳を承認できる")
+        void shouldApprovePendingJournalEntry() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "承認",
+                    JournalEntryStatus.PENDING,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+            LocalDateTime approvedAt = LocalDateTime.of(2024, 2, 1, 10, 0, 0);
+
+            JournalEntry approved = entry.approve(UserId.of("approver-1"), approvedAt);
+
+            assertThat(approved.getStatus()).isEqualTo(JournalEntryStatus.APPROVED);
+            assertThat(approved.getApprovedBy()).isEqualTo(UserId.of("approver-1"));
+            assertThat(approved.getApprovedAt()).isEqualTo(approvedAt);
+        }
+
+        @Test
+        @DisplayName("承認待ち以外のステータスでは承認できない")
+        void shouldThrowExceptionWhenStatusIsNotPending() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "承認",
+                    JournalEntryStatus.DRAFT,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(() -> entry.approve(UserId.of("approver-1"), LocalDateTime.now()))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("承認待ち状態の仕訳のみ承認可能です");
+        }
+
+        @Test
+        @DisplayName("承認者が null の場合は例外をスローする")
+        void shouldThrowExceptionWhenApproverIsNull() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "承認",
+                    JournalEntryStatus.PENDING,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(() -> entry.approve(null, LocalDateTime.now()))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("承認者は必須です");
         }
     }
 

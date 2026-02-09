@@ -54,6 +54,15 @@ public interface UserRepository {
     List<User> findAll();
 
     /**
+     * 条件でユーザーを検索する
+     *
+     * @param role    ロール（null の場合は全件）
+     * @param keyword 検索キーワード（null の場合は全件）
+     * @return ユーザーリスト
+     */
+    List<User> search(String role, String keyword);
+
+    /**
      * ユーザーを削除する
      *
      * @param id ユーザーID

@@ -51,6 +51,7 @@
 - [イテレーション計画 2](./development/iteration_plan-2.md) - イテレーション2の詳細計画
 - [イテレーション計画 3](./development/iteration_plan-3.md) - イテレーション3の詳細計画
 - [イテレーション計画 4](./development/iteration_plan-4.md) - イテレーション4の詳細計画
+- [イテレーション計画 5](./development/iteration_plan-5.md) - イテレーション5の詳細計画
 
 ### ふりかえり
 
@@ -58,6 +59,7 @@
 - [イテレーション 2 ふりかえり](./development/retrospective-2.md) - イテレーション2の KPT 分析
 - [イテレーション 3 ふりかえり](./development/retrospective-3.md) - イテレーション3の KPT 分析
 - [イテレーション 4 ふりかえり](./development/retrospective-4.md) - イテレーション4の KPT 分析
+- [イテレーション 5 ふりかえり](./development/retrospective-5.md) - イテレーション5の KPT 分析
 
 ## 運用
 

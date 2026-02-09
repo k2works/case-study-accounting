@@ -49,6 +49,69 @@ const mockUsers: Record<string, { password: string; role: string }> = {
   viewer: { password: 'Password123!', role: 'VIEWER' },
 };
 
+interface UserRecord {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  role: string;
+  lastLoginAt: string | null;
+}
+
+const mockUserRecords: UserRecord[] = [
+  {
+    id: '101',
+    username: 'user_edit_nav',
+    email: 'nav@example.com',
+    displayName: 'ナビゲーション',
+    role: 'USER',
+    lastLoginAt: '2024-01-15T10:30:00',
+  },
+  {
+    id: '102',
+    username: 'user_edit_readonly',
+    email: 'readonly@example.com',
+    displayName: 'リードオンリー',
+    role: 'MANAGER',
+    lastLoginAt: '2024-02-10T14:00:00',
+  },
+  {
+    id: '103',
+    username: 'user_edit_display',
+    email: 'display@example.com',
+    displayName: '表示名テスト',
+    role: 'USER',
+    lastLoginAt: null,
+  },
+  {
+    id: '104',
+    username: 'user_edit_role',
+    email: 'role@example.com',
+    displayName: 'ロールテスト',
+    role: 'VIEWER',
+    lastLoginAt: '2024-03-05T09:15:00',
+  },
+  {
+    id: '105',
+    username: 'user_edit_password',
+    email: 'password@example.com',
+    displayName: 'パスワードテスト',
+    role: 'ADMIN',
+    lastLoginAt: '2024-03-20T16:45:00',
+  },
+  {
+    id: '106',
+    username: 'user_edit_validate',
+    email: 'validate@example.com',
+    displayName: 'バリデーション',
+    role: 'USER',
+    lastLoginAt: '2024-01-01T08:00:00',
+  },
+];
+
+const findUserRecord = (id: string): UserRecord | undefined =>
+  mockUserRecords.find((user) => user.id === id);
+
 // エラーユーザー定義
 const errorUsers: Record<string, string> = {
   locked:
@@ -148,6 +211,106 @@ export const authHandlers = [
       email: body.email,
       displayName: body.displayName,
       role: body.role,
+    });
+  }),
+];
+
+/**
+ * ユーザー関連のハンドラー
+ */
+export const userHandlers = [
+  // ユーザー一覧取得（フィルター/検索対応）
+  http.get(/\/users\/?$/, ({ request }) => {
+    const url = new URL(request.url);
+    const role = url.searchParams.get('role');
+    const keyword = url.searchParams.get('keyword');
+
+    let filtered = [...mockUserRecords];
+
+    // ロールでフィルタリング
+    if (role) {
+      filtered = filtered.filter((user) => user.role === role);
+    }
+
+    // キーワードで検索（ユーザーIDまたは表示名）
+    if (keyword) {
+      const lowerKeyword = keyword.toLowerCase();
+      filtered = filtered.filter(
+        (user) =>
+          user.username.toLowerCase().includes(lowerKeyword) ||
+          user.displayName.toLowerCase().includes(lowerKeyword)
+      );
+    }
+
+    return HttpResponse.json<UserRecord[]>(filtered);
+  }),
+
+  // ユーザー詳細取得
+  http.get(/\/users\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/users\/([^/]+)$/);
+    const id = match ? decodeURIComponent(match[1]) : '';
+    const user = findUserRecord(id);
+
+    if (!user) {
+      return HttpResponse.json({ errorMessage: 'ユーザーが見つかりません' }, { status: 404 });
+    }
+
+    return HttpResponse.json<UserRecord>(user);
+  }),
+
+  // ユーザー更新
+  http.put(/\/users\/([^/]+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/users\/([^/]+)$/);
+    const id = match ? decodeURIComponent(match[1]) : '';
+    const body = (await request.json()) as {
+      displayName: string;
+      role: string;
+      password?: string;
+    };
+
+    const user = findUserRecord(id);
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, errorMessage: 'ユーザーが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    user.displayName = body.displayName;
+    user.role = body.role;
+
+    return HttpResponse.json({
+      success: true,
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName,
+      role: user.role,
+    });
+  }),
+
+  // ユーザー削除（論理削除）
+  http.delete(/\/users\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/users\/([^/]+)$/);
+    const id = match ? decodeURIComponent(match[1]) : '';
+
+    const userIndex = mockUserRecords.findIndex((user) => user.id === id);
+    if (userIndex === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: 'ユーザーが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    // 論理削除: mockUserRecords から削除（フロントエンドでは一覧から消える）
+    mockUserRecords.splice(userIndex, 1);
+
+    return HttpResponse.json({
+      success: true,
+      errorMessage: null,
     });
   }),
 ];
@@ -433,6 +596,71 @@ let nextJournalEntryId = 200;
 
 type MockEntry = (typeof mockJournalEntries)[number];
 
+// 仕訳ステータス変更ハンドラー設定
+interface StatusChangeConfig {
+  action: string;
+  requiredStatus: string;
+  newStatus: string;
+  errorMessage: string;
+  successMessage: string;
+  additionalFields?: Record<string, unknown>;
+}
+
+const createJournalStatusHandler = (config: StatusChangeConfig) => {
+  const { action, requiredStatus, newStatus, errorMessage, successMessage, additionalFields } =
+    config;
+  const pattern = new RegExp(`\\/journal-entries\\/(\\d+)\\/${action}$`);
+
+  return http.post(pattern, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(pattern);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    if (entry.status !== requiredStatus) {
+      return HttpResponse.json({ success: false, errorMessage }, { status: 400 });
+    }
+
+    entry.status = newStatus;
+
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: id,
+      status: newStatus,
+      message: successMessage,
+      ...additionalFields,
+    });
+  });
+};
+
+const createJournalStatusHandlers = () => [
+  createJournalStatusHandler({
+    action: 'submit',
+    requiredStatus: 'DRAFT',
+    newStatus: 'PENDING',
+    errorMessage: '下書き状態の仕訳のみ承認申請可能です',
+    successMessage: '仕訳を承認申請しました',
+  }),
+  createJournalStatusHandler({
+    action: 'approve',
+    requiredStatus: 'PENDING',
+    newStatus: 'APPROVED',
+    errorMessage: '承認待ち状態の仕訳のみ承認可能です',
+    successMessage: '仕訳を承認しました',
+    additionalFields: {
+      approvedBy: 'manager',
+      approvedAt: new Date().toISOString(),
+    },
+  }),
+];
+
 const applySearchFilters = (entries: MockEntry[], params: URLSearchParams): MockEntry[] => {
   let filtered = [...entries];
   const statusParams = params.getAll('status');
@@ -656,6 +884,9 @@ export const journalEntryHandlers = [
       message: '仕訳を削除しました',
     });
   }),
+
+  // 仕訳ステータス変更ハンドラーのファクトリ
+  ...createJournalStatusHandlers(),
 ];
 
 // 総勘定元帳モックデータ
@@ -784,22 +1015,24 @@ const mockDailyBalanceEntries: DailyBalanceEntry[] = [
   },
 ];
 
-// 総勘定元帳ヘルパー関数
-const filterEntriesByDateRange = (
-  entries: GeneralLedgerEntry[],
+// 日付範囲フィルタリング共通関数
+const filterByDateRange = <T>(
+  entries: T[],
   dateFrom: string | null,
-  dateTo: string | null
-): GeneralLedgerEntry[] => {
+  dateTo: string | null,
+  getDate: (entry: T) => string
+): T[] => {
   let filtered = [...entries];
   if (dateFrom) {
-    filtered = filtered.filter((entry) => entry.journalDate >= dateFrom);
+    filtered = filtered.filter((entry) => getDate(entry) >= dateFrom);
   }
   if (dateTo) {
-    filtered = filtered.filter((entry) => entry.journalDate <= dateTo);
+    filtered = filtered.filter((entry) => getDate(entry) <= dateTo);
   }
   return filtered;
 };
 
+// 総勘定元帳ヘルパー関数
 const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedgerEntry[] => {
   let runningBalance = 0;
   return entries.map((entry) => {
@@ -808,21 +1041,7 @@ const recalculateRunningBalances = (entries: GeneralLedgerEntry[]): GeneralLedge
   });
 };
 
-const filterDailyEntriesByDateRange = (
-  entries: DailyBalanceEntry[],
-  dateFrom: string | null,
-  dateTo: string | null
-): DailyBalanceEntry[] => {
-  let filtered = [...entries];
-  if (dateFrom) {
-    filtered = filtered.filter((entry) => entry.date >= dateFrom);
-  }
-  if (dateTo) {
-    filtered = filtered.filter((entry) => entry.date <= dateTo);
-  }
-  return filtered;
-};
-
+// 日次残高ヘルパー関数
 const recalculateDailyBalances = (entries: DailyBalanceEntry[]): DailyBalanceEntry[] => {
   let balance = 0;
   return entries.map((entry) => {
@@ -894,7 +1113,12 @@ export const generalLedgerHandlers = [
       return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
     }
 
-    const filtered = filterEntriesByDateRange(mockGeneralLedgerEntries, dateFrom, dateTo);
+    const filtered = filterByDateRange(
+      mockGeneralLedgerEntries,
+      dateFrom,
+      dateTo,
+      (e) => e.journalDate
+    );
     const withBalances = recalculateRunningBalances(filtered);
     const start = page * size;
     const content = withBalances.slice(start, start + size);
@@ -918,7 +1142,7 @@ export const dailyBalanceHandlers = [
       return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
     }
 
-    const filtered = filterDailyEntriesByDateRange(mockDailyBalanceEntries, dateFrom, dateTo);
+    const filtered = filterByDateRange(mockDailyBalanceEntries, dateFrom, dateTo, (e) => e.date);
     const withBalances = recalculateDailyBalances(filtered);
     const result = buildDailyBalanceResult(withBalances, accountId);
 
@@ -931,6 +1155,7 @@ export const dailyBalanceHandlers = [
  */
 export const handlers = [
   ...authHandlers,
+  ...userHandlers,
   ...accountHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,

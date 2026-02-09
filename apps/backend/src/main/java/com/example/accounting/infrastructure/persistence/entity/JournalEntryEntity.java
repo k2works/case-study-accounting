@@ -26,7 +26,9 @@ public class JournalEntryEntity {
     private String status;
     private Integer version;
     private String createdBy;
+    private String approvedBy;
     private OffsetDateTime createdAt;
+    private OffsetDateTime approvedAt;
     private OffsetDateTime updatedAt;
     // MyBatisがcollectionマッピングで要素を追加できるように可変リストで初期化
     private List<JournalEntryLineEntity> lines = new ArrayList<>();
@@ -58,7 +60,11 @@ public class JournalEntryEntity {
         if (journalEntry.getCreatedBy() != null) {
             entity.setCreatedBy(journalEntry.getCreatedBy().value());
         }
+        if (journalEntry.getApprovedBy() != null) {
+            entity.setApprovedBy(journalEntry.getApprovedBy().value());
+        }
         entity.setCreatedAt(toOffsetDateTime(journalEntry.getCreatedAt()));
+        entity.setApprovedAt(toOffsetDateTime(journalEntry.getApprovedAt()));
         entity.setUpdatedAt(toOffsetDateTime(journalEntry.getUpdatedAt()));
         entity.setLines(journalEntry.getLines().stream()
                 .map(line -> JournalEntryLineEntity.fromDomain(line, entity.getId()))
@@ -81,6 +87,8 @@ public class JournalEntryEntity {
                 version,
                 domainLines,
                 createdBy == null ? null : UserId.of(createdBy),
+                approvedBy == null ? null : UserId.of(approvedBy),
+                approvedAt == null ? null : approvedAt.toLocalDateTime(),
                 createdAt == null ? null : createdAt.toLocalDateTime(),
                 updatedAt == null ? null : updatedAt.toLocalDateTime()
         );
@@ -142,12 +150,28 @@ public class JournalEntryEntity {
         this.createdBy = createdBy;
     }
 
+    public String getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(String approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public OffsetDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(OffsetDateTime approvedAt) {
+        this.approvedAt = approvedAt;
     }
 
     public OffsetDateTime getUpdatedAt() {

@@ -69,6 +69,22 @@ public interface UserMapper {
     @ResultMap("userResultMap")
     List<UserEntity> findAll();
 
+    @Select("""
+            <script>
+            SELECT * FROM users
+            WHERE 1=1
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+            <if test="keyword != null">
+                AND (username LIKE CONCAT('%', #{keyword}, '%') OR display_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            ORDER BY created_at DESC
+            </script>
+            """)
+    @ResultMap("userResultMap")
+    List<UserEntity> search(@Param("role") String role, @Param("keyword") String keyword);
+
     @Delete("DELETE FROM users WHERE id = #{id}")
     void deleteById(String id);
 

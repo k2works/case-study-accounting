@@ -27,6 +27,8 @@ public class JournalEntry {
     LocalDate journalDate;
     String description;
     JournalEntryStatus status;
+    UserId approvedBy;
+    LocalDateTime approvedAt;
     Integer version;
     List<JournalEntryLine> lines;
     UserId createdBy;
@@ -82,6 +84,8 @@ public class JournalEntry {
                 journalDate,
                 description,
                 JournalEntryStatus.DRAFT,
+                null,
+                null,
                 version,
                 List.of(),
                 createdBy,
@@ -111,6 +115,8 @@ public class JournalEntry {
                                            Integer version,
                                            List<JournalEntryLine> lines,
                                            UserId createdBy,
+                                           UserId approvedBy,
+                                           LocalDateTime approvedAt,
                                            LocalDateTime createdAt,
                                            LocalDateTime updatedAt) {
         return new JournalEntry(
@@ -118,6 +124,8 @@ public class JournalEntry {
                 journalDate,
                 description,
                 status,
+                approvedBy,
+                approvedAt,
                 version,
                 List.copyOf(requireLines(lines)),
                 createdBy,
@@ -160,6 +168,41 @@ public class JournalEntry {
                 .description(newDescription)
                 .lines(newLines == null ? List.of() : List.copyOf(newLines))
                 .updatedAt(clockSupplier.get())
+                .build();
+    }
+
+    /**
+     * 承認申請を行う
+     *
+     * @return 承認待ち状態の JournalEntry
+     * @throws IllegalStateException 下書き以外のステータスの場合
+     */
+    public JournalEntry submitForApproval() {
+        if (status != JournalEntryStatus.DRAFT) {
+            throw new IllegalStateException("下書き状態の仕訳のみ承認申請可能です");
+        }
+        return this.withStatus(JournalEntryStatus.PENDING);
+    }
+
+    /**
+     * 仕訳を承認する
+     *
+     * @param approver 承認者
+     * @param approvedAt 承認日時
+     * @return 承認済み状態の JournalEntry
+     * @throws IllegalStateException 承認待ち以外のステータスの場合
+     */
+    public JournalEntry approve(UserId approver, LocalDateTime approvedAt) {
+        if (status != JournalEntryStatus.PENDING) {
+            throw new IllegalStateException("承認待ち状態の仕訳のみ承認可能です");
+        }
+        if (approver == null) {
+            throw new IllegalArgumentException("承認者は必須です");
+        }
+        return this.toBuilder()
+                .status(JournalEntryStatus.APPROVED)
+                .approvedBy(approver)
+                .approvedAt(approvedAt)
                 .build();
     }
 

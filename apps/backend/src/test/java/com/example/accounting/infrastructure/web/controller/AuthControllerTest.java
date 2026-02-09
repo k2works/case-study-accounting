@@ -130,7 +130,7 @@ class AuthControllerTest {
         void shouldFailWithDeactivatedAccount() {
             // Given
             LoginRequest request = new LoginRequest("deactivateduser", "Password123!");
-            LoginResult result = LoginResult.failure("アカウントが無効化されています");
+            LoginResult result = LoginResult.failure("アカウントが無効です");
             when(authUseCase.execute(any(LoginCommand.class))).thenReturn(result);
 
             // When
@@ -140,7 +140,7 @@ class AuthControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
-            assertThat(response.getBody().errorMessage()).isEqualTo("アカウントが無効化されています");
+            assertThat(response.getBody().errorMessage()).isEqualTo("アカウントが無効です");
         }
     }
 }

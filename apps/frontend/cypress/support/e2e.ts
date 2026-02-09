@@ -78,6 +78,33 @@ declare global {
        * @param tableTestId - 結果テーブルのdata-testid
        */
       selectAccountAndWaitForTable(selectId: string, tableTestId: string): Chainable<void>;
+
+      /**
+       * 仕訳一覧をステータスでフィルタリング
+       * @param status - ステータス値 (DRAFT, PENDING, APPROVED)
+       */
+      filterJournalEntriesByStatus(status: 'DRAFT' | 'PENDING' | 'APPROVED'): Chainable<void>;
+
+      /**
+       * テーブルの先頭行でボタンの存在を確認
+       * @param buttonText - ボタンのテキスト
+       * @param shouldExist - 存在すべきか
+       */
+      checkButtonInFirstRow(buttonText: string, shouldExist: boolean): Chainable<void>;
+
+      /**
+       * テーブルの先頭行でボタンをクリック（確認ダイアログ付き）
+       * @param buttonText - ボタンのテキスト
+       * @param confirmAction - true=OK, false=キャンセル
+       */
+      clickButtonInFirstRowWithConfirm(buttonText: string, confirmAction: boolean): Chainable<void>;
+
+      /**
+       * 承認ワークフロー用のログインと仕訳一覧遷移
+       * @param username - ユーザー名
+       * @param password - パスワード
+       */
+      loginAndVisitJournalList(username: string, password: string): Chainable<void>;
     }
   }
 }
@@ -247,6 +274,51 @@ Cypress.Commands.add('selectAccountAndWaitForTable', (selectId: string, tableTes
   cy.selectAccountOption(selectId);
   cy.wait(1000);
   cy.get(`[data-testid="${tableTestId}"]`, { timeout: 15000 }).should('be.visible');
+});
+
+/**
+ * 仕訳一覧をステータスでフィルタリング
+ */
+Cypress.Commands.add('filterJournalEntriesByStatus', (status: 'DRAFT' | 'PENDING' | 'APPROVED') => {
+  cy.get('#journal-entry-filter-status').select(status);
+  cy.contains('button', '検索').click();
+  cy.get('table tbody tr', { timeout: 10000 }).should('exist');
+});
+
+/**
+ * テーブルの先頭行でボタンの存在を確認
+ */
+Cypress.Commands.add('checkButtonInFirstRow', (buttonText: string, shouldExist: boolean) => {
+  if (shouldExist) {
+    cy.get('table tbody tr').first().contains('button', buttonText).should('be.visible');
+  } else {
+    // 完全一致で検索（「承認」と「承認申請」を区別）
+    cy.get('table tbody tr')
+      .first()
+      .find('button')
+      .contains(new RegExp(`^${buttonText}$`))
+      .should('not.exist');
+  }
+});
+
+/**
+ * テーブルの先頭行でボタンをクリック（確認ダイアログ付き）
+ */
+Cypress.Commands.add(
+  'clickButtonInFirstRowWithConfirm',
+  (buttonText: string, confirmAction: boolean) => {
+    cy.on('window:confirm', () => confirmAction);
+    cy.get('table tbody tr').first().contains('button', buttonText).click();
+  }
+);
+
+/**
+ * 承認ワークフロー用のログインと仕訳一覧遷移
+ */
+Cypress.Commands.add('loginAndVisitJournalList', (username: string, password: string) => {
+  cy.login(username, password);
+  cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+  cy.visitJournalEntryList();
 });
 
 export {};

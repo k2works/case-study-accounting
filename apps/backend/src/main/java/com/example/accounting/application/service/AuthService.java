@@ -90,7 +90,7 @@ public class AuthService implements AuthUseCase {
     private Either<String, User> validateAccountActive(User user) {
         return user.isActive()
                 ? Either.right(user)
-                : Either.left("アカウントが無効化されています。管理者にお問い合わせください。");
+                : Either.left("アカウントが無効です");
     }
 
     /**
