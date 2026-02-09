@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     description VARCHAR(255),
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     created_by VARCHAR(36),
+    approved_by VARCHAR(36),
+    approved_at TIMESTAMP,
     voucher_number VARCHAR(20),
     input_date DATE,
     is_closing_entry INTEGER DEFAULT 0 NOT NULL,
@@ -74,12 +76,14 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     version INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_journal_entries_user FOREIGN KEY (created_by) REFERENCES users(id)
+    CONSTRAINT fk_journal_entries_user FOREIGN KEY (created_by) REFERENCES users(id),
+    CONSTRAINT fk_journal_entries_approver FOREIGN KEY (approved_by) REFERENCES users(id)
 );
 
 -- インデックス
 CREATE INDEX IF NOT EXISTS idx_journal_entries_date ON journal_entries(journal_date);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_status ON journal_entries(status);
+CREATE INDEX IF NOT EXISTS idx_journal_entries_approved_by ON journal_entries(approved_by);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_is_closing ON journal_entries(is_closing_entry);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_is_red_slip ON journal_entries(is_red_slip);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_department ON journal_entries(department_code);

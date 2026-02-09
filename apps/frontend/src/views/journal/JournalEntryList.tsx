@@ -7,6 +7,10 @@ import {
   submitForApprovalErrorMessage,
 } from '../../api/submitJournalEntryForApproval';
 import {
+  approveJournalEntry,
+  approveJournalEntryErrorMessage,
+} from '../../api/approveJournalEntry';
+import {
   ErrorMessage,
   SuccessNotification,
   Table,
@@ -67,6 +71,9 @@ export const JournalEntryList: React.FC<JournalEntryListProps> = ({
   const [submitSuccessMessage, setSubmitSuccessMessage] = useState<string | null>(null);
   const [submitErrorMessage, setSubmitErrorMessage] = useState<string | null>(null);
   const [submittingEntryId, setSubmittingEntryId] = useState<number | null>(null);
+  const [approveSuccessMessage, setApproveSuccessMessage] = useState<string | null>(null);
+  const [approveErrorMessage, setApproveErrorMessage] = useState<string | null>(null);
+  const [approvingEntryId, setApprovingEntryId] = useState<number | null>(null);
 
   const handleEdit = useCallback(
     (entry: JournalEntrySummary) => {
@@ -129,6 +136,33 @@ export const JournalEntryList: React.FC<JournalEntryListProps> = ({
     [onDelete]
   );
 
+  const handleApprove = useCallback(
+    async (entry: JournalEntrySummary) => {
+      const isConfirmed = window.confirm(`仕訳「${entry.description}」を承認しますか？`);
+      if (!isConfirmed) {
+        return;
+      }
+
+      setApproveErrorMessage(null);
+      setApproveSuccessMessage(null);
+      setApprovingEntryId(entry.journalEntryId);
+
+      try {
+        const response = await approveJournalEntry(entry.journalEntryId);
+        if (!response.success) {
+          throw new Error(response.errorMessage || '承認に失敗しました');
+        }
+        setApproveSuccessMessage(response.message || '仕訳を承認しました');
+        onDelete();
+      } catch (error) {
+        setApproveErrorMessage(approveJournalEntryErrorMessage(error));
+      } finally {
+        setApprovingEntryId(null);
+      }
+    },
+    [onDelete]
+  );
+
   const columns = useMemo<TableColumn<JournalEntrySummary>[]>(
     () => [
       { key: 'journalEntryId', header: '仕訳番号', width: '100px' },
@@ -174,6 +208,16 @@ export const JournalEntryList: React.FC<JournalEntryListProps> = ({
                 承認申請
               </Button>
             )}
+            {row.status === 'PENDING' && (
+              <Button
+                variant="primary"
+                size="small"
+                onClick={() => void handleApprove(row)}
+                disabled={approvingEntryId === row.journalEntryId}
+              >
+                承認
+              </Button>
+            )}
             <Button
               variant="danger"
               size="small"
@@ -186,7 +230,15 @@ export const JournalEntryList: React.FC<JournalEntryListProps> = ({
         ),
       },
     ],
-    [deletingEntryId, handleDelete, handleEdit, handleSubmitForApproval, submittingEntryId]
+    [
+      approvingEntryId,
+      deletingEntryId,
+      handleApprove,
+      handleDelete,
+      handleEdit,
+      handleSubmitForApproval,
+      submittingEntryId,
+    ]
   );
 
   return (
@@ -226,6 +278,22 @@ export const JournalEntryList: React.FC<JournalEntryListProps> = ({
           <ErrorMessage
             message={submitErrorMessage}
             onDismiss={() => setSubmitErrorMessage(null)}
+          />
+        </div>
+      )}
+      {approveSuccessMessage && (
+        <div className="journal-entry-list__notification">
+          <SuccessNotification
+            message={approveSuccessMessage}
+            onDismiss={() => setApproveSuccessMessage(null)}
+          />
+        </div>
+      )}
+      {approveErrorMessage && (
+        <div className="journal-entry-list__notification">
+          <ErrorMessage
+            message={approveErrorMessage}
+            onDismiss={() => setApproveErrorMessage(null)}
           />
         </div>
       )}

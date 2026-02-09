@@ -4,15 +4,18 @@ import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
 import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
+import com.example.accounting.application.port.in.ApproveJournalEntryUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SubmitForApprovalUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
+import com.example.accounting.application.port.in.command.ApproveJournalEntryCommand;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.in.command.SubmitForApprovalCommand;
 import com.example.accounting.application.port.in.command.UpdateJournalEntryCommand;
+import com.example.accounting.application.port.out.ApproveJournalEntryResult;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
 import com.example.accounting.application.port.out.DeleteJournalEntryResult;
 import com.example.accounting.application.port.out.GetJournalEntriesResult;
@@ -21,6 +24,7 @@ import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.shared.OptimisticLockException;
+import com.example.accounting.infrastructure.web.dto.ApproveJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.DeleteJournalEntryResponse;
@@ -42,6 +46,8 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,6 +74,7 @@ public class JournalEntryController {
     private final GetJournalEntriesUseCase getJournalEntriesUseCase;
     private final SearchJournalEntriesUseCase searchJournalEntriesUseCase;
     private final SubmitForApprovalUseCase submitForApprovalUseCase;
+    private final ApproveJournalEntryUseCase approveJournalEntryUseCase;
     private final UserRepository userRepository;
 
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
@@ -77,6 +84,7 @@ public class JournalEntryController {
                                   GetJournalEntriesUseCase getJournalEntriesUseCase,
                                   SearchJournalEntriesUseCase searchJournalEntriesUseCase,
                                   SubmitForApprovalUseCase submitForApprovalUseCase,
+                                  ApproveJournalEntryUseCase approveJournalEntryUseCase,
                                   UserRepository userRepository) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
@@ -85,6 +93,7 @@ public class JournalEntryController {
         this.getJournalEntriesUseCase = getJournalEntriesUseCase;
         this.searchJournalEntriesUseCase = searchJournalEntriesUseCase;
         this.submitForApprovalUseCase = submitForApprovalUseCase;
+        this.approveJournalEntryUseCase = approveJournalEntryUseCase;
         this.userRepository = userRepository;
     }
 
@@ -356,6 +365,51 @@ public class JournalEntryController {
 
         return ResponseEntity.badRequest()
                 .body(SubmitForApprovalResponse.failure(result.errorMessage()));
+    }
+
+    /**
+     * 仕訳承認
+     */
+    @Operation(
+            summary = "仕訳承認",
+            description = "管理者またはマネージャーが仕訳を承認します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "承認成功"
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "承認失敗（ステータスエラー等）"
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "仕訳が見つからない"
+    )
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApproveJournalEntryResponse> approveJournalEntry(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        ApproveJournalEntryCommand command = new ApproveJournalEntryCommand(id, userDetails.getUsername());
+        ApproveJournalEntryResult result = approveJournalEntryUseCase.execute(command);
+
+        if (result.success()) {
+            return ResponseEntity.ok(ApproveJournalEntryResponse.success(
+                    result.journalEntryId(),
+                    result.status(),
+                    result.approvedBy(),
+                    result.approvedAt(),
+                    result.message()
+            ));
+        }
+
+        if ("仕訳が見つかりません".equals(result.errorMessage())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.badRequest()
+                .body(ApproveJournalEntryResponse.failure(result.errorMessage()));
     }
 
     /**

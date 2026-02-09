@@ -45,6 +45,8 @@ class JournalEntryEntityTest {
                     1,
                     List.of(debitLine, creditLine),
                     CREATED_BY,
+                    UserId.of("approver-1"),
+                    now,
                     now,
                     now
             );
@@ -57,7 +59,9 @@ class JournalEntryEntityTest {
             assertThat(entity.getStatus()).isEqualTo("DRAFT");
             assertThat(entity.getVersion()).isEqualTo(1);
             assertThat(entity.getCreatedBy()).isEqualTo("user-1");
+            assertThat(entity.getApprovedBy()).isEqualTo("approver-1");
             assertThat(entity.getCreatedAt()).isNotNull();
+            assertThat(entity.getApprovedAt()).isNotNull();
             assertThat(entity.getUpdatedAt()).isNotNull();
             assertThat(entity.getLines()).hasSize(2);
         }
@@ -88,13 +92,17 @@ class JournalEntryEntityTest {
                     List.of(),
                     null,
                     null,
+                    null,
+                    null,
                     null
             );
 
             JournalEntryEntity entity = JournalEntryEntity.fromDomain(entry);
 
             assertThat(entity.getCreatedBy()).isNull();
+            assertThat(entity.getApprovedBy()).isNull();
             assertThat(entity.getCreatedAt()).isNull();
+            assertThat(entity.getApprovedAt()).isNull();
             assertThat(entity.getUpdatedAt()).isNull();
         }
     }
@@ -113,7 +121,9 @@ class JournalEntryEntityTest {
             entity.setStatus("APPROVED");
             entity.setVersion(2);
             entity.setCreatedBy("user-1");
+            entity.setApprovedBy("approver-1");
             entity.setCreatedAt(java.time.OffsetDateTime.now());
+            entity.setApprovedAt(java.time.OffsetDateTime.now());
             entity.setUpdatedAt(java.time.OffsetDateTime.now());
 
             JournalEntry entry = entity.toDomain();
@@ -124,6 +134,8 @@ class JournalEntryEntityTest {
             assertThat(entry.getStatus()).isEqualTo(JournalEntryStatus.APPROVED);
             assertThat(entry.getVersion()).isEqualTo(2);
             assertThat(entry.getCreatedBy()).isEqualTo(CREATED_BY);
+            assertThat(entry.getApprovedBy()).isEqualTo(UserId.of("approver-1"));
+            assertThat(entry.getApprovedAt()).isNotNull();
         }
 
         @Test
@@ -136,13 +148,17 @@ class JournalEntryEntityTest {
             entity.setStatus("DRAFT");
             entity.setVersion(0);
             entity.setCreatedBy(null);
+            entity.setApprovedBy(null);
             entity.setCreatedAt(null);
+            entity.setApprovedAt(null);
             entity.setUpdatedAt(null);
 
             JournalEntry entry = entity.toDomain();
 
             assertThat(entry.getCreatedBy()).isNull();
+            assertThat(entry.getApprovedBy()).isNull();
             assertThat(entry.getCreatedAt()).isNull();
+            assertThat(entry.getApprovedAt()).isNull();
             assertThat(entry.getUpdatedAt()).isNull();
         }
 

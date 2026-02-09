@@ -851,6 +851,39 @@ export const journalEntryHandlers = [
       message: '仕訳を承認申請しました',
     });
   }),
+  // 仕訳承認 (US-JNL-008)
+  http.post(/\/journal-entries\/(\d+)\/approve$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)\/approve$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    if (entry.status !== 'PENDING') {
+      return HttpResponse.json(
+        { success: false, errorMessage: '承認待ち状態の仕訳のみ承認可能です' },
+        { status: 400 }
+      );
+    }
+
+    // ステータスを更新
+    entry.status = 'APPROVED';
+
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: id,
+      status: 'APPROVED',
+      approvedBy: 'manager',
+      approvedAt: new Date().toISOString(),
+      message: '仕訳を承認しました',
+    });
+  }),
 ];
 
 // 総勘定元帳モックデータ

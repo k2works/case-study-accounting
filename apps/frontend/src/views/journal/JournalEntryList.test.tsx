@@ -7,6 +7,7 @@ import type { JournalEntrySummary } from '../../api/getJournalEntries';
 import { useNavigate } from 'react-router-dom';
 import { deleteJournalEntry } from '../../api/deleteJournalEntry';
 import { submitJournalEntryForApproval } from '../../api/submitJournalEntryForApproval';
+import { approveJournalEntry } from '../../api/approveJournalEntry';
 
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
@@ -22,6 +23,12 @@ vi.mock('../../api/submitJournalEntryForApproval', () => ({
   submitJournalEntryForApproval: vi.fn(),
   submitForApprovalErrorMessage: (error: unknown) =>
     error instanceof Error ? error.message : '承認申請に失敗しました',
+}));
+
+vi.mock('../../api/approveJournalEntry', () => ({
+  approveJournalEntry: vi.fn(),
+  approveJournalEntryErrorMessage: (error: unknown) =>
+    error instanceof Error ? error.message : '承認に失敗しました',
 }));
 
 vi.mock('../common', () => ({
@@ -145,6 +152,7 @@ vi.mock('./JournalEntryList.css', () => ({}));
 const mockUseNavigate = vi.mocked(useNavigate);
 const mockDeleteJournalEntry = vi.mocked(deleteJournalEntry);
 const mockSubmitJournalEntryForApproval = vi.mocked(submitJournalEntryForApproval);
+const mockApproveJournalEntry = vi.mocked(approveJournalEntry);
 
 const mockEntries: JournalEntrySummary[] = [
   {
@@ -211,6 +219,12 @@ describe('JournalEntryList', () => {
       journalEntryId: 1,
       status: 'PENDING',
       message: '仕訳を承認申請しました',
+    });
+    mockApproveJournalEntry.mockResolvedValue({
+      success: true,
+      journalEntryId: 3,
+      status: 'APPROVED',
+      message: '仕訳を承認しました',
     });
   });
 
@@ -296,6 +310,23 @@ describe('JournalEntryList', () => {
     expect(submitButtons).toHaveLength(1);
   });
 
+  it('PENDING の仕訳に承認ボタンが表示される', () => {
+    render(<JournalEntryList {...defaultProps} />);
+
+    const approveButtons = screen.getAllByText('承認');
+    expect(approveButtons).toHaveLength(1);
+  });
+
+  it('PENDING 以外の仕訳に承認ボタンが表示されない', () => {
+    render(<JournalEntryList {...defaultProps} />);
+
+    const draftRow = screen.getByTestId('row-1');
+    const approvedRow = screen.getByTestId('row-2');
+
+    expect(within(draftRow).queryByText('承認')).not.toBeInTheDocument();
+    expect(within(approvedRow).queryByText('承認')).not.toBeInTheDocument();
+  });
+
   it('DRAFT 以外の仕訳に承認申請ボタンが表示されない', () => {
     render(<JournalEntryList {...defaultProps} />);
 
@@ -328,6 +359,31 @@ describe('JournalEntryList', () => {
 
     expect(await screen.findByTestId('success-notification')).toHaveTextContent(
       '仕訳を承認申請しました'
+    );
+  });
+
+  it('承認ボタンで確認ダイアログが表示される', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認'));
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockApproveJournalEntry).toHaveBeenCalledWith(3);
+  });
+
+  it('承認成功時に成功メッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認'));
+
+    expect(await screen.findByTestId('success-notification')).toHaveTextContent(
+      '仕訳を承認しました'
     );
   });
 });
