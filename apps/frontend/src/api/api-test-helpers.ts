@@ -83,3 +83,48 @@ export const createErrorMessageTestCases = (
     },
   }));
 };
+
+/**
+ * 仕訳ステータス変更 API テスト設定
+ */
+export interface JournalStatusApiTestConfig {
+  /** API 関数名（テスト説明用） */
+  apiName: string;
+  /** API エンドポイントのアクション部分（submit または approve） */
+  action: string;
+  /** 期待するステータス */
+  expectedStatus: string;
+  /** 成功メッセージ */
+  successMessage: string;
+  /** エラーメッセージ設定 */
+  errorMessages: ErrorMessageTestOptions;
+}
+
+/**
+ * 仕訳ステータス変更 API のテストケースを生成
+ */
+export const createJournalStatusApiTestCases = (config: JournalStatusApiTestConfig) => {
+  const { apiName, action, expectedStatus, successMessage } = config;
+
+  return {
+    apiTestName: apiName,
+    apiTestDescription: `${apiName} API を呼び出してレスポンスを返す`,
+    expectedEndpoint: (id: number) => `/api/journal-entries/${id}/${action}`,
+    mockResponse: {
+      success: true,
+      journalEntryId: 1,
+      status: expectedStatus,
+      message: successMessage,
+    },
+    expectedStatus,
+  };
+};
+
+/**
+ * axios post mock のファクトリを作成
+ */
+export const createAxiosPostMockFactory = () => ({
+  axiosInstance: {
+    post: () => Promise.resolve({ data: {} }),
+  },
+});
