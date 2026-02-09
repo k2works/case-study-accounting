@@ -111,11 +111,19 @@ public class Application {
     }
 
     /**
+     * DOCKER_HOST 環境変数が設定されていると Docker Desktop に接続できない場合があるため除外する
+     */
+    private static void clearDockerHostEnv(ProcessBuilder pb) {
+        pb.environment().remove("DOCKER_HOST");
+    }
+
+    /**
      * コンテナが存在するか確認
      */
     private static boolean containerExists() throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(DOCKER_PATH, "ps", "-a", "-q", "-f", "name=" + CONTAINER_NAME);
         pb.redirectErrorStream(true);
+        clearDockerHostEnv(pb);
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
@@ -134,6 +142,7 @@ public class Application {
         // 実行時のカレントディレクトリが apps/backend の場合、2つ上の階層
         ProcessBuilder pb = new ProcessBuilder(DOCKER_COMPOSE_PATH, "up", "-d", "postgres");
         pb.redirectErrorStream(true);
+        clearDockerHostEnv(pb);
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
@@ -146,6 +155,7 @@ public class Application {
             // docker-compose が失敗した場合、docker compose (V2) を試行
             ProcessBuilder pbV2 = new ProcessBuilder(DOCKER_PATH, "compose", "up", "-d", "postgres");
             pbV2.redirectErrorStream(true);
+            clearDockerHostEnv(pbV2);
             Process processV2 = pbV2.start();
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(processV2.getInputStream(), StandardCharsets.UTF_8))) {
@@ -166,6 +176,7 @@ public class Application {
         ProcessBuilder pb = new ProcessBuilder(
                 DOCKER_PATH, "inspect", "-f", "{{.State.Running}}", CONTAINER_NAME);
         pb.redirectErrorStream(true);
+        clearDockerHostEnv(pb);
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
@@ -182,6 +193,7 @@ public class Application {
     private static void startContainer() throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(DOCKER_PATH, "start", CONTAINER_NAME);
         pb.redirectErrorStream(true);
+        clearDockerHostEnv(pb);
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
@@ -226,6 +238,7 @@ public class Application {
         ProcessBuilder pb = new ProcessBuilder(
                 DOCKER_PATH, "inspect", "-f", "{{.State.Health.Status}}", CONTAINER_NAME);
         pb.redirectErrorStream(true);
+        clearDockerHostEnv(pb);
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(
