@@ -5,15 +5,18 @@ import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
+import com.example.accounting.application.port.in.SubmitForApprovalUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
+import com.example.accounting.application.port.in.command.SubmitForApprovalCommand;
 import com.example.accounting.application.port.in.command.UpdateJournalEntryCommand;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
 import com.example.accounting.application.port.out.DeleteJournalEntryResult;
 import com.example.accounting.application.port.out.GetJournalEntriesResult;
+import com.example.accounting.application.port.out.SubmitForApprovalResult;
 import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.User;
@@ -22,6 +25,7 @@ import com.example.accounting.infrastructure.web.dto.CreateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.DeleteJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.JournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.SubmitForApprovalResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryResponse;
 import com.example.accounting.infrastructure.web.exception.BusinessException;
@@ -63,6 +67,7 @@ public class JournalEntryController {
     private final DeleteJournalEntryUseCase deleteJournalEntryUseCase;
     private final GetJournalEntriesUseCase getJournalEntriesUseCase;
     private final SearchJournalEntriesUseCase searchJournalEntriesUseCase;
+    private final SubmitForApprovalUseCase submitForApprovalUseCase;
     private final UserRepository userRepository;
 
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
@@ -71,6 +76,7 @@ public class JournalEntryController {
                                   DeleteJournalEntryUseCase deleteJournalEntryUseCase,
                                   GetJournalEntriesUseCase getJournalEntriesUseCase,
                                   SearchJournalEntriesUseCase searchJournalEntriesUseCase,
+                                  SubmitForApprovalUseCase submitForApprovalUseCase,
                                   UserRepository userRepository) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
@@ -78,6 +84,7 @@ public class JournalEntryController {
         this.deleteJournalEntryUseCase = deleteJournalEntryUseCase;
         this.getJournalEntriesUseCase = getJournalEntriesUseCase;
         this.searchJournalEntriesUseCase = searchJournalEntriesUseCase;
+        this.submitForApprovalUseCase = submitForApprovalUseCase;
         this.userRepository = userRepository;
     }
 
@@ -308,6 +315,47 @@ public class JournalEntryController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(UpdateJournalEntryResponse.failure(ex.getMessage()));
         }
+    }
+
+    /**
+     * 仕訳承認申請
+     */
+    @Operation(
+            summary = "仕訳承認申請",
+            description = "経理担当者が仕訳を承認申請します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "承認申請成功"
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "承認申請失敗（ステータスエラー等）"
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "仕訳が見つからない"
+    )
+    @PostMapping("/{id}/submit")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    public ResponseEntity<SubmitForApprovalResponse> submitForApproval(@PathVariable Integer id) {
+        SubmitForApprovalCommand command = new SubmitForApprovalCommand(id);
+        SubmitForApprovalResult result = submitForApprovalUseCase.execute(command);
+
+        if (result.success()) {
+            return ResponseEntity.ok(SubmitForApprovalResponse.success(
+                    result.journalEntryId(),
+                    result.status(),
+                    result.message()
+            ));
+        }
+
+        if ("仕訳が見つかりません".equals(result.errorMessage())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.badRequest()
+                .body(SubmitForApprovalResponse.failure(result.errorMessage()));
     }
 
     /**

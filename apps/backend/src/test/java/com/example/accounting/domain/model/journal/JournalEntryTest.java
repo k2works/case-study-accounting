@@ -340,6 +340,42 @@ class JournalEntryTest {
         }
     }
 
+    @Nested
+    @DisplayName("submitForApproval")
+    class SubmitForApproval {
+
+        @Test
+        @DisplayName("下書き状態の仕訳を承認申請できる")
+        void shouldSubmitDraftJournalEntry() {
+            JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "承認申請", CREATED_BY, 0);
+
+            JournalEntry submitted = entry.submitForApproval();
+
+            assertThat(submitted.getStatus()).isEqualTo(JournalEntryStatus.PENDING);
+            assertThat(entry.getStatus()).isEqualTo(JournalEntryStatus.DRAFT);
+        }
+
+        @Test
+        @DisplayName("下書き以外のステータスでは承認申請できない")
+        void shouldThrowExceptionWhenStatusIsNotDraft() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "承認申請",
+                    JournalEntryStatus.APPROVED,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(entry::submitForApproval)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("下書き状態の仕訳のみ承認申請可能です");
+        }
+    }
+
     private JournalEntryLine debitLine(int lineNumber) {
         return JournalEntryLine.of(
                 lineNumber,

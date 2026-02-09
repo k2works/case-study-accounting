@@ -164,6 +164,19 @@ public class JournalEntry {
     }
 
     /**
+     * 承認申請を行う
+     *
+     * @return 承認待ち状態の JournalEntry
+     * @throws IllegalStateException 下書き以外のステータスの場合
+     */
+    public JournalEntry submitForApproval() {
+        if (status != JournalEntryStatus.DRAFT) {
+            throw new IllegalStateException("下書き状態の仕訳のみ承認申請可能です");
+        }
+        return this.withStatus(JournalEntryStatus.PENDING);
+    }
+
+    /**
      * 明細行を追加した新しい仕訳を返す
      *
      * @param line 追加する明細行
