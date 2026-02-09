@@ -819,6 +819,38 @@ export const journalEntryHandlers = [
       message: '仕訳を削除しました',
     });
   }),
+
+  // 仕訳承認申請 (US-JNL-007)
+  http.post(/\/journal-entries\/(\d+)\/submit$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/journal-entries\/(\d+)\/submit$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const entry = mockJournalEntries.find((e) => e.journalEntryId === id);
+    if (!entry) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '仕訳が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    if (entry.status !== 'DRAFT') {
+      return HttpResponse.json(
+        { success: false, errorMessage: '下書き状態の仕訳のみ承認申請可能です' },
+        { status: 400 }
+      );
+    }
+
+    // ステータスを更新
+    entry.status = 'PENDING';
+
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: id,
+      status: 'PENDING',
+      message: '仕訳を承認申請しました',
+    });
+  }),
 ];
 
 // 総勘定元帳モックデータ
