@@ -50,6 +50,8 @@ class JournalEntryEntityTest {
                     null,
                     null,
                     null,
+                    null,
+                    null,
                     now,
                     now
             );
@@ -100,6 +102,8 @@ class JournalEntryEntityTest {
                     UserId.of("manager-1"),
                     now,
                     "金額に誤りがあります",
+                    null,
+                    null,
                     now,
                     now
             );
@@ -121,6 +125,8 @@ class JournalEntryEntityTest {
                     JournalEntryStatus.DRAFT,
                     1,
                     List.of(),
+                    null,
+                    null,
                     null,
                     null,
                     null,

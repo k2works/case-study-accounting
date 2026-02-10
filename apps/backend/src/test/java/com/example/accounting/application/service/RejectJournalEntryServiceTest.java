@@ -214,6 +214,8 @@ class RejectJournalEntryServiceTest {
                 null,  // rejectedBy
                 null,  // rejectedAt
                 null,  // rejectionReason
+                null,
+                null,
                 LocalDateTime.of(2024, 1, 31, 10, 0),
                 LocalDateTime.of(2024, 1, 31, 10, 0)
         );
@@ -240,6 +242,8 @@ class RejectJournalEntryServiceTest {
                 null,  // rejectedBy
                 null,  // rejectedAt
                 null,  // rejectionReason
+                null,
+                null,
                 LocalDateTime.of(2024, 1, 31, 10, 0),
                 LocalDateTime.of(2024, 1, 31, 10, 0)
         );
@@ -266,6 +270,8 @@ class RejectJournalEntryServiceTest {
                 null,  // rejectedBy
                 null,  // rejectedAt
                 null,  // rejectionReason
+                null,
+                null,
                 LocalDateTime.of(2024, 1, 31, 10, 0),
                 LocalDateTime.of(2024, 1, 31, 10, 0)
         );

@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 @With
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("PMD.TooManyFields") // 仕訳エンティティはワークフロー状態を含むため多フィールド
 public class JournalEntry {
 
     JournalEntryId id;
@@ -32,6 +33,8 @@ public class JournalEntry {
     UserId rejectedBy;
     LocalDateTime rejectedAt;
     String rejectionReason;
+    UserId confirmedBy;
+    LocalDateTime confirmedAt;
     Integer version;
     List<JournalEntryLine> lines;
     UserId createdBy;
@@ -92,6 +95,8 @@ public class JournalEntry {
                 null,
                 null,
                 null,
+                null,
+                null,
                 version,
                 List.of(),
                 createdBy,
@@ -126,6 +131,8 @@ public class JournalEntry {
                                            UserId rejectedBy,
                                            LocalDateTime rejectedAt,
                                            String rejectionReason,
+                                           UserId confirmedBy,
+                                           LocalDateTime confirmedAt,
                                            LocalDateTime createdAt,
                                            LocalDateTime updatedAt) {
         return new JournalEntry(
@@ -138,6 +145,8 @@ public class JournalEntry {
                 rejectedBy,
                 rejectedAt,
                 rejectionReason,
+                confirmedBy,
+                confirmedAt,
                 version,
                 List.copyOf(requireLines(lines)),
                 createdBy,
@@ -242,6 +251,28 @@ public class JournalEntry {
                 .rejectedBy(rejector)
                 .rejectedAt(rejectedAt)
                 .rejectionReason(rejectionReason)
+                .build();
+    }
+
+    /**
+     * 仕訳を確定する
+     *
+     * @param confirmer 確定者
+     * @param confirmedAt 確定日時
+     * @return 確定済み状態の JournalEntry
+     * @throws IllegalStateException 承認済み以外のステータスの場合
+     */
+    public JournalEntry confirm(UserId confirmer, LocalDateTime confirmedAt) {
+        if (status != JournalEntryStatus.APPROVED) {
+            throw new IllegalStateException("承認済み状態の仕訳のみ確定可能です");
+        }
+        if (confirmer == null) {
+            throw new IllegalArgumentException("確定者は必須です");
+        }
+        return this.toBuilder()
+                .status(JournalEntryStatus.CONFIRMED)
+                .confirmedBy(confirmer)
+                .confirmedAt(confirmedAt)
                 .build();
     }
 

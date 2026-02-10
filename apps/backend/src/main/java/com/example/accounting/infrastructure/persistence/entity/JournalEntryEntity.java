@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 仕訳エンティティ（永続化用）
  */
-@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessivePublicCount", "PMD.CognitiveComplexity", "PMD.NPathComplexity"})
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessivePublicCount", "PMD.CognitiveComplexity", "PMD.NPathComplexity", "PMD.CyclomaticComplexity"})
 public class JournalEntryEntity {
 
     private Integer id;
@@ -32,6 +32,8 @@ public class JournalEntryEntity {
     private OffsetDateTime approvedAt;
     private OffsetDateTime rejectedAt;
     private String rejectionReason;
+    private String confirmedBy;
+    private OffsetDateTime confirmedAt;
     private OffsetDateTime updatedAt;
     // MyBatisがcollectionマッピングで要素を追加できるように可変リストで初期化
     private List<JournalEntryLineEntity> lines = new ArrayList<>();
@@ -69,10 +71,14 @@ public class JournalEntryEntity {
         if (journalEntry.getRejectedBy() != null) {
             entity.setRejectedBy(journalEntry.getRejectedBy().value());
         }
+        if (journalEntry.getConfirmedBy() != null) {
+            entity.setConfirmedBy(journalEntry.getConfirmedBy().value());
+        }
         entity.setCreatedAt(toOffsetDateTime(journalEntry.getCreatedAt()));
         entity.setApprovedAt(toOffsetDateTime(journalEntry.getApprovedAt()));
         entity.setRejectedAt(toOffsetDateTime(journalEntry.getRejectedAt()));
         entity.setRejectionReason(journalEntry.getRejectionReason());
+        entity.setConfirmedAt(toOffsetDateTime(journalEntry.getConfirmedAt()));
         entity.setUpdatedAt(toOffsetDateTime(journalEntry.getUpdatedAt()));
         entity.setLines(journalEntry.getLines().stream()
                 .map(line -> JournalEntryLineEntity.fromDomain(line, entity.getId()))
@@ -100,6 +106,8 @@ public class JournalEntryEntity {
                 rejectedBy == null ? null : UserId.of(rejectedBy),
                 rejectedAt == null ? null : rejectedAt.toLocalDateTime(),
                 rejectionReason,
+                confirmedBy == null ? null : UserId.of(confirmedBy),
+                confirmedAt == null ? null : confirmedAt.toLocalDateTime(),
                 createdAt == null ? null : createdAt.toLocalDateTime(),
                 updatedAt == null ? null : updatedAt.toLocalDateTime()
         );
@@ -227,6 +235,22 @@ public class JournalEntryEntity {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getConfirmedBy() {
+        return confirmedBy;
+    }
+
+    public void setConfirmedBy(String confirmedBy) {
+        this.confirmedBy = confirmedBy;
+    }
+
+    public OffsetDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(OffsetDateTime confirmedAt) {
+        this.confirmedAt = confirmedAt;
     }
 
     // 設計書で追加されたカラムのGetter/Setter

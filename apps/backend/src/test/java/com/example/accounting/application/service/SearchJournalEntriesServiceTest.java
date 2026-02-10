@@ -274,6 +274,8 @@ class SearchJournalEntriesServiceTest {
                 null,
                 null,
                 null,
+                null,
+                null,
                 LocalDateTime.of(2024, 4, 1, 10, 0),
                 LocalDateTime.of(2024, 4, 1, 10, 0)
         );

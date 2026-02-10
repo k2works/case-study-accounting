@@ -156,6 +156,8 @@ class UpdateJournalEntryServiceTest {
                     null,
                     null,
                     null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 31, 10, 0),
                     LocalDateTime.of(2024, 1, 31, 10, 0)
             );
@@ -195,6 +197,8 @@ class UpdateJournalEntryServiceTest {
                             )
                     ),
                     UserId.of("user-1"),
+                    null,
+                    null,
                     null,
                     null,
                     null,
@@ -307,6 +311,8 @@ class UpdateJournalEntryServiceTest {
                         )
                 ),
                 UserId.of("user-1"),
+                null,
+                null,
                 null,
                 null,
                 null,

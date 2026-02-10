@@ -206,6 +206,8 @@ class JournalEntryRepositoryImplTest {
                 null,
                 null,
                 null,
+                null,
+                null,
                 LocalDateTime.of(2024, 1, 5, 10, 0),
                 LocalDateTime.of(2024, 1, 5, 10, 0)
         );
