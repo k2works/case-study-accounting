@@ -41,6 +41,14 @@ public interface AccountRepository {
     Optional<Account> findByCode(AccountCode code);
 
     /**
+     * 勘定科目コードで勘定科目を検索する
+     *
+     * @param code 勘定科目コード
+     * @return 勘定科目（存在しない場合は empty）
+     */
+    Optional<Account> findByCode(String code);
+
+    /**
      * すべての勘定科目を取得する
      *
      * @return 勘定科目リスト

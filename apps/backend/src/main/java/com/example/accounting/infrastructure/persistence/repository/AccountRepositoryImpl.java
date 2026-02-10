@@ -54,6 +54,12 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
+    public Optional<Account> findByCode(String code) {
+        return accountMapper.findByCode(code)
+                .map(AccountEntity::toDomain);
+    }
+
+    @Override
     public List<Account> findAll() {
         return accountMapper.findAll().stream()
                 .map(AccountEntity::toDomain)
