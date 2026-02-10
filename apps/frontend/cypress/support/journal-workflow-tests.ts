@@ -165,17 +165,11 @@ const createPromptExecutionTests = (config: WorkflowTestConfig): void => {
     cy.filterJournalEntriesByStatus(config.targetStatus);
     stubPromptAndClick(config.promptReasonText!);
     cy.contains(config.successMessage, { timeout: 10000 }).should('be.visible');
+    if (config.afterActionStatus && config.afterActionStatusLabel) {
+      cy.filterJournalEntriesByStatus(config.afterActionStatus);
+      cy.get('table tbody tr').first().should('contain', config.afterActionStatusLabel);
+    }
   });
-
-  if (config.afterActionStatus && config.afterActionStatusLabel) {
-    it(`${config.buttonText}後にステータスが${config.afterActionStatusLabel}に戻る`, () => {
-      cy.filterJournalEntriesByStatus(config.targetStatus);
-      stubPromptAndClick(config.promptReasonText!);
-      cy.contains(config.successMessage, { timeout: 10000 }).should('be.visible');
-      cy.filterJournalEntriesByStatus(config.afterActionStatus!);
-      cy.get('table tbody tr').first().should('contain', config.afterActionStatusLabel!);
-    });
-  }
 };
 
 /**
