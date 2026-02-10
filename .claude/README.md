@@ -8,7 +8,7 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 
 3 つの機能で Claude Code の動作をカスタマイズできます。
 
-- **Commands**: `/` で始まるカスタムコマンド
+- **Skills**: タスクに応じて自動発動する専門スキル（Progressive Disclosure）
 - **Roles**: 専門家の視点で回答するための役割設定
 - **Hooks**: 特定のタイミングでスクリプトを自動実行
 
@@ -16,55 +16,67 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 
 ## 機能一覧
 
-### Commands（カスタムコマンド）
+### Skills（スキル）
 
-`commands/` ディレクトリ内の Markdown ファイルとして保存されています。`/` に続けてファイル名を入力すると実行できます。
+`skills/` ディレクトリ内の `SKILL.md` ファイルとして保存されています。タスク内容に応じて自動的に発動し、必要な指示をコンテキストに読み込みます。
 
-#### 分析系コマンド
+#### オーケストレーション
 
-| コマンド                   | 説明                                                       |
-| :------------------------- | :--------------------------------------------------------- |
-| `/analysis`                | 分析フェーズ全体の作業を支援。要件定義から非機能要件まで包括的な分析ワークフローを表示。 |
-| `/analysis-requirements`   | RDRA モデルに基づいた体系的な要件定義を作成。              |
-| `/analysis-usecases`       | ユースケース・ユーザーストーリー作成を支援。トレーサビリティを維持。 |
-| `/analysis-architecture`   | 業務領域とデータ構造の複雑さに基づくアーキテクチャパターンの選択を支援。 |
-| `/analysis-data-model`     | PlantUML の ER 図を使用してデータモデルを設計。            |
-| `/analysis-domain-model`   | DDD の戦術的設計パターンに基づくドメインモデルを設計。     |
-| `/analysis-ui-design`      | 画面遷移図と画面イメージを PlantUML で設計。               |
-| `/analysis-tech-stack`     | 表形式の技術スタック一覧を作成。                           |
-| `/analysis-test-strategy`  | ピラミッド型・ダイヤモンド型・逆ピラミッド型テストの選択を支援。 |
-| `/analysis-non-functional` | 性能、セキュリティ、可用性などの非機能要件を定義。         |
-| `/analysis-operation`      | 運用フロー、監視、バックアップなどの運用要件を定義。       |
+| スキル | 説明 |
+| :--- | :--- |
+| `orchestrating-analysis` | 分析フェーズ全体のワークフローをオーケストレーション。各 analyzing-* スキルの実行順序を案内。 |
+| `orchestrating-development` | 開発フェーズ全体の TDD ワークフローをオーケストレーション。Codex 分業体制を案内。 |
 
-#### 開発系コマンド
+#### 分析系
 
-| コマンド        | 説明                                                         |
-| :-------------- | :----------------------------------------------------------- |
-| `/dev`          | 開発フェーズ全体の作業を支援。TDD サイクルに従った開発ワークフローを表示。 |
-| `/dev-backend`  | バックエンド開発のためのコーディングとテストガイドを参照。   |
-| `/dev-frontend` | フロントエンド開発のためのコーディングとテストガイドを参照。 |
+| スキル | 説明 |
+| :--- | :--- |
+| `analyzing-requirements` | RDRA 2.0 に基づいた体系的な要件定義を作成。 |
+| `analyzing-usecases` | ユースケース・ユーザーストーリー作成を支援。 |
+| `analyzing-architecture` | アーキテクチャパターンの選択と設計ドキュメント作成。 |
+| `analyzing-data-model` | ER 図作成、テーブル定義、リレーション設計。 |
+| `analyzing-domain-model` | エンティティ、値オブジェクト、集約の設計。 |
+| `analyzing-ui-design` | 画面遷移図と画面イメージを設計。 |
+| `analyzing-tech-stack` | フレームワーク、ライブラリ、インフラの選定と評価。 |
+| `analyzing-test-strategy` | テストピラミッド設計、テスト種別の定義、カバレッジ目標の設定。 |
+| `analyzing-non-functional` | 性能、セキュリティ、可用性、保守性の要件策定。 |
+| `analyzing-operation` | 運用フロー、監視設計、障害対応手順の策定。 |
 
-#### 計画・進捗系コマンド
+#### 開発系
 
-| コマンド       | 説明                                                         |
-| :------------- | :----------------------------------------------------------- |
-| `/plan`        | アジャイルなリリース計画とイテレーション計画を作成・管理。   |
-| `/plan-github` | リリース計画を GitHub Project・Issue・Milestone に同期。     |
-| `/progress`    | プロジェクトの開発進捗を包括的に確認し、現在の状況を詳細に報告。 |
+| スキル | 説明 |
+| :--- | :--- |
+| `developing-backend` | バックエンド開発の TDD ワークフロー。インサイドアウトアプローチ。 |
+| `developing-frontend` | フロントエンド開発の TDD ワークフロー。アウトサイドインアプローチ。 |
 
-#### 運用系コマンド
+#### 計画・進捗系
 
-| コマンド | 説明                                                                   |
-| :------- | :--------------------------------------------------------------------- |
-| `/ops`   | アプリケーションの運用・構築・配置を統括的に管理。本番環境への安全かつ効率的なデプロイを実現。 |
-| `/kill`  | 開発サーバーや Node.js プロセスを強制終了。複数ポートで起動している開発プロセスを一括停止。 |
+| スキル | 説明 |
+| :--- | :--- |
+| `planning-releases` | アジャイルなリリース計画とイテレーション計画を作成・管理。 |
+| `syncing-github-project` | リリース計画を GitHub Project・Issue・Milestone に同期。 |
+| `tracking-progress` | プロジェクトの開発進捗を包括的に分析しレポート生成。 |
 
-#### ドキュメント・Git 系コマンド
+#### 運用系
 
-| コマンド      | 説明                                               |
-| :------------ | :------------------------------------------------- |
-| `/docs`       | 設計ドキュメントの一覧表示、進捗確認、内容参照。   |
-| `/git-commit` | 意味のある変更単位ごとにコミットを作成。           |
+| スキル | 説明 |
+| :--- | :--- |
+| `managing-operations` | 環境構築、デプロイ、監視、バックアップ、日次運用タスクの実行。 |
+| `killing-processes` | 開発サーバーや Node.js プロセスを強制終了。ポート競合の解決。 |
+
+#### ドキュメント・Git 系
+
+| スキル | 説明 |
+| :--- | :--- |
+| `managing-docs` | 設計ドキュメントの一覧表示、進捗確認、インデックス更新、Markdown Lint。 |
+| `git-commit` | 意味のある変更単位ごとにコミットを作成。Conventional Commits 準拠。 |
+| `creating-adr` | Architecture Decision Record の作成を支援。 |
+
+#### 共通
+
+| スキル | 説明 |
+| :--- | :--- |
+| `ai-agent-guidelines` | AI Agent の実行ガイドライン。TDD サイクル、品質保証、完了報告のルール。 |
 
 ### Roles（役割設定）
 
@@ -76,16 +88,16 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 
 `settings.json` で設定して、開発作業を自動化できます。
 
-| 実行スクリプト                 | イベント      | 説明                                                                 |
-| :----------------------------- | :------------ | :------------------------------------------------------------------- |
-| `deny-check.sh`                | `PreToolUse`  | `rm -rf /` のような危険なコマンドの実行を未然に防ぐ。                |
-| `check-ai-commit.sh`           | `PreToolUse`  | `git commit` でコミットメッセージに AI の署名が含まれている場合にエラーを出す。 |
+| 実行スクリプト | イベント | 説明 |
+| :--- | :--- | :--- |
+| `deny-check.sh` | `PreToolUse` | `rm -rf /` のような危険なコマンドの実行を未然に防ぐ。 |
+| `check-ai-commit.sh` | `PreToolUse` | `git commit` でコミットメッセージに AI の署名が含まれている場合にエラーを出す。 |
 | `preserve-file-permissions.sh` | `PreToolUse` / `PostToolUse` | ファイル編集前に元の権限を保存し、編集後に復元する。 |
-| `ja-space-format.sh`           | `PostToolUse` | ファイル保存時に、日本語と英数字の間のスペースを自動で整形する。     |
-| `auto-comment.sh`              | `PostToolUse` | 新規ファイル作成時や大幅な編集時に、docstring の追加を促す。         |
-| `(osascript)`                  | `Notification` | Claude がユーザーの確認を待っている時に、macOS の通知センターでお知らせする。 |
-| `check-continue.sh`            | `Stop`        | タスク完了時に、継続可能なタスクがないか確認する。                   |
-| `(osascript)`                  | `Stop`        | 全タスク完了時に、macOS の通知センターで完了を知らせる。             |
+| `ja-space-format.sh` | `PostToolUse` | ファイル保存時に、日本語と英数字の間のスペースを自動で整形する。 |
+| `auto-comment.sh` | `PostToolUse` | 新規ファイル作成時や大幅な編集時に、docstring の追加を促す。 |
+| `(osascript)` | `Notification` | Claude がユーザーの確認を待っている時に、macOS の通知センターでお知らせする。 |
+| `check-continue.sh` | `Stop` | タスク完了時に、継続可能なタスクがないか確認する。 |
+| `(osascript)` | `Stop` | 全タスク完了時に、macOS の通知センターで完了を知らせる。 |
 
 **注意**: スクリプトファイルは `scripts/` ディレクトリに配置する必要があります。このテンプレートには `.gitkeep` のみが含まれているため、実際のスクリプトは `~/.claude/scripts/` から参照するか、プロジェクトに合わせて作成してください。
 
@@ -96,45 +108,49 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 ```
 .claude/
 ├── agents/
-│   └── roles/           # 役割定義ファイル（.md）
-├── assets/              # 通知音などのアセット
-├── commands/            # カスタムコマンド（.md）
-│   ├── analysis.md
-│   ├── analysis-architecture.md
-│   ├── analysis-data-model.md
-│   ├── analysis-domain-model.md
-│   ├── analysis-non-functional.md
-│   ├── analysis-operation.md
-│   ├── analysis-requirements.md
-│   ├── analysis-tech-stack.md
-│   ├── analysis-test-strategy.md
-│   ├── analysis-ui-design.md
-│   ├── analysis-usecases.md
-│   ├── dev.md
-│   ├── dev-backend.md
-│   ├── dev-frontend.md
-│   ├── docs.md
-│   ├── git-commit.md
-│   ├── kill.md
-│   ├── ops.md
-│   ├── plan.md
-│   ├── plan-github.md
-│   └── progress.md
-├── scripts/             # Hooks 用スクリプト
-├── .gitignore
-├── .mcp.json            # MCP サーバー設定
-├── COMMAND_TEMPLATE.md  # コマンド作成テンプレート
+│   └── roles/                          # 役割定義ファイル（.md）
+├── assets/                             # 通知音などのアセット
+├── scripts/                            # Hooks 用スクリプト
+├── skills/                             # スキル定義（SKILL.md + 参照ファイル）
+│   ├── ai-agent-guidelines/SKILL.md
+│   ├── git-commit/SKILL.md
+│   ├── creating-adr/SKILL.md
+│   ├── analyzing-requirements/SKILL.md
+│   ├── analyzing-usecases/SKILL.md
+│   ├── analyzing-architecture/SKILL.md
+│   ├── analyzing-data-model/SKILL.md
+│   ├── analyzing-domain-model/SKILL.md
+│   ├── analyzing-ui-design/SKILL.md
+│   ├── analyzing-tech-stack/SKILL.md
+│   ├── analyzing-test-strategy/SKILL.md
+│   ├── analyzing-non-functional/SKILL.md
+│   ├── analyzing-operation/SKILL.md
+│   ├── developing-backend/SKILL.md
+│   ├── developing-frontend/SKILL.md
+│   ├── killing-processes/SKILL.md
+│   ├── managing-operations/
+│   │   ├── SKILL.md
+│   │   ├── SETUP_JAVA.md
+│   │   ├── SETUP_FRONTEND.md
+│   │   ├── SETUP_CSHARP.md
+│   │   └── DEPLOY.md
+│   ├── managing-docs/SKILL.md
+│   ├── tracking-progress/SKILL.md
+│   ├── syncing-github-project/SKILL.md
+│   ├── planning-releases/SKILL.md
+│   ├── orchestrating-analysis/SKILL.md
+│   └── orchestrating-development/SKILL.md
+├── SKILLS_TEMPLATE.md                  # スキル作成テンプレート
 ├── README.md
-├── settings.json        # Claude Code 設定
-└── settings.local.json  # ローカル環境用設定
+├── settings.json                       # Claude Code 設定
+└── settings.local.json                 # ローカル環境用設定
 ```
 
 ---
 
 ## カスタマイズ
 
-- **コマンドの追加**: `commands/` に `.md` ファイルを追加するだけです
+- **スキルの追加**: `skills/<skill-name>/SKILL.md` を作成するだけです
 - **ロールの追加**: `agents/roles/` に `.md` ファイルを追加するだけです
 - **Hooks の編集**: `settings.json` を編集して、自動化処理を変更できます
 - **スクリプトの追加**: `scripts/` にシェルスクリプトを追加し、`settings.json` で参照します
-

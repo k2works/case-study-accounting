@@ -1,13 +1,7 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(gh repo view:*)",
-      "Bash(gh issue list:*)",
-      "mcp__byterover-mcp__byterover-store-knowledge",
-      "Bash(tree:*)",
-      "Bash(find:*)",
-      "mcp__byterover-mcp__byterover-retrieve-knowledge"
-    ],
+    "defaultMode": "plan",
+    "allow": [],
     "deny": [],
     "ask": []
   }
