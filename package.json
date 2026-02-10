@@ -8,10 +8,10 @@
     "docs:serve": "gulp mkdocs:serve",
     "docs:stop": "gulp mkdocs:stop",
     "docs:build": "gulp mkdocs:build",
-    "claude:yol": "claude --dangerously-skip-permissions",
-    "copilot:yol": "copilot --allow-all-tools",
-    "codex:yol": "codex --yolo",
-    "gemini:yol": "gemini --yolo",
+    "claude:yolo": "claude --dangerously-skip-permissions",
+    "copilot:yolo": "copilot --allow-all-tools",
+    "codex:yolo": "codex --yolo",
+    "gemini:yolo": "gemini --yolo",
     "prepare": "husky",
     "frontend:lint": "cd apps/frontend && npm run lint",
     "frontend:format": "cd apps/frontend && npm run format:check",
@@ -50,7 +50,7 @@
   "homepage": "https://github.com/k2works/{project_name}#readme",
   "type": "module",
   "dependencies": {
-    "@k2works/claude-code-booster": "^0.19.0",
+    "@k2works/claude-code-booster": "^1.1.0",
     "gulp": "^5.0.0"
   },
   "devDependencies": {
