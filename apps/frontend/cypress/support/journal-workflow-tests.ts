@@ -14,12 +14,12 @@ export interface WorkflowTestConfig {
   /** 成功メッセージ */
   successMessage: string;
   /** 対象ステータス（このステータスの仕訳にボタンが表示される） */
-  targetStatus: 'DRAFT' | 'PENDING' | 'APPROVED';
+  targetStatus: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED';
   /** 対象ステータスの表示名 */
   targetStatusLabel: string;
   /** ボタンが表示されないステータスリスト */
   excludedStatuses: Array<{
-    status: 'DRAFT' | 'PENDING' | 'APPROVED';
+    status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED';
     label: string;
   }>;
   /** ボタン表示確認のログインユーザー */
@@ -39,7 +39,7 @@ export interface WorkflowTestConfig {
   /** 空理由時のエラーメッセージ */
   emptyReasonErrorMessage?: string;
   /** アクション後に確認するステータス */
-  afterActionStatus?: 'DRAFT' | 'PENDING' | 'APPROVED';
+  afterActionStatus?: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED';
   /** アクション後に確認するステータスの表示名 */
   afterActionStatusLabel?: string;
 }
@@ -175,7 +175,7 @@ const createPromptExecutionTests = (config: WorkflowTestConfig): void => {
 /**
  * 仕訳を作成し承認申請して PENDING 状態にするセットアップ
  */
-const createEntryAndSubmitForApproval = (
+export const createEntryAndSubmitForApproval = (
   date: string,
   description: string,
   amount: string
@@ -292,4 +292,46 @@ export const rejectJournalEntryConfig: WorkflowTestConfig = {
     createEntryAndSubmitForApproval('2024-08-01', '差し戻しテスト仕訳', '20000');
   },
   permissionTests: pendingStatusPermissionTests('差し戻し'),
+};
+
+/**
+ * 確定テストの設定
+ */
+export const confirmJournalEntryConfig: WorkflowTestConfig = {
+  storyId: 'US-JNL-010',
+  suiteName: '仕訳確定',
+  buttonText: '確定',
+  confirmText: '確定しますか',
+  successMessage: '仕訳を確定しました',
+  targetStatus: 'APPROVED',
+  targetStatusLabel: '承認済み',
+  excludedStatuses: [
+    { status: 'DRAFT', label: '下書き' },
+    { status: 'PENDING', label: '承認待ち' },
+  ],
+  visibilityCheckUser: 'manager',
+  setupBeforeAction: () => {
+    createEntryAndSubmitForApproval('2024-09-01', '確定テスト仕訳', '25000');
+    // 承認する
+    cy.filterJournalEntriesByStatus('PENDING');
+    cy.clickButtonInFirstRowWithConfirm('承認', true);
+    cy.contains('仕訳を承認しました', { timeout: 10000 }).should('be.visible');
+  },
+  permissionTests: [
+    {
+      description: '一般ユーザーは確定できない（確定ボタンが表示されない）',
+      username: 'user',
+      shouldHaveButton: false,
+    },
+    {
+      description: 'マネージャーは確定できる',
+      username: 'manager',
+      shouldHaveButton: true,
+    },
+    {
+      description: '管理者は確定できる',
+      username: 'admin',
+      shouldHaveButton: true,
+    },
+  ],
 };

@@ -83,7 +83,9 @@ declare global {
        * 仕訳一覧をステータスでフィルタリング
        * @param status - ステータス値 (DRAFT, PENDING, APPROVED)
        */
-      filterJournalEntriesByStatus(status: 'DRAFT' | 'PENDING' | 'APPROVED'): Chainable<void>;
+      filterJournalEntriesByStatus(
+        status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED'
+      ): Chainable<void>;
 
       /**
        * テーブルの先頭行でボタンの存在を確認
@@ -279,11 +281,14 @@ Cypress.Commands.add('selectAccountAndWaitForTable', (selectId: string, tableTes
 /**
  * 仕訳一覧をステータスでフィルタリング
  */
-Cypress.Commands.add('filterJournalEntriesByStatus', (status: 'DRAFT' | 'PENDING' | 'APPROVED') => {
+Cypress.Commands.add(
+  'filterJournalEntriesByStatus',
+  (status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED') => {
   cy.get('#journal-entry-filter-status').select(status);
   cy.contains('button', '検索').click();
   cy.get('table tbody tr', { timeout: 10000 }).should('exist');
-});
+  }
+);
 
 /**
  * テーブルの先頭行でボタンの存在を確認

@@ -670,6 +670,17 @@ const createJournalStatusHandlers = () => [
       rejectedAt: new Date().toISOString(),
     },
   }),
+  createJournalStatusHandler({
+    action: 'confirm',
+    requiredStatus: 'APPROVED',
+    newStatus: 'CONFIRMED',
+    errorMessage: '承認済み状態の仕訳のみ確定可能です',
+    successMessage: '仕訳を確定しました',
+    additionalFields: {
+      confirmedBy: 'manager',
+      confirmedAt: new Date().toISOString(),
+    },
+  }),
 ];
 
 const applySearchFilters = (entries: MockEntry[], params: URLSearchParams): MockEntry[] => {
