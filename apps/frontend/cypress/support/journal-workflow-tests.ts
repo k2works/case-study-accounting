@@ -176,6 +176,53 @@ const createPromptExecutionTests = (config: WorkflowTestConfig): void => {
 };
 
 /**
+ * 仕訳を作成し承認申請して PENDING 状態にするセットアップ
+ */
+const createEntryAndSubmitForApproval = (
+  date: string,
+  description: string,
+  amount: string
+): void => {
+  cy.login('admin', 'Password123!');
+  cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+  cy.createTestJournalEntry(date, description, amount);
+  cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
+  cy.visitJournalEntryList();
+  cy.filterJournalEntriesByStatus('DRAFT');
+  cy.clickButtonInFirstRowWithConfirm('承認申請', true);
+  cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
+  cy.clearAuth();
+  cy.loginAndVisitJournalList('manager', 'Password123!');
+};
+
+/** PENDING ステータスを対象とするワークフローの除外ステータス */
+const pendingStatusExclusions: WorkflowTestConfig['excludedStatuses'] = [
+  { status: 'DRAFT', label: '下書き' },
+  { status: 'APPROVED', label: '承認済み' },
+];
+
+/** PENDING ステータスを対象とするワークフローの権限テスト */
+const pendingStatusPermissionTests = (
+  actionLabel: string
+): WorkflowTestConfig['permissionTests'] => [
+  {
+    description: `一般ユーザーは${actionLabel}できない（${actionLabel}ボタンが表示されない）`,
+    username: 'user',
+    shouldHaveButton: false,
+  },
+  {
+    description: `マネージャーは${actionLabel}できる`,
+    username: 'manager',
+    shouldHaveButton: true,
+  },
+  {
+    description: `管理者は${actionLabel}できる`,
+    username: 'admin',
+    shouldHaveButton: true,
+  },
+];
+
+/**
  * 承認申請テストの設定
  */
 export const submitJournalEntryConfig: WorkflowTestConfig = {
@@ -218,42 +265,12 @@ export const approveJournalEntryConfig: WorkflowTestConfig = {
   successMessage: '仕訳を承認しました',
   targetStatus: 'PENDING',
   targetStatusLabel: '承認待ち',
-  excludedStatuses: [
-    { status: 'DRAFT', label: '下書き' },
-    { status: 'APPROVED', label: '承認済み' },
-  ],
+  excludedStatuses: pendingStatusExclusions,
   visibilityCheckUser: 'manager',
   setupBeforeAction: () => {
-    // Admin で仕訳作成と承認申請
-    cy.login('admin', 'Password123!');
-    cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-    cy.createTestJournalEntry('2024-07-15', '承認テスト仕訳', '15000');
-    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
-    cy.visitJournalEntryList();
-    cy.filterJournalEntriesByStatus('DRAFT');
-    cy.clickButtonInFirstRowWithConfirm('承認申請', true);
-    cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
-    // Manager で再ログイン
-    cy.clearAuth();
-    cy.loginAndVisitJournalList('manager', 'Password123!');
+    createEntryAndSubmitForApproval('2024-07-15', '承認テスト仕訳', '15000');
   },
-  permissionTests: [
-    {
-      description: '一般ユーザーは承認できない（承認ボタンが表示されない）',
-      username: 'user',
-      shouldHaveButton: false,
-    },
-    {
-      description: 'マネージャーは承認できる',
-      username: 'manager',
-      shouldHaveButton: true,
-    },
-    {
-      description: '管理者は承認できる',
-      username: 'admin',
-      shouldHaveButton: true,
-    },
-  ],
+  permissionTests: pendingStatusPermissionTests('承認'),
 };
 
 /**
@@ -267,10 +284,7 @@ export const rejectJournalEntryConfig: WorkflowTestConfig = {
   successMessage: '仕訳を差し戻しました',
   targetStatus: 'PENDING',
   targetStatusLabel: '承認待ち',
-  excludedStatuses: [
-    { status: 'DRAFT', label: '下書き' },
-    { status: 'APPROVED', label: '承認済み' },
-  ],
+  excludedStatuses: pendingStatusExclusions,
   visibilityCheckUser: 'manager',
   dialogType: 'prompt',
   promptReasonText: '金額に誤りがあります',
@@ -278,35 +292,7 @@ export const rejectJournalEntryConfig: WorkflowTestConfig = {
   afterActionStatus: 'DRAFT',
   afterActionStatusLabel: '下書き',
   setupBeforeAction: () => {
-    // Admin で仕訳作成 → 承認申請して PENDING 状態にする
-    cy.login('admin', 'Password123!');
-    cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-    cy.createTestJournalEntry('2024-08-01', '差し戻しテスト仕訳', '20000');
-    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
-    cy.visitJournalEntryList();
-    cy.filterJournalEntriesByStatus('DRAFT');
-    // MSW は unshift で新エントリを先頭に追加するため、先頭行が最新
-    cy.clickButtonInFirstRowWithConfirm('承認申請', true);
-    cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
-    // Manager で再ログイン
-    cy.clearAuth();
-    cy.loginAndVisitJournalList('manager', 'Password123!');
+    createEntryAndSubmitForApproval('2024-08-01', '差し戻しテスト仕訳', '20000');
   },
-  permissionTests: [
-    {
-      description: '一般ユーザーは差し戻しできない（差し戻しボタンが表示されない）',
-      username: 'user',
-      shouldHaveButton: false,
-    },
-    {
-      description: 'マネージャーは差し戻しできる',
-      username: 'manager',
-      shouldHaveButton: true,
-    },
-    {
-      description: '管理者は差し戻しできる',
-      username: 'admin',
-      shouldHaveButton: true,
-    },
-  ],
+  permissionTests: pendingStatusPermissionTests('差し戻し'),
 };
