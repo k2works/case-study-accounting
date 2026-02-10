@@ -52,6 +52,7 @@
 - [イテレーション計画 3](./development/iteration_plan-3.md) - イテレーション3の詳細計画
 - [イテレーション計画 4](./development/iteration_plan-4.md) - イテレーション4の詳細計画
 - [イテレーション計画 5](./development/iteration_plan-5.md) - イテレーション5の詳細計画
+- [イテレーション計画 6](./development/iteration_plan-6.md) - イテレーション6の詳細計画
 
 ### ふりかえり
 
