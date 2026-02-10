@@ -84,6 +84,34 @@ class JournalEntryEntityTest {
         }
 
         @Test
+        @DisplayName("差し戻しフィールド付きのドメインモデルからエンティティに変換できる")
+        void shouldConvertFromDomainWithRejectionFields() {
+            LocalDateTime now = LocalDateTime.of(2024, 2, 20, 14, 0, 0);
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "差し戻し済み",
+                    JournalEntryStatus.DRAFT,
+                    2,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    UserId.of("manager-1"),
+                    now,
+                    "金額に誤りがあります",
+                    now,
+                    now
+            );
+
+            JournalEntryEntity entity = JournalEntryEntity.fromDomain(entry);
+
+            assertThat(entity.getRejectedBy()).isEqualTo("manager-1");
+            assertThat(entity.getRejectedAt()).isNotNull();
+            assertThat(entity.getRejectionReason()).isEqualTo("金額に誤りがあります");
+        }
+
+        @Test
         @DisplayName("createdBy が null の場合も変換できる")
         void shouldConvertFromDomainWithNullCreatedBy() {
             JournalEntry entry = JournalEntry.reconstruct(
@@ -166,6 +194,29 @@ class JournalEntryEntityTest {
             assertThat(entry.getCreatedAt()).isNull();
             assertThat(entry.getApprovedAt()).isNull();
             assertThat(entry.getUpdatedAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("差し戻しフィールド付きエンティティからドメインモデルに変換できる")
+        void shouldConvertToDomainWithRejectionFields() {
+            JournalEntryEntity entity = new JournalEntryEntity();
+            entity.setId(1);
+            entity.setJournalDate(JOURNAL_DATE);
+            entity.setDescription("差し戻し済み");
+            entity.setStatus("DRAFT");
+            entity.setVersion(2);
+            entity.setCreatedBy("user-1");
+            entity.setRejectedBy("manager-1");
+            entity.setRejectedAt(java.time.OffsetDateTime.of(2024, 2, 20, 14, 0, 0, 0, java.time.ZoneOffset.UTC));
+            entity.setRejectionReason("金額に誤りがあります");
+            entity.setCreatedAt(java.time.OffsetDateTime.now());
+            entity.setUpdatedAt(java.time.OffsetDateTime.now());
+
+            JournalEntry entry = entity.toDomain();
+
+            assertThat(entry.getRejectedBy()).isEqualTo(UserId.of("manager-1"));
+            assertThat(entry.getRejectedAt()).isNotNull();
+            assertThat(entry.getRejectionReason()).isEqualTo("金額に誤りがあります");
         }
 
         @Test

@@ -137,6 +137,56 @@ class RejectJournalEntryServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("コマンドバリデーション")
+    class CommandValidation {
+
+        @Test
+        @DisplayName("仕訳IDがnullの場合は例外をスローする")
+        void shouldThrowWhenJournalEntryIdIsNull() {
+            org.assertj.core.api.Assertions.assertThatThrownBy(
+                    () -> new RejectJournalEntryCommand(null, "manager-1", "理由"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("仕訳IDは必須です");
+        }
+
+        @Test
+        @DisplayName("差し戻し者IDがnullの場合は例外をスローする")
+        void shouldThrowWhenRejectorIdIsNull() {
+            org.assertj.core.api.Assertions.assertThatThrownBy(
+                    () -> new RejectJournalEntryCommand(1, null, "理由"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("差し戻し者IDは必須です");
+        }
+
+        @Test
+        @DisplayName("差し戻し者IDが空白の場合は例外をスローする")
+        void shouldThrowWhenRejectorIdIsBlank() {
+            org.assertj.core.api.Assertions.assertThatThrownBy(
+                    () -> new RejectJournalEntryCommand(1, "  ", "理由"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("差し戻し者IDは必須です");
+        }
+
+        @Test
+        @DisplayName("差し戻し理由がnullの場合は例外をスローする")
+        void shouldThrowWhenReasonIsNull() {
+            org.assertj.core.api.Assertions.assertThatThrownBy(
+                    () -> new RejectJournalEntryCommand(1, "manager-1", null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("差し戻し理由は必須です");
+        }
+
+        @Test
+        @DisplayName("差し戻し理由が空白の場合は例外をスローする")
+        void shouldThrowWhenReasonIsBlank() {
+            org.assertj.core.api.Assertions.assertThatThrownBy(
+                    () -> new RejectJournalEntryCommand(1, "manager-1", "  "))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("差し戻し理由は必須です");
+        }
+    }
+
     private JournalEntry pendingEntry() {
         return JournalEntry.reconstruct(
                 JournalEntryId.of(10),
