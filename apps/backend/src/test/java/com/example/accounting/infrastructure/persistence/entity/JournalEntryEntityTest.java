@@ -47,6 +47,9 @@ class JournalEntryEntityTest {
                     CREATED_BY,
                     UserId.of("approver-1"),
                     now,
+                    null,
+                    null,
+                    null,
                     now,
                     now
             );
@@ -90,6 +93,9 @@ class JournalEntryEntityTest {
                     JournalEntryStatus.DRAFT,
                     1,
                     List.of(),
+                    null,
+                    null,
+                    null,
                     null,
                     null,
                     null,

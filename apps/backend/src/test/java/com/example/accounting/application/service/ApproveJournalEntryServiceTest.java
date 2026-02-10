@@ -123,6 +123,9 @@ class ApproveJournalEntryServiceTest {
                     UserId.of("user-1"),
                     null,
                     null,
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 31, 10, 0),
                     LocalDateTime.of(2024, 1, 31, 10, 0)
             );
@@ -158,6 +161,9 @@ class ApproveJournalEntryServiceTest {
                     UserId.of("user-1"),
                     UserId.of("approver-1"),
                     LocalDateTime.of(2024, 2, 1, 10, 0),
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 31, 10, 0),
                     LocalDateTime.of(2024, 1, 31, 10, 0)
             );
@@ -195,6 +201,9 @@ class ApproveJournalEntryServiceTest {
                         )
                 ),
                 UserId.of("user-1"),
+                null,
+                null,
+                null,
                 null,
                 null,
                 LocalDateTime.of(2024, 1, 31, 10, 0),

@@ -38,23 +38,23 @@
 
 **受入条件**:
 
-- [ ] 「承認待ち」ステータスの仕訳のみ差し戻しできる
-- [ ] 差し戻し理由を入力できる
-- [ ] 差し戻し後、ステータスが「下書き」に戻る
-- [ ] 差し戻し成功時、確認メッセージが表示される
+- [x] 「承認待ち」ステータスの仕訳のみ差し戻しできる
+- [x] 差し戻し理由を入力できる
+- [x] 差し戻し後、ステータスが「下書き」に戻る
+- [x] 差し戻し成功時、確認メッセージが表示される
 
 | タスクID | タスク名 | 理想時間 | 担当 | 状態 |
 |----------|---------|---------|------|------|
-| JNL-009-01 | 仕訳差し戻しユースケース設計 | 2h | Claude | 未着手 |
-| JNL-009-02 | RejectJournalEntryCommand 実装 | 2h | Codex | 未着手 |
-| JNL-009-03 | RejectJournalEntryService 実装 | 3h | Codex | 未着手 |
-| JNL-009-04 | ドメインモデル拡張（reject メソッド、rejection_reason フィールド） | 3h | Codex | 未着手 |
-| JNL-009-05 | DB マイグレーション（V13: rejection フィールド追加） | 2h | Codex | 未着手 |
-| JNL-009-06 | 差し戻し API 実装（POST /api/journal-entries/{id}/reject） | 2h | Codex | 未着手 |
-| JNL-009-07 | 単体テスト作成 | 2h | Codex | 未着手 |
-| JNL-009-08 | 差し戻しボタン・理由入力ダイアログ UI 実装 | 3h | Codex | 未着手 |
-| JNL-009-09 | フロントエンド API 連携 | 2h | Codex | 未着手 |
-| JNL-009-10 | 統合テスト（E2E テスト） | 2h | Claude | 未着手 |
+| JNL-009-01 | 仕訳差し戻しユースケース設計 | 2h | Claude | 完了 |
+| JNL-009-02 | RejectJournalEntryCommand 実装 | 2h | Codex | 完了 |
+| JNL-009-03 | RejectJournalEntryService 実装 | 3h | Codex | 完了 |
+| JNL-009-04 | ドメインモデル拡張（reject メソッド、rejection_reason フィールド） | 3h | Codex | 完了 |
+| JNL-009-05 | DB マイグレーション（V13: rejection フィールド追加） | 2h | Codex | 完了 |
+| JNL-009-06 | 差し戻し API 実装（POST /api/journal-entries/{id}/reject） | 2h | Codex | 完了 |
+| JNL-009-07 | 単体テスト作成 | 2h | Codex | 完了 |
+| JNL-009-08 | 差し戻しボタン・理由入力ダイアログ UI 実装 | 3h | Codex | 完了 |
+| JNL-009-09 | フロントエンド API 連携 | 2h | Codex | 完了 |
+| JNL-009-10 | 統合テスト（E2E テスト） | 2h | Claude | 完了 |
 | | **小計** | **23h** | | |
 
 #### 実装詳細
@@ -432,7 +432,7 @@ ALTER TABLE journal_entries ADD CONSTRAINT fk_journal_entries_rejected_by
 
 | ストーリーID | ストーリー名 | SP | 状態 | 完了日 |
 |-------------|-------------|-----|------|--------|
-| US-JNL-009 | 仕訳差し戻し | 3 | 未着手 | - |
+| US-JNL-009 | 仕訳差し戻し | 3 | 完了 | 2026-02-10 |
 | US-JNL-010 | 仕訳確定 | 5 | 未着手 | - |
 | US-LDG-004 | 月次残高照会 | 5 | 未着手 | - |
 | US-LDG-005 | 残高試算表表示 | 6 | 未着手 | - |

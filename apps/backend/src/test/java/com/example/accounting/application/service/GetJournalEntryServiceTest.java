@@ -164,6 +164,9 @@ class GetJournalEntryServiceTest {
                 UserId.of("user-1"),
                 null,
                 null,
+                null,
+                null,
+                null,
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0)
         );

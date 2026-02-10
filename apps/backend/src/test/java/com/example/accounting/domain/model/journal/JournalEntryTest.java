@@ -165,6 +165,9 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -213,6 +216,9 @@ class JournalEntryTest {
                 CREATED_BY,
                 UserId.of("approver-1"),
                 LocalDateTime.of(2024, 1, 2, 12, 0, 0),
+                null,
+                null,
+                null,
                 createdAt,
                 updatedAt
         );
@@ -277,7 +283,7 @@ class JournalEntryTest {
 
         assertThatThrownBy(() -> JournalEntry.reconstruct(
                 id, JOURNAL_DATE, "摘要", JournalEntryStatus.DRAFT,
-                0, null, CREATED_BY, null, null, now, now))
+                0, null, CREATED_BY, null, null, null, null, null, now, now))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("明細は必須");
     }
@@ -372,6 +378,9 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -399,6 +408,9 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -424,6 +436,9 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -446,6 +461,9 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,  // rejectedBy
+                    null,  // rejectedAt
+                    null,  // rejectionReason
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );

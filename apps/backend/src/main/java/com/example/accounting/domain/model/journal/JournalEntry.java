@@ -29,6 +29,9 @@ public class JournalEntry {
     JournalEntryStatus status;
     UserId approvedBy;
     LocalDateTime approvedAt;
+    UserId rejectedBy;
+    LocalDateTime rejectedAt;
+    String rejectionReason;
     Integer version;
     List<JournalEntryLine> lines;
     UserId createdBy;
@@ -86,6 +89,9 @@ public class JournalEntry {
                 JournalEntryStatus.DRAFT,
                 null,
                 null,
+                null,
+                null,
+                null,
                 version,
                 List.of(),
                 createdBy,
@@ -117,6 +123,9 @@ public class JournalEntry {
                                            UserId createdBy,
                                            UserId approvedBy,
                                            LocalDateTime approvedAt,
+                                           UserId rejectedBy,
+                                           LocalDateTime rejectedAt,
+                                           String rejectionReason,
                                            LocalDateTime createdAt,
                                            LocalDateTime updatedAt) {
         return new JournalEntry(
@@ -126,6 +135,9 @@ public class JournalEntry {
                 status,
                 approvedBy,
                 approvedAt,
+                rejectedBy,
+                rejectedAt,
+                rejectionReason,
                 version,
                 List.copyOf(requireLines(lines)),
                 createdBy,
@@ -203,6 +215,33 @@ public class JournalEntry {
                 .status(JournalEntryStatus.APPROVED)
                 .approvedBy(approver)
                 .approvedAt(approvedAt)
+                .build();
+    }
+
+    /**
+     * 仕訳を差し戻す
+     *
+     * @param rejector 差し戻し者
+     * @param rejectedAt 差し戻し日時
+     * @param rejectionReason 差し戻し理由
+     * @return 差し戻された（下書き状態の）JournalEntry
+     * @throws IllegalStateException 承認待ち以外のステータスの場合
+     */
+    public JournalEntry reject(UserId rejector, LocalDateTime rejectedAt, String rejectionReason) {
+        if (status != JournalEntryStatus.PENDING) {
+            throw new IllegalStateException("承認待ち状態の仕訳のみ差し戻し可能です");
+        }
+        if (rejector == null) {
+            throw new IllegalArgumentException("差し戻し者は必須です");
+        }
+        if (rejectionReason == null || rejectionReason.isBlank()) {
+            throw new IllegalArgumentException("差し戻し理由は必須です");
+        }
+        return this.toBuilder()
+                .status(JournalEntryStatus.DRAFT)
+                .rejectedBy(rejector)
+                .rejectedAt(rejectedAt)
+                .rejectionReason(rejectionReason)
                 .build();
     }
 

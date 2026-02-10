@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 仕訳エンティティ（永続化用）
  */
-@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields"})
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessivePublicCount", "PMD.CognitiveComplexity", "PMD.NPathComplexity"})
 public class JournalEntryEntity {
 
     private Integer id;
@@ -27,8 +27,11 @@ public class JournalEntryEntity {
     private Integer version;
     private String createdBy;
     private String approvedBy;
+    private String rejectedBy;
     private OffsetDateTime createdAt;
     private OffsetDateTime approvedAt;
+    private OffsetDateTime rejectedAt;
+    private String rejectionReason;
     private OffsetDateTime updatedAt;
     // MyBatisがcollectionマッピングで要素を追加できるように可変リストで初期化
     private List<JournalEntryLineEntity> lines = new ArrayList<>();
@@ -63,8 +66,13 @@ public class JournalEntryEntity {
         if (journalEntry.getApprovedBy() != null) {
             entity.setApprovedBy(journalEntry.getApprovedBy().value());
         }
+        if (journalEntry.getRejectedBy() != null) {
+            entity.setRejectedBy(journalEntry.getRejectedBy().value());
+        }
         entity.setCreatedAt(toOffsetDateTime(journalEntry.getCreatedAt()));
         entity.setApprovedAt(toOffsetDateTime(journalEntry.getApprovedAt()));
+        entity.setRejectedAt(toOffsetDateTime(journalEntry.getRejectedAt()));
+        entity.setRejectionReason(journalEntry.getRejectionReason());
         entity.setUpdatedAt(toOffsetDateTime(journalEntry.getUpdatedAt()));
         entity.setLines(journalEntry.getLines().stream()
                 .map(line -> JournalEntryLineEntity.fromDomain(line, entity.getId()))
@@ -89,6 +97,9 @@ public class JournalEntryEntity {
                 createdBy == null ? null : UserId.of(createdBy),
                 approvedBy == null ? null : UserId.of(approvedBy),
                 approvedAt == null ? null : approvedAt.toLocalDateTime(),
+                rejectedBy == null ? null : UserId.of(rejectedBy),
+                rejectedAt == null ? null : rejectedAt.toLocalDateTime(),
+                rejectionReason,
                 createdAt == null ? null : createdAt.toLocalDateTime(),
                 updatedAt == null ? null : updatedAt.toLocalDateTime()
         );
@@ -191,6 +202,31 @@ public class JournalEntryEntity {
     public void setLines(List<JournalEntryLineEntity> lines) {
         // MyBatisがcollectionマッピングで要素を追加できるようにArrayListを使用
         this.lines = lines == null ? new ArrayList<>() : new ArrayList<>(lines);
+    }
+
+    // 差し戻し関連フィールドのGetter/Setter
+    public String getRejectedBy() {
+        return rejectedBy;
+    }
+
+    public void setRejectedBy(String rejectedBy) {
+        this.rejectedBy = rejectedBy;
+    }
+
+    public OffsetDateTime getRejectedAt() {
+        return rejectedAt;
+    }
+
+    public void setRejectedAt(OffsetDateTime rejectedAt) {
+        this.rejectedAt = rejectedAt;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     // 設計書で追加されたカラムのGetter/Setter

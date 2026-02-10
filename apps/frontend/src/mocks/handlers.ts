@@ -659,6 +659,17 @@ const createJournalStatusHandlers = () => [
       approvedAt: new Date().toISOString(),
     },
   }),
+  createJournalStatusHandler({
+    action: 'reject',
+    requiredStatus: 'PENDING',
+    newStatus: 'DRAFT',
+    errorMessage: '承認待ち状態の仕訳のみ差し戻し可能です',
+    successMessage: '仕訳を差し戻しました',
+    additionalFields: {
+      rejectedBy: 'manager',
+      rejectedAt: new Date().toISOString(),
+    },
+  }),
 ];
 
 const applySearchFilters = (entries: MockEntry[], params: URLSearchParams): MockEntry[] => {

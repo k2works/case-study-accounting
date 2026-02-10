@@ -13,8 +13,11 @@
         <result property="version" column="version"/>
         <result property="createdBy" column="created_by"/>
         <result property="approvedBy" column="approved_by"/>
+        <result property="rejectedBy" column="rejected_by"/>
         <result property="createdAt" column="created_at"/>
         <result property="approvedAt" column="approved_at"/>
+        <result property="rejectedAt" column="rejected_at"/>
+        <result property="rejectionReason" column="rejection_reason"/>
         <result property="updatedAt" column="updated_at"/>
         <result property="voucherNumber" column="voucher_number"/>
         <result property="inputDate" column="input_date"/>
@@ -71,9 +74,11 @@
     <insert id="insert" parameterType="com.example.accounting.infrastructure.persistence.entity.JournalEntryEntity"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO journal_entries (
-            journal_date, description, status, created_by, approved_by, approved_at, version
+            journal_date, description, status, created_by, approved_by, approved_at,
+            rejected_by, rejected_at, rejection_reason, version
         ) VALUES (
-            #{journalDate}, #{description}, #{status}, #{createdBy}, #{approvedBy}, #{approvedAt}, 1
+            #{journalDate}, #{description}, #{status}, #{createdBy}, #{approvedBy}, #{approvedAt},
+            #{rejectedBy}, #{rejectedAt}, #{rejectionReason}, 1
         )
     </insert>
 
@@ -95,6 +100,9 @@
             created_by = #{createdBy},
             approved_by = #{approvedBy},
             approved_at = #{approvedAt},
+            rejected_by = #{rejectedBy},
+            rejected_at = #{rejectedAt},
+            rejection_reason = #{rejectionReason},
             updated_at = CURRENT_TIMESTAMP,
             version = version + 1
         WHERE id = #{id}
@@ -117,6 +125,9 @@
             je.approved_by,
             je.created_at,
             je.approved_at,
+            je.rejected_by,
+            je.rejected_at,
+            je.rejection_reason,
             je.updated_at,
             je.voucher_number,
             je.input_date,
@@ -153,6 +164,9 @@
             je.approved_by,
             je.created_at,
             je.approved_at,
+            je.rejected_by,
+            je.rejected_at,
+            je.rejection_reason,
             je.updated_at,
             je.voucher_number,
             je.input_date,
@@ -196,6 +210,9 @@
             je.approved_by,
             je.created_at,
             je.approved_at,
+            je.rejected_by,
+            je.rejected_at,
+            je.rejection_reason,
             je.updated_at,
             je.voucher_number,
             je.input_date,
@@ -265,6 +282,9 @@
             je.approved_by,
             je.created_at,
             je.approved_at,
+            je.rejected_by,
+            je.rejected_at,
+            je.rejection_reason,
             je.updated_at,
             je.voucher_number,
             je.input_date,
