@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { deleteJournalEntry } from '../../api/deleteJournalEntry';
 import { submitJournalEntryForApproval } from '../../api/submitJournalEntryForApproval';
 import { approveJournalEntry } from '../../api/approveJournalEntry';
+import { rejectJournalEntry } from '../../api/rejectJournalEntry';
 
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
@@ -29,6 +30,12 @@ vi.mock('../../api/approveJournalEntry', () => ({
   approveJournalEntry: vi.fn(),
   approveJournalEntryErrorMessage: (error: unknown) =>
     error instanceof Error ? error.message : '承認に失敗しました',
+}));
+
+vi.mock('../../api/rejectJournalEntry', () => ({
+  rejectJournalEntry: vi.fn(),
+  rejectJournalEntryErrorMessage: (error: unknown) =>
+    error instanceof Error ? error.message : '差し戻しに失敗しました',
 }));
 
 vi.mock('../common', () => ({
@@ -153,6 +160,7 @@ const mockUseNavigate = vi.mocked(useNavigate);
 const mockDeleteJournalEntry = vi.mocked(deleteJournalEntry);
 const mockSubmitJournalEntryForApproval = vi.mocked(submitJournalEntryForApproval);
 const mockApproveJournalEntry = vi.mocked(approveJournalEntry);
+const mockRejectJournalEntry = vi.mocked(rejectJournalEntry);
 
 const mockEntries: JournalEntrySummary[] = [
   {
@@ -225,6 +233,14 @@ describe('JournalEntryList', () => {
       journalEntryId: 3,
       status: 'APPROVED',
       message: '仕訳を承認しました',
+    });
+    mockRejectJournalEntry.mockResolvedValue({
+      success: true,
+      journalEntryId: 3,
+      status: 'DRAFT',
+      rejectedBy: 'manager',
+      rejectionReason: '金額に誤りがあります',
+      message: '仕訳を差し戻しました',
     });
   });
 
@@ -385,5 +401,126 @@ describe('JournalEntryList', () => {
     expect(await screen.findByTestId('success-notification')).toHaveTextContent(
       '仕訳を承認しました'
     );
+  });
+
+  it('PENDING の仕訳に差し戻しボタンが表示される', () => {
+    render(<JournalEntryList {...defaultProps} />);
+
+    const pendingRow = screen.getByTestId('row-3');
+    expect(within(pendingRow).getByText('差し戻し')).toBeInTheDocument();
+  });
+
+  it('PENDING 以外の仕訳に差し戻しボタンが表示されない', () => {
+    render(<JournalEntryList {...defaultProps} />);
+
+    const draftRow = screen.getByTestId('row-1');
+    const approvedRow = screen.getByTestId('row-2');
+
+    expect(within(draftRow).queryByText('差し戻し')).not.toBeInTheDocument();
+    expect(within(approvedRow).queryByText('差し戻し')).not.toBeInTheDocument();
+  });
+
+  it('差し戻しボタンで理由入力ダイアログが表示される', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('金額に誤りがあります');
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    expect(window.prompt).toHaveBeenCalled();
+    expect(mockRejectJournalEntry).toHaveBeenCalledWith(3, '金額に誤りがあります');
+  });
+
+  it('差し戻し成功時に成功メッセージを表示する', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('金額に誤りがあります');
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    expect(await screen.findByTestId('success-notification')).toHaveTextContent(
+      '仕訳を差し戻しました'
+    );
+  });
+
+  it('差し戻しダイアログでキャンセルすると差し戻しされない', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue(null);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    expect(window.prompt).toHaveBeenCalled();
+    expect(mockRejectJournalEntry).not.toHaveBeenCalled();
+  });
+
+  it('差し戻し理由が空の場合はエラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('');
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    expect(mockRejectJournalEntry).not.toHaveBeenCalled();
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('差し戻し理由は必須です');
+  });
+
+  it('差し戻し失敗時にエラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('理由あり');
+    mockRejectJournalEntry.mockRejectedValue(new Error('差し戻しに失敗しました'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('差し戻しに失敗しました');
+  });
+
+  it('差し戻し成功メッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('金額に誤りがあります');
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    const notification = await screen.findByTestId('success-notification');
+    expect(notification).toHaveTextContent('仕訳を差し戻しました');
+    await user.click(notification);
+    expect(screen.queryByText('仕訳を差し戻しました')).not.toBeInTheDocument();
+  });
+
+  it('差し戻しエラーメッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('');
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    const errorMsg = await screen.findByTestId('error-message');
+    expect(errorMsg).toHaveTextContent('差し戻し理由は必須です');
+    await user.click(errorMsg);
+    expect(screen.queryByText('差し戻し理由は必須です')).not.toBeInTheDocument();
+  });
+
+  it('差し戻し API が success:false を返した場合エラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('理由あり');
+    mockRejectJournalEntry.mockResolvedValue({
+      success: false,
+      errorMessage: '差し戻しに失敗しました',
+    });
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('差し戻し'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('差し戻しに失敗しました');
   });
 });
