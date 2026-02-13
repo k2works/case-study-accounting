@@ -37,7 +37,6 @@ const MENU_ITEMS: MenuItem[] = [
       { id: 'ledger-general', label: '総勘定元帳', path: '/general-ledger' },
       { id: 'ledger-daily-balance', label: '日次残高', path: '/ledger/daily-balance' },
       { id: 'ledger-monthly-balance', label: '月次残高', path: '/ledger/monthly-balance' },
-      { id: 'ledger-subsidiary', label: '補助元帳', path: '/ledger/subsidiary' },
       { id: 'ledger-trial-balance', label: '残高試算表', path: '/ledger/trial-balance' },
     ],
   },

@@ -1301,6 +1301,84 @@ export const trialBalanceHandlers = [
 ];
 
 /**
+ * 月次残高関連のハンドラー
+ */
+const buildMonthlyBalanceEntries = (
+  accountCode: string
+): {
+  entries: {
+    month: number;
+    openingBalance: number;
+    debitAmount: number;
+    creditAmount: number;
+    closingBalance: number;
+  }[];
+  openingBalance: number;
+  debitTotal: number;
+  creditTotal: number;
+  closingBalance: number;
+} => {
+  let balance = 10000;
+  const entries = [];
+  let debitTotal = 0;
+  let creditTotal = 0;
+  const openingBalance = balance;
+
+  for (let m = 1; m <= 12; m++) {
+    const debit = (parseInt(accountCode, 10) + m) * 100;
+    const credit = (parseInt(accountCode, 10) + m) * 80;
+    const ob = balance;
+    balance = ob + debit - credit;
+    debitTotal += debit;
+    creditTotal += credit;
+    entries.push({
+      month: m,
+      openingBalance: ob,
+      debitAmount: debit,
+      creditAmount: credit,
+      closingBalance: balance,
+    });
+  }
+
+  return { entries, openingBalance, debitTotal, creditTotal, closingBalance: balance };
+};
+
+export const monthlyBalanceHandlers = [
+  http.get('*/monthly-balance', ({ request }) => {
+    const url = new URL(request.url);
+    const accountCode = url.searchParams.get('accountCode');
+    const fiscalPeriodParam = url.searchParams.get('fiscalPeriod');
+
+    if (!accountCode) {
+      return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
+    }
+
+    const account = mockAccounts.find((a) => a.accountCode === accountCode);
+    if (!account) {
+      return HttpResponse.json(
+        { errorMessage: '指定された勘定科目が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    const fiscalPeriod = fiscalPeriodParam ? parseInt(fiscalPeriodParam, 10) : 2024;
+    const { entries, openingBalance, debitTotal, creditTotal, closingBalance } =
+      buildMonthlyBalanceEntries(accountCode);
+
+    return HttpResponse.json({
+      accountCode: account.accountCode,
+      accountName: account.accountName,
+      fiscalPeriod,
+      openingBalance,
+      debitTotal,
+      creditTotal,
+      closingBalance,
+      entries,
+    });
+  }),
+];
+
+/**
  * すべてのハンドラー
  */
 export const handlers = [
@@ -1311,4 +1389,5 @@ export const handlers = [
   ...generalLedgerHandlers,
   ...dailyBalanceHandlers,
   ...trialBalanceHandlers,
+  ...monthlyBalanceHandlers,
 ];
