@@ -61,6 +61,7 @@
 - [イテレーション 3 ふりかえり](./development/retrospective-3.md) - イテレーション3の KPT 分析
 - [イテレーション 4 ふりかえり](./development/retrospective-4.md) - イテレーション4の KPT 分析
 - [イテレーション 5 ふりかえり](./development/retrospective-5.md) - イテレーション5の KPT 分析
+- [イテレーション 6 ふりかえり](./development/retrospective-6.md) - イテレーション6の KPT 分析
 
 ## 運用
 
