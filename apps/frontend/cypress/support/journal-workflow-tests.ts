@@ -116,6 +116,7 @@ export const createWorkflowTests = (config: WorkflowTestConfig): void => {
 const createConfirmExecutionTests = (config: WorkflowTestConfig): void => {
   it(`${config.buttonText}ボタンクリックで確認ダイアログが表示される`, () => {
     cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
     cy.on('window:confirm', (text) => {
       expect(text).to.include(config.confirmText);
       return false;
@@ -132,6 +133,7 @@ const createConfirmExecutionTests = (config: WorkflowTestConfig): void => {
 
   it(`${config.buttonText}が成功すると成功メッセージが表示される`, () => {
     cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
     cy.clickButtonInFirstRowWithConfirm(config.buttonText, true);
     cy.contains(config.successMessage, { timeout: 10000 }).should('be.visible');
   });
@@ -150,6 +152,7 @@ const createPromptExecutionTests = (config: WorkflowTestConfig): void => {
 
   it(`${config.buttonText}ボタンクリックで理由入力ダイアログが表示される`, () => {
     cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
     stubPromptAndClick(null);
     cy.window().its('prompt').should('be.called');
   });
@@ -164,6 +167,7 @@ const createPromptExecutionTests = (config: WorkflowTestConfig): void => {
   if (config.emptyReasonErrorMessage) {
     it(`${config.buttonText}理由が空の場合はエラーメッセージが表示される`, () => {
       cy.filterJournalEntriesByStatus(config.targetStatus);
+      cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
       stubPromptAndClick('');
       cy.contains(config.emptyReasonErrorMessage!, { timeout: 10000 }).should('be.visible');
     });
@@ -171,6 +175,7 @@ const createPromptExecutionTests = (config: WorkflowTestConfig): void => {
 
   it(`${config.buttonText}が成功すると成功メッセージが表示される`, () => {
     cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
     stubPromptAndClick(config.promptReasonText!);
     cy.contains(config.successMessage, { timeout: 10000 }).should('be.visible');
     if (config.afterActionStatus && config.afterActionStatusLabel) {
