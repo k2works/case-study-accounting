@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 import { getTrialBalance, getTrialBalanceErrorMessage } from '../api/getTrialBalance';
 import type {
   TrialBalanceEntry,
@@ -135,7 +134,7 @@ const TrialBalancePageContent: React.FC<TrialBalancePageContentProps> = ({
 };
 
 const TrialBalancePage: React.FC = () => {
-  const { isAuthenticated, isLoading, hasRole } = useAuth();
+  const authGuard = useRequireAuth(['ADMIN', 'MANAGER', 'USER']);
   const { state, filterValues, setFilterValues, handleSearch } = useTrialBalanceFetch();
 
   const breadcrumbs = useMemo(
@@ -143,17 +142,7 @@ const TrialBalancePage: React.FC = () => {
     []
   );
 
-  if (isLoading) {
-    return <Loading message="認証情報を確認中..." fullScreen />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole('ADMIN') && !hasRole('MANAGER') && !hasRole('USER')) {
-    return <Navigate to="/" replace />;
-  }
+  if (authGuard) return authGuard;
 
   return (
     <MainLayout breadcrumbs={breadcrumbs}>

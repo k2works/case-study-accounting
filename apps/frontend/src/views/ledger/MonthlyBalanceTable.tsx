@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { MonthlyBalanceEntry } from '../../api/getMonthlyBalance';
 import { Table, TableColumn } from '../common';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { currencyColumn } from './currencyColumn';
 
 interface MonthlyBalanceTableProps {
   entries: MonthlyBalanceEntry[];
@@ -10,40 +10,11 @@ interface MonthlyBalanceTableProps {
 export const MonthlyBalanceTable: React.FC<MonthlyBalanceTableProps> = ({ entries }) => {
   const columns = useMemo<TableColumn<MonthlyBalanceEntry>[]>(
     () => [
-      {
-        key: 'month',
-        header: '月',
-        width: '80px',
-        render: (value) => <>{value}月</>,
-      },
-      {
-        key: 'openingBalance',
-        header: '期首残高',
-        width: '140px',
-        align: 'right',
-        render: (value) => <>{formatCurrency(value as number)}</>,
-      },
-      {
-        key: 'debitAmount',
-        header: '借方合計',
-        width: '140px',
-        align: 'right',
-        render: (value) => <>{formatCurrency(value as number)}</>,
-      },
-      {
-        key: 'creditAmount',
-        header: '貸方合計',
-        width: '140px',
-        align: 'right',
-        render: (value) => <>{formatCurrency(value as number)}</>,
-      },
-      {
-        key: 'closingBalance',
-        header: '期末残高',
-        width: '140px',
-        align: 'right',
-        render: (value) => <>{formatCurrency(value as number)}</>,
-      },
+      { key: 'month', header: '月', width: '80px', render: (value) => <>{value}月</> },
+      currencyColumn('openingBalance', '期首残高'),
+      currencyColumn('debitAmount', '借方合計'),
+      currencyColumn('creditAmount', '貸方合計'),
+      currencyColumn('closingBalance', '期末残高'),
     ],
     []
   );

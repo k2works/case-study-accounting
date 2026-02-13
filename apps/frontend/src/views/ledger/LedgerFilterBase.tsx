@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { getAccounts, getAccountsErrorMessage } from '../../api/getAccounts';
-import type { Account } from '../../api/getAccounts';
-import { Button, ErrorMessage, Loading } from '../common';
+import React from 'react';
+import { Button } from '../common';
+import { useAccountOptions } from './useAccountOptions';
+import { AccountSelect } from './AccountSelect';
+import { FilterStatusDisplay } from './FilterStatusDisplay';
 
 export interface LedgerFilterValues {
   accountId: string;
@@ -22,26 +23,7 @@ export const LedgerFilterBase: React.FC<LedgerFilterBaseProps> = ({
   onChange,
   onSearch,
 }) => {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const fetchAccounts = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-    try {
-      const data = await getAccounts();
-      setAccounts(data);
-    } catch (error) {
-      setErrorMessage(getAccountsErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchAccounts();
-  }, [fetchAccounts]);
+  const { accounts, isLoading, errorMessage, fetchAccounts } = useAccountOptions();
 
   const handleChange =
     (field: keyof LedgerFilterValues) =>
@@ -52,23 +34,13 @@ export const LedgerFilterBase: React.FC<LedgerFilterBaseProps> = ({
   return (
     <div data-testid={`${testIdPrefix}-filter`}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
-        <div style={{ minWidth: '220px' }}>
-          <label htmlFor={`${testIdPrefix}-filter-account`}>勘定科目</label>
-          <select
-            id={`${testIdPrefix}-filter-account`}
-            value={values.accountId}
-            onChange={handleChange('accountId')}
-            disabled={isLoading}
-            style={{ display: 'block', width: '100%', marginTop: '4px' }}
-          >
-            <option value="">勘定科目を選択</option>
-            {accounts.map((account) => (
-              <option key={account.accountId} value={String(account.accountId)}>
-                {account.accountCode} {account.accountName}
-              </option>
-            ))}
-          </select>
-        </div>
+        <AccountSelect
+          id={`${testIdPrefix}-filter-account`}
+          value={values.accountId}
+          onChange={handleChange('accountId')}
+          accounts={accounts}
+          isLoading={isLoading}
+        />
         <div>
           <label htmlFor={`${testIdPrefix}-filter-date-from`}>期間（開始）</label>
           <input
@@ -93,16 +65,12 @@ export const LedgerFilterBase: React.FC<LedgerFilterBaseProps> = ({
           照会
         </Button>
       </div>
-      {isLoading && accounts.length === 0 && (
-        <div style={{ marginTop: '12px' }}>
-          <Loading message="勘定科目を読み込み中..." size="small" />
-        </div>
-      )}
-      {errorMessage && (
-        <div style={{ marginTop: '12px' }}>
-          <ErrorMessage message={errorMessage} onRetry={fetchAccounts} />
-        </div>
-      )}
+      <FilterStatusDisplay
+        isLoading={isLoading}
+        hasData={accounts.length > 0}
+        errorMessage={errorMessage}
+        onRetry={fetchAccounts}
+      />
     </div>
   );
 };
