@@ -26,6 +26,8 @@ export interface WorkflowTestConfig {
   visibilityCheckUser: string;
   /** アクション実行前のセットアップ（仕訳作成等） */
   setupBeforeAction?: () => void;
+  /** ボタン表示確認テスト全体の前に実行するセットアップ（once per describe） */
+  visibilityTestSetup?: () => void;
   /** 権限テスト設定 */
   permissionTests: Array<{
     description: string;
@@ -54,6 +56,12 @@ export const createWorkflowTests = (config: WorkflowTestConfig): void => {
     });
 
     describe(`${config.buttonText}ボタン表示`, () => {
+      if (config.visibilityTestSetup) {
+        before(() => {
+          config.visibilityTestSetup!();
+        });
+      }
+
       beforeEach(() => {
         cy.loginAndVisitJournalList(config.visibilityCheckUser, 'Password123!');
       });
@@ -235,6 +243,33 @@ export const submitJournalEntryConfig: WorkflowTestConfig = {
     { status: 'APPROVED', label: '承認済み' },
   ],
   visibilityCheckUser: 'admin',
+  visibilityTestSetup: () => {
+    // PENDING エントリを作成（DRAFT → 承認申請）
+    cy.login('admin', 'Password123!');
+    cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+    cy.createTestJournalEntry('2024-06-15', '表示確認用PENDING仕訳', '10000');
+    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
+    cy.visitJournalEntryList();
+    cy.filterJournalEntriesByStatus('DRAFT');
+    cy.clickButtonInFirstRowWithConfirm('承認申請', true);
+    cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
+    // APPROVED エントリを作成（DRAFT → 承認申請 → 承認）
+    cy.clearAuth();
+    cy.login('admin', 'Password123!');
+    cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+    cy.createTestJournalEntry('2024-06-16', '表示確認用APPROVED仕訳', '11000');
+    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
+    cy.visitJournalEntryList();
+    cy.filterJournalEntriesByStatus('DRAFT');
+    cy.clickButtonInFirstRowWithConfirm('承認申請', true);
+    cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
+    cy.clearAuth();
+    cy.loginAndVisitJournalList('manager', 'Password123!');
+    cy.filterJournalEntriesByStatus('PENDING');
+    cy.clickButtonInFirstRowWithConfirm('承認', true);
+    cy.contains('仕訳を承認しました', { timeout: 10000 }).should('be.visible');
+    cy.clearAuth();
+  },
   setupBeforeAction: () => {
     cy.login('admin', 'Password123!');
     cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
