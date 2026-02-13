@@ -122,6 +122,7 @@ nav:
       - 分析・設計ガイド:
           - 要件定義ガイド: reference/要件定義ガイド.md
           - ユースケース作成ガイド: reference/ユースケース作成ガイド.md
+          - ビジネスアーキテクチャ設計ガイド: reference/ビジネスアーキテクチャ設計ガイド.md
           - アーキテクチャ設計ガイド: reference/アーキテクチャ設計ガイド.md
           - データモデル設計ガイド: reference/データモデル設計ガイド.md
           - ドメインモデル設計ガイド: reference/ドメインモデル設計ガイド.md
@@ -132,19 +133,26 @@ nav:
           - 非機能要件定義ガイド: reference/非機能要件定義ガイド.md
           - 運用要件定義ガイド: reference/運用要件定義ガイド.md
           - リリース・イテレーション計画ガイド: reference/リリース・イテレーション計画ガイド.md
+          - リリースガイド: reference/リリースガイド.md
       - 環境構築ガイド:
           - Javaアプリケーション環境構築ガイド: reference/Javaアプリケーション環境構築ガイド.md
           - TypeScriptアプリケーション環境構築ガイド: reference/TypeScriptアプリケーション環境構築ガイド.md
+          - 言語別開発ガイド: reference/言語別開発ガイド.md
+          - 環境変数管理ガイド: reference/環境変数管理ガイド.md
+          - Vim操作マニュアル: reference/Vim操作マニュアル.md
           - Codex CLI MCP サーバー設定手順: reference/CodexCLIMCPサーバー設定手順.md
           - Codex CLI MCP アプリケーション開発フロー: reference/CodexCLIMCPアプリケーション開発フロー.md
   - テンプレート:
       - ADR: template/ADR.md
       - イテレーション完了報告書: template/イテレーション完了報告書.md
+      - イテレーション計画: template/イテレーション計画.md
       - インセプションデッキ: template/インセプションデッキ.md
       - まずこれを読もうリスト: template/まずこれを読もうリスト.md
+      - リリース計画: template/リリース計画.md
       - 完全形式のユースケース: template/完全形式のユースケース.md
       - 要件定義: template/要件定義.md
       - 設計: template/設計.md
+      - README: template/README.md
   - 実践ガイド:
       - 概要: article/index.md
       - バックエンド編（Java版）:
