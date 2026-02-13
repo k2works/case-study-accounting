@@ -9,6 +9,7 @@ import { deleteJournalEntry } from '../../api/deleteJournalEntry';
 import { submitJournalEntryForApproval } from '../../api/submitJournalEntryForApproval';
 import { approveJournalEntry } from '../../api/approveJournalEntry';
 import { rejectJournalEntry } from '../../api/rejectJournalEntry';
+import { confirmJournalEntry } from '../../api/confirmJournalEntry';
 
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
@@ -36,6 +37,12 @@ vi.mock('../../api/rejectJournalEntry', () => ({
   rejectJournalEntry: vi.fn(),
   rejectJournalEntryErrorMessage: (error: unknown) =>
     error instanceof Error ? error.message : '差し戻しに失敗しました',
+}));
+
+vi.mock('../../api/confirmJournalEntry', () => ({
+  confirmJournalEntry: vi.fn(),
+  confirmJournalEntryErrorMessage: (error: unknown) =>
+    error instanceof Error ? error.message : '確定に失敗しました',
 }));
 
 vi.mock('../common', () => ({
@@ -161,6 +168,7 @@ const mockDeleteJournalEntry = vi.mocked(deleteJournalEntry);
 const mockSubmitJournalEntryForApproval = vi.mocked(submitJournalEntryForApproval);
 const mockApproveJournalEntry = vi.mocked(approveJournalEntry);
 const mockRejectJournalEntry = vi.mocked(rejectJournalEntry);
+const mockConfirmJournalEntry = vi.mocked(confirmJournalEntry);
 
 const mockEntries: JournalEntrySummary[] = [
   {
@@ -190,6 +198,15 @@ const mockEntries: JournalEntrySummary[] = [
     status: 'PENDING',
     version: 1,
   },
+  {
+    journalEntryId: 4,
+    journalDate: '2024-01-25',
+    description: '確定済み仕訳',
+    totalDebitAmount: 4000,
+    totalCreditAmount: 4000,
+    status: 'CONFIRMED',
+    version: 1,
+  },
 ];
 
 const defaultFilterValues = {
@@ -212,7 +229,7 @@ describe('JournalEntryList', () => {
     onDelete: vi.fn(),
     currentPage: 1,
     totalPages: 1,
-    totalItems: 3,
+    totalItems: 4,
     itemsPerPage: 20,
     onPageChange: vi.fn(),
     onItemsPerPageChange: vi.fn(),
@@ -241,6 +258,12 @@ describe('JournalEntryList', () => {
       rejectedBy: 'manager',
       rejectionReason: '金額に誤りがあります',
       message: '仕訳を差し戻しました',
+    });
+    mockConfirmJournalEntry.mockResolvedValue({
+      success: true,
+      journalEntryId: 2,
+      status: 'CONFIRMED',
+      message: '仕訳を確定しました',
     });
   });
 
@@ -522,5 +545,348 @@ describe('JournalEntryList', () => {
     await user.click(screen.getByText('差し戻し'));
 
     expect(await screen.findByTestId('error-message')).toHaveTextContent('差し戻しに失敗しました');
+  });
+
+  // --- 確定（handleConfirm）テスト ---
+  it('APPROVED の仕訳に確定ボタンが表示される', () => {
+    render(<JournalEntryList {...defaultProps} />);
+
+    const approvedRow = screen.getByTestId('row-2');
+    expect(within(approvedRow).getByText('確定')).toBeInTheDocument();
+  });
+
+  it('APPROVED 以外の仕訳に確定ボタンが表示されない', () => {
+    render(<JournalEntryList {...defaultProps} />);
+
+    const draftRow = screen.getByTestId('row-1');
+    const pendingRow = screen.getByTestId('row-3');
+
+    expect(within(draftRow).queryByText('確定')).not.toBeInTheDocument();
+    expect(within(pendingRow).queryByText('確定')).not.toBeInTheDocument();
+  });
+
+  it('確定ボタンで確認ダイアログが表示される', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const approvedRow = screen.getByTestId('row-2');
+    await user.click(within(approvedRow).getByText('確定'));
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockConfirmJournalEntry).toHaveBeenCalledWith(2);
+  });
+
+  it('確定確認をキャンセルすると確定されない', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const approvedRow = screen.getByTestId('row-2');
+    await user.click(within(approvedRow).getByText('確定'));
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockConfirmJournalEntry).not.toHaveBeenCalled();
+  });
+
+  it('確定成功時に成功メッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const approvedRow = screen.getByTestId('row-2');
+    await user.click(within(approvedRow).getByText('確定'));
+
+    expect(await screen.findByTestId('success-notification')).toHaveTextContent(
+      '仕訳を確定しました'
+    );
+  });
+
+  it('確定失敗時にエラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockConfirmJournalEntry.mockRejectedValue(new Error('確定に失敗しました'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const approvedRow = screen.getByTestId('row-2');
+    await user.click(within(approvedRow).getByText('確定'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('確定に失敗しました');
+  });
+
+  it('確定 API が success:false を返した場合エラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockConfirmJournalEntry.mockResolvedValue({
+      success: false,
+      errorMessage: '確定に失敗しました',
+    });
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const approvedRow = screen.getByTestId('row-2');
+    await user.click(within(approvedRow).getByText('確定'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('確定に失敗しました');
+  });
+
+  it('確定成功メッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const approvedRow = screen.getByTestId('row-2');
+    await user.click(within(approvedRow).getByText('確定'));
+
+    const notification = await screen.findByTestId('success-notification');
+    expect(notification).toHaveTextContent('仕訳を確定しました');
+    await user.click(notification);
+    expect(screen.queryByText('仕訳を確定しました')).not.toBeInTheDocument();
+  });
+
+  it('確定エラーメッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockConfirmJournalEntry.mockRejectedValue(new Error('確定に失敗'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const approvedRow = screen.getByTestId('row-2');
+    await user.click(within(approvedRow).getByText('確定'));
+
+    const errorMsg = await screen.findByTestId('error-message');
+    expect(errorMsg).toHaveTextContent('確定に失敗');
+    await user.click(errorMsg);
+    expect(screen.queryByText('確定に失敗')).not.toBeInTheDocument();
+  });
+
+  // --- 削除のエラーパス ---
+  it('削除失敗時にエラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockDeleteJournalEntry.mockRejectedValue(new Error('削除に失敗しました'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const deleteButtons = screen.getAllByText('削除');
+    await user.click(deleteButtons[0]);
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('削除に失敗しました');
+  });
+
+  it('削除 API が success:false を返した場合エラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockDeleteJournalEntry.mockResolvedValue({
+      success: false,
+      errorMessage: '削除権限がありません',
+    });
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const deleteButtons = screen.getAllByText('削除');
+    await user.click(deleteButtons[0]);
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('削除権限がありません');
+  });
+
+  it('削除成功時に成功メッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const deleteButtons = screen.getAllByText('削除');
+    await user.click(deleteButtons[0]);
+
+    expect(await screen.findByTestId('success-notification')).toHaveTextContent(
+      '仕訳を削除しました'
+    );
+  });
+
+  it('削除成功メッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const deleteButtons = screen.getAllByText('削除');
+    await user.click(deleteButtons[0]);
+
+    const notification = await screen.findByTestId('success-notification');
+    await user.click(notification);
+    expect(screen.queryByText('仕訳を削除しました')).not.toBeInTheDocument();
+  });
+
+  it('削除エラーメッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockDeleteJournalEntry.mockRejectedValue(new Error('削除エラー'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    const deleteButtons = screen.getAllByText('削除');
+    await user.click(deleteButtons[0]);
+
+    const errorMsg = await screen.findByTestId('error-message');
+    expect(errorMsg).toHaveTextContent('削除エラー');
+    await user.click(errorMsg);
+    expect(screen.queryByText('削除エラー')).not.toBeInTheDocument();
+  });
+
+  // --- 承認申請のエラーパス ---
+  it('承認申請失敗時にエラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockSubmitJournalEntryForApproval.mockRejectedValue(new Error('承認申請に失敗しました'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認申請'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('承認申請に失敗しました');
+  });
+
+  it('承認申請 API が success:false を返した場合エラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockSubmitJournalEntryForApproval.mockResolvedValue({
+      success: false,
+      journalEntryId: 1,
+      status: 'DRAFT',
+      errorMessage: '承認申請権限がありません',
+    });
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認申請'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent(
+      '承認申請権限がありません'
+    );
+  });
+
+  it('承認申請確認をキャンセルすると承認申請されない', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認申請'));
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockSubmitJournalEntryForApproval).not.toHaveBeenCalled();
+  });
+
+  // --- 承認のエラーパス ---
+  it('承認失敗時にエラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockApproveJournalEntry.mockRejectedValue(new Error('承認に失敗しました'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('承認に失敗しました');
+  });
+
+  it('承認 API が success:false を返した場合エラーメッセージを表示する', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockApproveJournalEntry.mockResolvedValue({
+      success: false,
+      journalEntryId: 3,
+      status: 'PENDING',
+      errorMessage: '承認権限がありません',
+    });
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認'));
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('承認権限がありません');
+  });
+
+  it('承認確認をキャンセルすると承認されない', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認'));
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockApproveJournalEntry).not.toHaveBeenCalled();
+  });
+
+  // --- 通知の dismiss ---
+  it('承認申請成功メッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認申請'));
+
+    const notification = await screen.findByTestId('success-notification');
+    expect(notification).toHaveTextContent('仕訳を承認申請しました');
+    await user.click(notification);
+    expect(screen.queryByText('仕訳を承認申請しました')).not.toBeInTheDocument();
+  });
+
+  it('承認成功メッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認'));
+
+    const notification = await screen.findByTestId('success-notification');
+    expect(notification).toHaveTextContent('仕訳を承認しました');
+    await user.click(notification);
+    expect(screen.queryByText('仕訳を承認しました')).not.toBeInTheDocument();
+  });
+
+  it('承認申請エラーメッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockSubmitJournalEntryForApproval.mockRejectedValue(new Error('申請エラー'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認申請'));
+
+    const errorMsg = await screen.findByTestId('error-message');
+    await user.click(errorMsg);
+    expect(screen.queryByText('申請エラー')).not.toBeInTheDocument();
+  });
+
+  it('承認エラーメッセージを閉じることができる', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockApproveJournalEntry.mockRejectedValue(new Error('承認エラー'));
+
+    render(<JournalEntryList {...defaultProps} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByText('承認'));
+
+    const errorMsg = await screen.findByTestId('error-message');
+    await user.click(errorMsg);
+    expect(screen.queryByText('承認エラー')).not.toBeInTheDocument();
+  });
+
+  // --- CONFIRMED ステータス表示 ---
+  it('CONFIRMED のステータスラベルが「確定」と表示される', () => {
+    render(<JournalEntryList {...defaultProps} />);
+
+    const confirmedRow = screen.getByTestId('row-4');
+    expect(within(confirmedRow).getByText('確定')).toBeInTheDocument();
   });
 });

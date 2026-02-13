@@ -33,4 +33,22 @@ describe('TrialBalanceTable', () => {
     render(<TrialBalanceTable entries={[]} />);
     expect(screen.getByText('試算表データがありません')).toBeInTheDocument();
   });
+
+  it('renders 0 for null/undefined balance values', () => {
+    const entries = [
+      {
+        accountCode: '2000',
+        accountName: '買掛金',
+        bsplCategory: 'BS',
+        accountType: 'LIABILITY',
+        debitBalance: null as unknown as number,
+        creditBalance: undefined as unknown as number,
+      },
+    ];
+
+    render(<TrialBalanceTable entries={entries} />);
+
+    const cells = screen.getAllByText('0');
+    expect(cells.length).toBeGreaterThanOrEqual(2);
+  });
 });

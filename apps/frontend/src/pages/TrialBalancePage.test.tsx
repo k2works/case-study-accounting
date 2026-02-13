@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -17,21 +16,11 @@ vi.mock('../api/getTrialBalance', () => ({
     error instanceof Error ? error.message : '残高試算表の取得に失敗しました',
 }));
 
-vi.mock('react-router-dom', () => ({
-  Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
-}));
-
-vi.mock('../views/common', () => ({
-  MainLayout: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="main-layout">{children}</div>
-  ),
-  Loading: ({ message }: { message?: string }) => <div data-testid="loading">{message}</div>,
-  ErrorMessage: ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
-    <button data-testid="error-message" onClick={onRetry}>
-      {message}
-    </button>
-  ),
-}));
+vi.mock(
+  'react-router-dom',
+  async () => (await import('../test/pageTestMocks')).reactRouterDomMocks
+);
+vi.mock('../views/common', async () => (await import('../test/pageTestMocks')).commonViewMocks);
 
 vi.mock('../views/ledger/TrialBalanceFilter', () => ({
   TrialBalanceFilter: ({
@@ -142,6 +131,56 @@ describe('TrialBalancePage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('error-message')).toHaveTextContent('接続エラー');
+    });
+  });
+
+  it('ローディング中にローディング表示を出す', async () => {
+    // 未解決の Promise でローディング状態を維持
+    mockGetTrialBalance.mockReturnValue(new Promise<GetTrialBalanceResult>(() => {}));
+    render(<TrialBalancePage />);
+    await userEvent.setup().click(screen.getByTestId('search-btn'));
+    await waitFor(() => expect(screen.getByTestId('loading')).toBeInTheDocument());
+  });
+
+  it('基準日を設定して試算表を表示する', async () => {
+    mockGetTrialBalance.mockResolvedValue(
+      createMockResult({
+        date: '2024-06-30',
+        totalDebit: 100000,
+        totalCredit: 100000,
+      })
+    );
+
+    render(<TrialBalancePage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('set-date-btn'));
+    await user.click(screen.getByTestId('search-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('trial-balance-summary')).toBeInTheDocument();
+    });
+    expect(mockGetTrialBalance).toHaveBeenCalledWith({ date: '2024-06-30' });
+  });
+
+  it('API が null/undefined 値を返してもデフォルト値で正常に動作する', async () => {
+    mockGetTrialBalance.mockResolvedValue({
+      date: null,
+      totalDebit: 0,
+      totalCredit: 0,
+      balanced: true,
+      difference: 0,
+      entries: [],
+      categorySubtotals: [],
+    } as GetTrialBalanceResult);
+
+    render(<TrialBalancePage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('search-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('trial-balance-summary')).toBeInTheDocument();
     });
   });
 });

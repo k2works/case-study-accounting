@@ -10,6 +10,15 @@
  * - 残高の推移をグラフで表示できる
  */
 
+import {
+  createVisitFunction,
+  describeAccessControl,
+  describeErrorHandling,
+  itShouldShowDropdownOptions,
+  itShouldShowSummaryLabels,
+  itShouldShowTableHeaders,
+} from '../../support/ledgerTestConfig';
+
 // テスト共通設定
 const TEST_CONFIG = {
   page: {
@@ -25,17 +34,9 @@ const TEST_CONFIG = {
     table: 'daily-balance-table',
     chart: '[data-testid="daily-balance-chart"]',
   },
-  credentials: {
-    admin: { username: 'admin', password: 'Password123!' },
-    user: { username: 'user', password: 'Password123!' },
-    manager: { username: 'manager', password: 'Password123!' },
-  },
 } as const;
 
-const visitDailyBalancePage = (role: 'admin' | 'user' | 'manager' = 'admin') => {
-  const { username, password } = TEST_CONFIG.credentials[role];
-  cy.visitLedgerPage(username, password, TEST_CONFIG.page.path, TEST_CONFIG.page.testId);
-};
+const visitDailyBalancePage = createVisitFunction(TEST_CONFIG);
 
 const selectAccountAndVerifyTable = () => {
   cy.selectAccountAndWaitForTable(
@@ -63,15 +64,7 @@ describe('US-LDG-003: 日次残高照会', () => {
       cy.contains('button', '照会').should('be.visible');
     });
 
-    it('勘定科目ドロップダウンに選択肢が表示される', () => {
-      cy.get(`#${TEST_CONFIG.selectors.accountSelect} option`, { timeout: 15000 }).should(
-        'have.length.greaterThan',
-        1
-      );
-      cy.get(`#${TEST_CONFIG.selectors.accountSelect}`)
-        .contains('option', '勘定科目を選択')
-        .should('exist');
-    });
+    itShouldShowDropdownOptions(TEST_CONFIG.selectors.accountSelect);
   });
 
   describe('勘定科目を選択して日次残高を表示できる', () => {
@@ -87,23 +80,9 @@ describe('US-LDG-003: 日次残高照会', () => {
       );
     });
 
-    it('日付、借方合計、貸方合計、残高が表示される', () => {
-      cy.selectAccountOption(TEST_CONFIG.selectors.accountSelect);
-      cy.get(`[data-testid="${TEST_CONFIG.selectors.table}"]`, { timeout: 15000 }).should(
-        'be.visible'
-      );
-      ['日付', '借方合計', '貸方合計', '残高'].forEach((header) => {
-        cy.contains('th', header).should('be.visible');
-      });
-    });
+    itShouldShowTableHeaders(TEST_CONFIG, ['日付', '借方合計', '貸方合計', '残高']);
 
-    it('サマリ情報（期首残高、借方合計、貸方合計、期末残高）が表示される', () => {
-      cy.selectAccountOption(TEST_CONFIG.selectors.accountSelect);
-      cy.get(TEST_CONFIG.selectors.summary, { timeout: 15000 }).should('be.visible');
-      ['期首残高', '借方合計', '貸方合計', '期末残高'].forEach((label) => {
-        cy.get(TEST_CONFIG.selectors.summary).should('contain', label);
-      });
-    });
+    itShouldShowSummaryLabels(TEST_CONFIG, ['期首残高', '借方合計', '貸方合計', '期末残高']);
   });
 
   describe('期間を指定して絞り込みできる', () => {
@@ -160,32 +139,7 @@ describe('US-LDG-003: 日次残高照会', () => {
     });
   });
 
-  describe('アクセス制御', () => {
-    it('一般ユーザーも日次残高ページにアクセスできる', () => {
-      visitDailyBalancePage('user');
-      cy.get(TEST_CONFIG.selectors.filter).should('be.visible');
-    });
+  describeAccessControl(TEST_CONFIG, visitDailyBalancePage, '日次残高ページ');
 
-    it('未認証ユーザーは日次残高ページにアクセスできない', () => {
-      cy.visit(TEST_CONFIG.page.path);
-      cy.url().should('include', '/login');
-      cy.get('[data-testid="login-page"]', { timeout: 15000 }).should('be.visible');
-    });
-
-    it('経理責任者も日次残高ページにアクセスできる', () => {
-      visitDailyBalancePage('manager');
-      cy.get(`[data-testid="${TEST_CONFIG.page.testId}"]`).should('be.visible');
-    });
-  });
-
-  describe('エラーハンドリング', () => {
-    beforeEach(() => {
-      visitDailyBalancePage();
-    });
-
-    it('勘定科目を選択せずに照会するとエラーメッセージが表示される', () => {
-      cy.contains('button', '照会').click();
-      cy.contains('勘定科目を選択してください').should('be.visible');
-    });
-  });
+  describeErrorHandling(() => visitDailyBalancePage());
 });

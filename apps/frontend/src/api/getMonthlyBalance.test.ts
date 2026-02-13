@@ -48,6 +48,24 @@ describe('getMonthlyBalance', () => {
     expect(result.fiscalPeriod).toBe(2024);
   });
 
+  it('sends request without query params when accountCode is empty', async () => {
+    mockAxiosGet.mockResolvedValue({
+      data: {
+        accountCode: '',
+        accountName: '',
+        fiscalPeriod: 0,
+        openingBalance: 0,
+        debitTotal: 0,
+        creditTotal: 0,
+        closingBalance: 0,
+      },
+    });
+
+    await getMonthlyBalance({ accountCode: '' });
+
+    expect(mockAxiosGet).toHaveBeenCalledWith('/api/monthly-balance');
+  });
+
   it('omits fiscalPeriod when not provided', async () => {
     mockAxiosGet.mockResolvedValue({
       data: {

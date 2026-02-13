@@ -10,6 +10,11 @@
  * - 勘定科目種別ごとの小計が表示される
  */
 
+import {
+  createVisitFunction,
+  describeAccessControl,
+} from '../../support/ledgerTestConfig';
+
 // テスト共通設定
 const TEST_CONFIG = {
   page: {
@@ -22,17 +27,9 @@ const TEST_CONFIG = {
     summary: '[data-testid="trial-balance-summary"]',
     table: 'trial-balance-table',
   },
-  credentials: {
-    admin: { username: 'admin', password: 'Password123!' },
-    user: { username: 'user', password: 'Password123!' },
-    manager: { username: 'manager', password: 'Password123!' },
-  },
 } as const;
 
-const visitTrialBalancePage = (role: 'admin' | 'user' | 'manager' = 'admin') => {
-  const { username, password } = TEST_CONFIG.credentials[role];
-  cy.visitLedgerPage(username, password, TEST_CONFIG.page.path, TEST_CONFIG.page.testId);
-};
+const visitTrialBalancePage = createVisitFunction(TEST_CONFIG);
 
 describe('US-LDG-005: 残高試算表表示', () => {
   beforeEach(() => {
@@ -140,21 +137,5 @@ describe('US-LDG-005: 残高試算表表示', () => {
     });
   });
 
-  describe('アクセス制御', () => {
-    it('一般ユーザーも残高試算表ページにアクセスできる', () => {
-      visitTrialBalancePage('user');
-      cy.get(TEST_CONFIG.selectors.filter).should('be.visible');
-    });
-
-    it('未認証ユーザーは残高試算表ページにアクセスできない', () => {
-      cy.visit(TEST_CONFIG.page.path);
-      cy.url().should('include', '/login');
-      cy.get('[data-testid="login-page"]', { timeout: 15000 }).should('be.visible');
-    });
-
-    it('経理責任者も残高試算表ページにアクセスできる', () => {
-      visitTrialBalancePage('manager');
-      cy.get(`[data-testid="${TEST_CONFIG.page.testId}"]`).should('be.visible');
-    });
-  });
+  describeAccessControl(TEST_CONFIG, visitTrialBalancePage, '残高試算表ページ');
 });

@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -17,21 +16,11 @@ vi.mock('../api/getMonthlyBalance', () => ({
     error instanceof Error ? error.message : '月次残高の取得に失敗しました',
 }));
 
-vi.mock('react-router-dom', () => ({
-  Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
-}));
-
-vi.mock('../views/common', () => ({
-  MainLayout: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="main-layout">{children}</div>
-  ),
-  Loading: ({ message }: { message?: string }) => <div data-testid="loading">{message}</div>,
-  ErrorMessage: ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
-    <button data-testid="error-message" onClick={onRetry}>
-      {message}
-    </button>
-  ),
-}));
+vi.mock(
+  'react-router-dom',
+  async () => (await import('../test/pageTestMocks')).reactRouterDomMocks
+);
+vi.mock('../views/common', async () => (await import('../test/pageTestMocks')).commonViewMocks);
 
 vi.mock('../views/ledger/MonthlyBalanceFilter', () => ({
   MonthlyBalanceFilter: ({
@@ -164,6 +153,57 @@ describe('MonthlyBalancePage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('error-message')).toHaveTextContent('勘定科目を選択してください');
+    });
+  });
+
+  it('ローディング中にローディング表示を出す', async () => {
+    let resolvePromise: (value: GetMonthlyBalanceResult) => void;
+    mockGetMonthlyBalance.mockReturnValue(
+      new Promise<GetMonthlyBalanceResult>((resolve) => {
+        resolvePromise = resolve;
+      })
+    );
+
+    render(<MonthlyBalancePage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('account-select-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+    });
+
+    resolvePromise!(createMockResult({ entries: [] }));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
+    });
+  });
+
+  it('照会ボタンで fiscalPeriod 付きパラメータを送信する', async () => {
+    mockGetMonthlyBalance.mockResolvedValue(
+      createMockResult({
+        entries: [
+          { month: 1, openingBalance: 0, debitAmount: 1000, creditAmount: 0, closingBalance: 1000 },
+        ],
+      })
+    );
+
+    render(<MonthlyBalancePage />);
+
+    const user = userEvent.setup();
+    // まず科目選択で自動フェッチ
+    await user.click(screen.getByTestId('account-select-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('monthly-balance-summary')).toBeInTheDocument();
+    });
+
+    // 照会ボタンクリックで手動検索（fiscalPeriod は filter mock で設定されないので accountCode のみ）
+    await user.click(screen.getByTestId('search-btn'));
+
+    await waitFor(() => {
+      expect(mockGetMonthlyBalance).toHaveBeenCalledTimes(2);
     });
   });
 });

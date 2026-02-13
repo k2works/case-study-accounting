@@ -105,4 +105,30 @@ describe('TrialBalanceSummary', () => {
 
     expect(screen.queryByText('勘定科目種別ごとの小計')).not.toBeInTheDocument();
   });
+
+  it('renders 0 for undefined subtotal values via safeCurrency', () => {
+    const subtotals = [
+      {
+        accountType: 'EQUITY',
+        accountTypeDisplayName: '純資産',
+        debitSubtotal: undefined as unknown as number,
+        creditSubtotal: undefined as unknown as number,
+      },
+    ];
+
+    render(
+      <TrialBalanceSummary
+        date={null}
+        totalDebit={undefined as unknown as number}
+        totalCredit={undefined as unknown as number}
+        balanced={true}
+        difference={0}
+        categorySubtotals={subtotals}
+      />
+    );
+
+    expect(screen.getByText('純資産')).toBeInTheDocument();
+    const zeros = screen.getAllByText('0');
+    expect(zeros.length).toBeGreaterThanOrEqual(4);
+  });
 });
