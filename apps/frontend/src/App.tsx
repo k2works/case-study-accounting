@@ -13,6 +13,7 @@ import EditJournalEntryPage from './pages/EditJournalEntryPage';
 import GeneralLedgerPage from './pages/GeneralLedgerPage';
 import DailyBalancePage from './pages/DailyBalancePage';
 import MonthlyBalancePage from './pages/MonthlyBalancePage';
+import TrialBalancePage from './pages/TrialBalancePage';
 import UserEditPage from './pages/UserEditPage';
 import { Loading } from './views/common';
 
@@ -180,6 +181,14 @@ export const App = () => {
         element={
           <PrivateRoute>
             <MonthlyBalancePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/ledger/trial-balance"
+        element={
+          <PrivateRoute>
+            <TrialBalancePage />
           </PrivateRoute>
         }
       />

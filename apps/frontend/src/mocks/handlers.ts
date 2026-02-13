@@ -1172,6 +1172,134 @@ export const dailyBalanceHandlers = [
   }),
 ];
 
+// 残高試算表モックデータ
+interface TrialBalanceEntry {
+  accountCode: string;
+  accountName: string;
+  bsplCategory: string;
+  accountType: string;
+  debitBalance: number;
+  creditBalance: number;
+}
+
+interface CategorySubtotal {
+  accountType: string;
+  accountTypeDisplayName: string;
+  debitSubtotal: number;
+  creditSubtotal: number;
+}
+
+interface TrialBalanceResult {
+  date: string | null;
+  totalDebit: number;
+  totalCredit: number;
+  balanced: boolean;
+  difference: number;
+  entries: TrialBalanceEntry[];
+  categorySubtotals: CategorySubtotal[];
+}
+
+const buildTrialBalanceEntries = (): TrialBalanceEntry[] => {
+  const typeMap: Record<string, { bspl: string; isDebit: boolean }> = {
+    ASSET: { bspl: 'B', isDebit: true },
+    LIABILITY: { bspl: 'B', isDebit: false },
+    EQUITY: { bspl: 'B', isDebit: false },
+    REVENUE: { bspl: 'P', isDebit: false },
+    EXPENSE: { bspl: 'P', isDebit: true },
+  };
+
+  // mockAccounts からエントリを生成（debit/credit はモック金額）
+  const mockAmounts: Record<string, number> = {
+    '1000': 50000,
+    '1001': 30000,
+    '2000': -20000,
+    '2001': -10000,
+    '3001': -40000,
+    '4001': -25000,
+    '5001': 10000,
+    '5002': 5000,
+  };
+
+  return mockAccounts
+    .filter((a) => typeMap[a.accountType])
+    .map((a) => {
+      const info = typeMap[a.accountType];
+      const balance = mockAmounts[a.accountCode] ?? 0;
+      let debitBalance = 0;
+      let creditBalance = 0;
+
+      if (info.isDebit) {
+        if (balance >= 0) {
+          debitBalance = balance;
+        } else {
+          creditBalance = Math.abs(balance);
+        }
+      } else {
+        if (balance <= 0) {
+          creditBalance = Math.abs(balance);
+        } else {
+          debitBalance = balance;
+        }
+      }
+
+      return {
+        accountCode: a.accountCode,
+        accountName: a.accountName,
+        bsplCategory: info.bspl,
+        accountType: a.accountType,
+        debitBalance,
+        creditBalance,
+      };
+    });
+};
+
+const buildCategorySubtotals = (entries: TrialBalanceEntry[]): CategorySubtotal[] => {
+  const orderedTypes = [
+    { type: 'ASSET', name: '資産' },
+    { type: 'LIABILITY', name: '負債' },
+    { type: 'EQUITY', name: '純資産' },
+    { type: 'REVENUE', name: '収益' },
+    { type: 'EXPENSE', name: '費用' },
+  ];
+
+  return orderedTypes.map(({ type, name }) => {
+    const group = entries.filter((e) => e.accountType === type);
+    return {
+      accountType: type,
+      accountTypeDisplayName: name,
+      debitSubtotal: group.reduce((sum, e) => sum + e.debitBalance, 0),
+      creditSubtotal: group.reduce((sum, e) => sum + e.creditBalance, 0),
+    };
+  });
+};
+
+/**
+ * 残高試算表関連のハンドラー
+ */
+export const trialBalanceHandlers = [
+  http.get('*/trial-balance', ({ request }) => {
+    const url = new URL(request.url);
+    const dateParam = url.searchParams.get('date');
+
+    const entries = buildTrialBalanceEntries();
+    const categorySubtotals = buildCategorySubtotals(entries);
+    const totalDebit = entries.reduce((sum, e) => sum + e.debitBalance, 0);
+    const totalCredit = entries.reduce((sum, e) => sum + e.creditBalance, 0);
+
+    const result: TrialBalanceResult = {
+      date: dateParam,
+      totalDebit,
+      totalCredit,
+      balanced: totalDebit === totalCredit,
+      difference: Math.abs(totalDebit - totalCredit),
+      entries,
+      categorySubtotals,
+    };
+
+    return HttpResponse.json(result);
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
@@ -1182,4 +1310,5 @@ export const handlers = [
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
   ...dailyBalanceHandlers,
+  ...trialBalanceHandlers,
 ];
