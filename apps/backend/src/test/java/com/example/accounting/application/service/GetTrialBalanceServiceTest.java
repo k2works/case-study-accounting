@@ -123,6 +123,78 @@ class GetTrialBalanceServiceTest {
         assertThat(result.balanced()).isTrue();
     }
 
+    @Test
+    void shouldHandleUnknownAccountTypeAsCreditBalance() {
+        TrialBalanceEntity unknownType = createEntity("999", "不明", "B", "UNKNOWN",
+                BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("500"));
+
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(unknownType));
+
+        GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
+
+        // Unknown type is treated as credit-balance account;
+        // positive balance with credit-balance account → goes to debit side
+        assertThat(result.entries()).hasSize(1);
+        assertThat(result.entries().getFirst().debitBalance())
+                .isEqualByComparingTo(new BigDecimal("500"));
+        assertThat(result.entries().getFirst().creditBalance())
+                .isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    void shouldHandleNullBalanceAsZero() {
+        TrialBalanceEntity entityWithNullBalance = new TrialBalanceEntity();
+        entityWithNullBalance.setAccountCode("100");
+        entityWithNullBalance.setAccountName("現金");
+        entityWithNullBalance.setBsplCategory("BS");
+        entityWithNullBalance.setAccountType("ASSET");
+        entityWithNullBalance.setTotalDebit(BigDecimal.ZERO);
+        entityWithNullBalance.setTotalCredit(BigDecimal.ZERO);
+        entityWithNullBalance.setBalance(null);
+
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(entityWithNullBalance));
+
+        GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
+
+        assertThat(result.entries()).hasSize(1);
+        assertThat(result.entries().getFirst().debitBalance())
+                .isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.entries().getFirst().creditBalance())
+                .isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    void shouldSplitNegativeBalanceForDebitAccount() {
+        // EXPENSE is a debit-balance account; negative balance → credit side
+        TrialBalanceEntity expense = createEntity("500", "仕入", "P", "EXPENSE",
+                BigDecimal.ZERO, new BigDecimal("1000"), new BigDecimal("-200"));
+
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(expense));
+
+        GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
+
+        assertThat(result.entries().getFirst().debitBalance())
+                .isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.entries().getFirst().creditBalance())
+                .isEqualByComparingTo(new BigDecimal("200"));
+    }
+
+    @Test
+    void shouldSplitZeroBalanceForCreditAccount() {
+        // LIABILITY is a credit-balance account; zero balance → credit side (not positive → debit)
+        TrialBalanceEntity liability = createEntity("200", "買掛金", "B", "LIABILITY",
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(liability));
+
+        GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
+
+        assertThat(result.entries().getFirst().debitBalance())
+                .isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.entries().getFirst().creditBalance())
+                .isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
     private TrialBalanceEntity createEntity(String code, String name, String bspl, String type,
                                              BigDecimal debit, BigDecimal credit, BigDecimal balance) {
         TrialBalanceEntity entity = new TrialBalanceEntity();

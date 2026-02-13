@@ -116,6 +116,35 @@ class JournalEntryEntityTest {
         }
 
         @Test
+        @DisplayName("確定フィールド付きのドメインモデルからエンティティに変換できる")
+        void shouldConvertFromDomainWithConfirmedFields() {
+            LocalDateTime now = LocalDateTime.of(2024, 3, 15, 10, 0, 0);
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "確定済み仕訳",
+                    JournalEntryStatus.CONFIRMED,
+                    3,
+                    List.of(),
+                    CREATED_BY,
+                    UserId.of("approver-1"),
+                    now,
+                    null,
+                    null,
+                    null,
+                    UserId.of("confirmer-1"),
+                    now,
+                    now,
+                    now
+            );
+
+            JournalEntryEntity entity = JournalEntryEntity.fromDomain(entry);
+
+            assertThat(entity.getConfirmedBy()).isEqualTo("confirmer-1");
+            assertThat(entity.getConfirmedAt()).isNotNull();
+        }
+
+        @Test
         @DisplayName("createdBy が null の場合も変換できる")
         void shouldConvertFromDomainWithNullCreatedBy() {
             JournalEntry entry = JournalEntry.reconstruct(
@@ -223,6 +252,30 @@ class JournalEntryEntityTest {
             assertThat(entry.getRejectedBy()).isEqualTo(UserId.of("manager-1"));
             assertThat(entry.getRejectedAt()).isNotNull();
             assertThat(entry.getRejectionReason()).isEqualTo("金額に誤りがあります");
+        }
+
+        @Test
+        @DisplayName("確定フィールド付きエンティティからドメインモデルに変換できる")
+        void shouldConvertToDomainWithConfirmedFields() {
+            JournalEntryEntity entity = new JournalEntryEntity();
+            entity.setId(1);
+            entity.setJournalDate(JOURNAL_DATE);
+            entity.setDescription("確定済み");
+            entity.setStatus("CONFIRMED");
+            entity.setVersion(3);
+            entity.setCreatedBy("user-1");
+            entity.setApprovedBy("approver-1");
+            entity.setConfirmedBy("confirmer-1");
+            entity.setConfirmedAt(java.time.OffsetDateTime.of(2024, 3, 15, 10, 0, 0, 0, java.time.ZoneOffset.UTC));
+            entity.setCreatedAt(java.time.OffsetDateTime.now());
+            entity.setApprovedAt(java.time.OffsetDateTime.now());
+            entity.setUpdatedAt(java.time.OffsetDateTime.now());
+
+            JournalEntry entry = entity.toDomain();
+
+            assertThat(entry.getConfirmedBy()).isEqualTo(UserId.of("confirmer-1"));
+            assertThat(entry.getConfirmedAt()).isNotNull();
+            assertThat(entry.getStatus()).isEqualTo(JournalEntryStatus.CONFIRMED);
         }
 
         @Test
