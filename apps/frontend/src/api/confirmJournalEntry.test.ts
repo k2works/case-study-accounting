@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AxiosError } from 'axios';
 import { axiosInstance } from './axios-instance';
 import { confirmJournalEntry, confirmJournalEntryErrorMessage } from './confirmJournalEntry';
 import { createErrorMessageTestCases } from './api-test-helpers';
@@ -43,5 +44,22 @@ describe('confirmJournalEntryErrorMessage', () => {
 
   testCases.forEach(({ name, run }) => {
     it(name, run);
+  });
+
+  it('AxiosError でレスポンスが無い場合はデフォルトメッセージを返す', () => {
+    const error = new AxiosError('Network Error');
+    expect(confirmJournalEntryErrorMessage(error)).toBe('確定に失敗しました');
+  });
+
+  it('非 404 でエラーメッセージが無い場合はデフォルトメッセージを返す', () => {
+    const error = new AxiosError('Bad Request');
+    error.response = {
+      data: {},
+      status: 400,
+      statusText: 'Bad Request',
+      headers: {},
+      config: {} as never,
+    };
+    expect(confirmJournalEntryErrorMessage(error)).toBe('確定に失敗しました');
   });
 });

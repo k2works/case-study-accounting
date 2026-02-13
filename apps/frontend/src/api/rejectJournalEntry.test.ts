@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AxiosError } from 'axios';
 import { axiosInstance } from './axios-instance';
 import { rejectJournalEntry, rejectJournalEntryErrorMessage } from './rejectJournalEntry';
 import { createErrorMessageTestCases } from './api-test-helpers';
@@ -48,5 +49,22 @@ describe('rejectJournalEntryErrorMessage', () => {
 
   testCases.forEach(({ name, run }) => {
     it(name, run);
+  });
+
+  it('AxiosError でレスポンスが無い場合はデフォルトメッセージを返す', () => {
+    const error = new AxiosError('Network Error');
+    expect(rejectJournalEntryErrorMessage(error)).toBe('差し戻しに失敗しました');
+  });
+
+  it('非 404 でエラーメッセージが無い場合はデフォルトメッセージを返す', () => {
+    const error = new AxiosError('Bad Request');
+    error.response = {
+      data: {},
+      status: 400,
+      statusText: 'Bad Request',
+      headers: {},
+      config: {} as never,
+    };
+    expect(rejectJournalEntryErrorMessage(error)).toBe('差し戻しに失敗しました');
   });
 });
