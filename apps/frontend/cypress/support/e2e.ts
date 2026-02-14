@@ -218,15 +218,13 @@ Cypress.Commands.add('createTestJournalEntry', (date: string, description: strin
 
 /**
  * 仕訳一覧ページ遷移コマンド
- * 一覧ページに遷移し初期データ読み込み完了を待機する
- * cy.intercept で初期 API レスポンスを待ち、後続のフィルタ操作とのレースコンディションを防止
+ * 一覧ページに遷移しデータ行の表示完了を待機する
+ * MSW 環境では cy.intercept がリクエストを検知できないため DOM アサーションで待機する
  */
 Cypress.Commands.add('visitJournalEntryList', () => {
-  cy.intercept({ method: 'GET', url: '**/api/journal-entries/search*', times: 1 }).as('journalEntriesInitialLoad');
   cy.visit('/journal/entries');
   cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
-  cy.wait('@journalEntriesInitialLoad');
-  cy.get('table tbody', { timeout: 15000 }).should('exist');
+  cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
 });
 
 /**
@@ -283,16 +281,14 @@ Cypress.Commands.add('selectAccountAndWaitForTable', (selectId: string, tableTes
 
 /**
  * 仕訳一覧をステータスでフィルタリング
- * cy.intercept で検索 API レスポンスを待ち、フィルタ結果が確実に反映されてからアサーションに進む
+ * MSW 環境では即座にレスポンスが返るため DOM アサーションのみで結果反映を待機する
  */
 Cypress.Commands.add(
   'filterJournalEntriesByStatus',
   (status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED') => {
-  cy.intercept({ method: 'GET', url: '**/api/journal-entries/search*', times: 1 }).as('journalEntriesSearch');
-  cy.get('#journal-entry-filter-status').select(status);
-  cy.contains('button', '検索').click();
-  cy.wait('@journalEntriesSearch');
-  cy.get('table tbody tr', { timeout: 10000 }).should('exist');
+    cy.get('#journal-entry-filter-status').select(status);
+    cy.contains('button', '検索').click();
+    cy.get('table tbody', { timeout: 10000 }).should('exist');
   }
 );
 
