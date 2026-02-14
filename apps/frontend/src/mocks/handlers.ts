@@ -1379,6 +1379,153 @@ export const monthlyBalanceHandlers = [
 ];
 
 /**
+ * 貸借対照表関連のハンドラー
+ */
+interface BalanceSheetEntry {
+  accountCode: string;
+  accountName: string;
+  accountType: string;
+  amount: number;
+  comparative: { previousAmount: number; difference: number; changeRate: number } | null;
+}
+
+interface BalanceSheetSection {
+  sectionType: string;
+  sectionDisplayName: string;
+  entries: BalanceSheetEntry[];
+  subtotal: number;
+  comparativeSubtotal: { previousAmount: number; difference: number; changeRate: number } | null;
+}
+
+const bsSectionNames: Record<string, string> = {
+  ASSET: '資産の部',
+  LIABILITY: '負債の部',
+  EQUITY: '純資産の部',
+};
+
+const bsMockAmounts: Record<string, number> = {
+  '1000': 50000,
+  '1001': 30000,
+  '2000': 20000,
+  '2001': 10000,
+  '3001': 50000,
+};
+
+const bsPrevAmounts: Record<string, number> = {
+  '1000': 40000,
+  '1001': 25000,
+  '2000': 15000,
+  '2001': 8000,
+  '3001': 42000,
+};
+
+const calcChangeRate = (diff: number, base: number): number =>
+  base !== 0 ? Math.round((diff / Math.abs(base)) * 10000) / 100 : 0;
+
+const toBsEntry = (a: Account, hasComparative: boolean): BalanceSheetEntry => {
+  const amount = bsMockAmounts[a.accountCode] ?? 0;
+  const prev = bsPrevAmounts[a.accountCode] ?? 0;
+  const diff = amount - prev;
+  return {
+    accountCode: a.accountCode,
+    accountName: a.accountName,
+    accountType: a.accountType,
+    amount,
+    comparative: hasComparative
+      ? { previousAmount: prev, difference: diff, changeRate: calcChangeRate(diff, prev) }
+      : null,
+  };
+};
+
+const toBsSection = (
+  type: string,
+  entries: BalanceSheetEntry[],
+  hasComparative: boolean
+): BalanceSheetSection => {
+  const subtotal = entries.reduce((s, e) => s + e.amount, 0);
+  const prevSubtotal = entries.reduce((s, e) => s + (e.comparative?.previousAmount ?? 0), 0);
+  const subDiff = subtotal - prevSubtotal;
+  return {
+    sectionType: type,
+    sectionDisplayName: bsSectionNames[type],
+    entries,
+    subtotal,
+    comparativeSubtotal: hasComparative
+      ? {
+          previousAmount: prevSubtotal,
+          difference: subDiff,
+          changeRate: calcChangeRate(subDiff, prevSubtotal),
+        }
+      : null,
+  };
+};
+
+const getSectionSubtotal = (sections: BalanceSheetSection[], type: string): number =>
+  sections.find((s) => s.sectionType === type)?.subtotal ?? 0;
+
+const groupBsAccounts = (hasComparative: boolean): Record<string, BalanceSheetEntry[]> => {
+  const bsTypes = ['ASSET', 'LIABILITY', 'EQUITY'];
+  const grouped: Record<string, BalanceSheetEntry[]> = { ASSET: [], LIABILITY: [], EQUITY: [] };
+  for (const a of mockAccounts.filter((ac) => bsTypes.includes(ac.accountType))) {
+    grouped[a.accountType].push(toBsEntry(a, hasComparative));
+  }
+  return grouped;
+};
+
+const buildBalanceSheetSections = (
+  hasComparative: boolean
+): {
+  sections: BalanceSheetSection[];
+  totalAssets: number;
+  totalLiab: number;
+  totalEquity: number;
+} => {
+  const bsTypes = ['ASSET', 'LIABILITY', 'EQUITY'];
+  const grouped = groupBsAccounts(hasComparative);
+  const sections = bsTypes.map((type) => toBsSection(type, grouped[type], hasComparative));
+  return {
+    sections,
+    totalAssets: getSectionSubtotal(sections, 'ASSET'),
+    totalLiab: getSectionSubtotal(sections, 'LIABILITY'),
+    totalEquity: getSectionSubtotal(sections, 'EQUITY'),
+  };
+};
+
+export const balanceSheetHandlers = [
+  http.get('*/balance-sheet/export', () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=balance-sheet.xlsx',
+      },
+    });
+  }),
+  http.get('*/balance-sheet', ({ request }) => {
+    const url = new URL(request.url);
+    const dateParam = url.searchParams.get('date');
+    const comparativeDateParam = url.searchParams.get('comparativeDate');
+    const hasComparative = !!comparativeDateParam;
+
+    const { sections, totalAssets, totalLiab, totalEquity } =
+      buildBalanceSheetSections(hasComparative);
+    const totalLiabAndEquity = totalLiab + totalEquity;
+
+    return HttpResponse.json({
+      date: dateParam,
+      comparativeDate: comparativeDateParam,
+      sections,
+      totalAssets,
+      totalLiabilities: totalLiab,
+      totalEquity,
+      totalLiabilitiesAndEquity: totalLiabAndEquity,
+      balanced: totalAssets === totalLiabAndEquity,
+      difference: Math.abs(totalAssets - totalLiabAndEquity),
+    });
+  }),
+];
+
+/**
  * すべてのハンドラー
  */
 export const handlers = [
@@ -1390,4 +1537,5 @@ export const handlers = [
   ...dailyBalanceHandlers,
   ...trialBalanceHandlers,
   ...monthlyBalanceHandlers,
+  ...balanceSheetHandlers,
 ];
