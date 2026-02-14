@@ -31,6 +31,8 @@ val springdocVersion = "2.8.8"
 val testcontainersVersion = "1.20.4"
 val archunitVersion = "1.3.0"
 val jigErdVersion = "0.2.1"
+val poiVersion = "5.4.0"
+val openpdfVersion = "2.0.3"
 
 dependencies {
     // === implementation ===
@@ -50,6 +52,9 @@ dependencies {
     implementation("io.vavr:vavr:$vavrVersion")
     // OpenAPI / Swagger UI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
+    // Export (PDF / Excel)
+    implementation("org.apache.poi:poi-ooxml:$poiVersion")
+    implementation("com.github.librepdf:openpdf:$openpdfVersion")
 
     // === runtimeOnly ===
     runtimeOnly("org.postgresql:postgresql")
