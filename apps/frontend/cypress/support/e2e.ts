@@ -281,14 +281,37 @@ Cypress.Commands.add('selectAccountAndWaitForTable', (selectId: string, tableTes
 
 /**
  * 仕訳一覧をステータスでフィルタリング
- * MSW 環境では即座にレスポンスが返るため DOM アサーションのみで結果反映を待機する
+ * MSW 環境では cy.intercept が使えないため、フィルタ結果のステータスラベルで待機する。
+ * select 後に React controlled component の re-render を待ち、
+ * handleSearch closure が更新されてからクリックする。
  */
 Cypress.Commands.add(
   'filterJournalEntriesByStatus',
   (status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED') => {
-    cy.get('#journal-entry-filter-status').select(status);
-    cy.contains('button', '検索').click();
-    cy.get('table tbody', { timeout: 10000 }).should('exist');
+    const statusLabelMap: Record<string, string> = {
+      DRAFT: '下書き',
+      PENDING: '承認待ち',
+      APPROVED: '承認済み',
+      CONFIRMED: '確定',
+    };
+    // React controlled component の stale closure により、cy.select() 直後の
+    // handleSearch が古い filterValues で実行されることがある。
+    // リトライパターンで結果が正しくない場合に再実行する。
+    const executeFilter = () => {
+      cy.get('#journal-entry-filter-status').select(status);
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(300);
+      cy.contains('button', '検索').click();
+    };
+    executeFilter();
+    cy.get('table tbody tr', { timeout: 5000 }).first().then(($row) => {
+      if (!$row.text().includes(statusLabelMap[status])) {
+        executeFilter();
+      }
+    });
+    cy.get('table tbody tr', { timeout: 15000 })
+      .first()
+      .should('contain', statusLabelMap[status]);
   }
 );
 
