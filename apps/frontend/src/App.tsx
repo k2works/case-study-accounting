@@ -11,6 +11,7 @@ import JournalEntryListPage from './pages/JournalEntryListPage';
 import CreateJournalEntryPage from './pages/CreateJournalEntryPage';
 import EditJournalEntryPage from './pages/EditJournalEntryPage';
 import GeneralLedgerPage from './pages/GeneralLedgerPage';
+import SubsidiaryLedgerPage from './pages/SubsidiaryLedgerPage';
 import DailyBalancePage from './pages/DailyBalancePage';
 import MonthlyBalancePage from './pages/MonthlyBalancePage';
 import TrialBalancePage from './pages/TrialBalancePage';
@@ -166,6 +167,14 @@ export const App = () => {
         element={
           <PrivateRoute>
             <GeneralLedgerPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/subsidiary-ledger"
+        element={
+          <PrivateRoute>
+            <SubsidiaryLedgerPage />
           </PrivateRoute>
         }
       />

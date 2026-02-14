@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 
 export const Navigate = ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />;

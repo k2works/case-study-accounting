@@ -1150,6 +1150,135 @@ export const generalLedgerHandlers = [
   }),
 ];
 
+// 補助元帳モックデータ
+interface SubsidiaryLedgerEntry {
+  journalEntryId: number;
+  journalDate: string;
+  description: string;
+  debitAmount: number;
+  creditAmount: number;
+  runningBalance: number;
+}
+
+interface SubsidiaryLedgerResult {
+  content: SubsidiaryLedgerEntry[];
+  accountCode: string;
+  accountName: string;
+  subAccountCode: string;
+  openingBalance: number;
+  debitTotal: number;
+  creditTotal: number;
+  closingBalance: number;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+const mockSubsidiaryLedgerEntries: SubsidiaryLedgerEntry[] = [
+  {
+    journalEntryId: 10,
+    journalDate: '2024-04-01',
+    description: 'A社 売上',
+    debitAmount: 150000,
+    creditAmount: 0,
+    runningBalance: 150000,
+  },
+  {
+    journalEntryId: 15,
+    journalDate: '2024-04-10',
+    description: 'A社 入金',
+    debitAmount: 0,
+    creditAmount: 100000,
+    runningBalance: 50000,
+  },
+  {
+    journalEntryId: 20,
+    journalDate: '2024-04-20',
+    description: 'A社 売上',
+    debitAmount: 200000,
+    creditAmount: 0,
+    runningBalance: 250000,
+  },
+];
+
+const recalculateSubsidiaryBalances = (
+  entries: SubsidiaryLedgerEntry[]
+): SubsidiaryLedgerEntry[] => {
+  let runningBalance = 0;
+  return entries.map((entry) => {
+    runningBalance = runningBalance + entry.debitAmount - entry.creditAmount;
+    return { ...entry, runningBalance };
+  });
+};
+
+const buildSubsidiaryLedgerResult = (
+  content: SubsidiaryLedgerEntry[],
+  accountCode: string,
+  subAccountCode: string,
+  page: number,
+  size: number,
+  totalElements: number
+): SubsidiaryLedgerResult => {
+  const debitTotal = content.reduce((sum, e) => sum + e.debitAmount, 0);
+  const creditTotal = content.reduce((sum, e) => sum + e.creditAmount, 0);
+  const closingBalance = content.length > 0 ? content[content.length - 1].runningBalance : 0;
+
+  return {
+    content,
+    accountCode,
+    accountName: accountCode === '1001' ? '売掛金' : '買掛金',
+    subAccountCode: subAccountCode || '',
+    openingBalance: 0,
+    debitTotal,
+    creditTotal,
+    closingBalance,
+    page,
+    size,
+    totalElements,
+    totalPages: Math.ceil(totalElements / size),
+  };
+};
+
+/**
+ * 補助元帳関連のハンドラー
+ */
+export const subsidiaryLedgerHandlers = [
+  http.get('*/subsidiary-ledger', ({ request }) => {
+    const url = new URL(request.url);
+    const accountCode = url.searchParams.get('accountCode') || '';
+    const subAccountCode = url.searchParams.get('subAccountCode') || '';
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+
+    if (!accountCode) {
+      return HttpResponse.json({ errorMessage: '勘定科目を選択してください' }, { status: 400 });
+    }
+
+    const filtered = filterByDateRange(
+      mockSubsidiaryLedgerEntries,
+      dateFrom,
+      dateTo,
+      (e) => e.journalDate
+    );
+    const withBalances = recalculateSubsidiaryBalances(filtered);
+    const start = page * size;
+    const content = withBalances.slice(start, start + size);
+    const result = buildSubsidiaryLedgerResult(
+      content,
+      accountCode,
+      subAccountCode,
+      page,
+      size,
+      withBalances.length
+    );
+
+    return HttpResponse.json(result);
+  }),
+];
+
 /**
  * 日次残高関連のハンドラー
  */
@@ -1534,6 +1663,7 @@ export const handlers = [
   ...accountHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
+  ...subsidiaryLedgerHandlers,
   ...dailyBalanceHandlers,
   ...trialBalanceHandlers,
   ...monthlyBalanceHandlers,
