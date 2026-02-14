@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.accounting.infrastructure.persistence.mapper.MonthlyAccountBalanceMapper">
+
+    <resultMap id="monthlyAccountBalanceResultMap"
+               type="com.example.accounting.infrastructure.persistence.entity.MonthlyAccountBalanceEntity">
+        <result property="fiscalPeriod" column="fiscal_period"/>
+        <result property="month" column="month"/>
+        <result property="accountCode" column="account_code"/>
+        <result property="openingBalance" column="opening_balance"/>
+        <result property="debitAmount" column="debit_amount"/>
+        <result property="creditAmount" column="credit_amount"/>
+        <result property="closingBalance" column="closing_balance"/>
+    </resultMap>
+
+    <select id="findByAccountCodeAndFiscalPeriod" resultMap="monthlyAccountBalanceResultMap">
+        SELECT fiscal_period, "month", account_code,
+               opening_balance, debit_amount, credit_amount, closing_balance
+        FROM monthly_account_balances
+        WHERE account_code = #{accountCode}
+        <if test="fiscalPeriod != null">
+            AND fiscal_period = #{fiscalPeriod}
+        </if>
+          AND sub_account_code = ''
+          AND department_code = ''
+          AND project_code = ''
+          AND is_closing_entry = 0
+        ORDER BY "month" ASC
+    </select>
+
+</mapper>

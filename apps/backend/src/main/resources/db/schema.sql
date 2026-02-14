@@ -63,6 +63,11 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     created_by VARCHAR(36),
     approved_by VARCHAR(36),
     approved_at TIMESTAMP,
+    rejected_by VARCHAR(36),
+    rejected_at TIMESTAMP,
+    rejection_reason VARCHAR(500),
+    confirmed_by VARCHAR(36),
+    confirmed_at TIMESTAMP,
     voucher_number VARCHAR(20),
     input_date DATE,
     is_closing_entry INTEGER DEFAULT 0 NOT NULL,
@@ -78,12 +83,16 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_journal_entries_user FOREIGN KEY (created_by) REFERENCES users(id),
     CONSTRAINT fk_journal_entries_approver FOREIGN KEY (approved_by) REFERENCES users(id)
+    ,CONSTRAINT fk_journal_entries_rejected_by FOREIGN KEY (rejected_by) REFERENCES users(id)
+    ,CONSTRAINT fk_journal_entries_confirmed_by FOREIGN KEY (confirmed_by) REFERENCES users(id)
 );
 
 -- インデックス
 CREATE INDEX IF NOT EXISTS idx_journal_entries_date ON journal_entries(journal_date);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_status ON journal_entries(status);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_approved_by ON journal_entries(approved_by);
+CREATE INDEX IF NOT EXISTS idx_journal_entries_rejected_by ON journal_entries(rejected_by);
+CREATE INDEX IF NOT EXISTS idx_journal_entries_confirmed_by ON journal_entries(confirmed_by);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_is_closing ON journal_entries(is_closing_entry);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_is_red_slip ON journal_entries(is_red_slip);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_department ON journal_entries(department_code);

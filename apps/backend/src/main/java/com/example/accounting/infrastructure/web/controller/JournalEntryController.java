@@ -2,20 +2,26 @@ package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
 import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
+import com.example.accounting.application.port.in.ConfirmJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
 import com.example.accounting.application.port.in.ApproveJournalEntryUseCase;
+import com.example.accounting.application.port.in.RejectJournalEntryUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SubmitForApprovalUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
 import com.example.accounting.application.port.in.command.ApproveJournalEntryCommand;
+import com.example.accounting.application.port.in.command.ConfirmJournalEntryCommand;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
+import com.example.accounting.application.port.in.command.RejectJournalEntryCommand;
 import com.example.accounting.application.port.in.command.SubmitForApprovalCommand;
 import com.example.accounting.application.port.in.command.UpdateJournalEntryCommand;
 import com.example.accounting.application.port.out.ApproveJournalEntryResult;
+import com.example.accounting.application.port.out.ConfirmJournalEntryResult;
+import com.example.accounting.application.port.out.RejectJournalEntryResult;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
 import com.example.accounting.application.port.out.DeleteJournalEntryResult;
 import com.example.accounting.application.port.out.GetJournalEntriesResult;
@@ -25,6 +31,9 @@ import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.web.dto.ApproveJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.ConfirmJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.RejectJournalEntryRequest;
+import com.example.accounting.infrastructure.web.dto.RejectJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.DeleteJournalEntryResponse;
@@ -75,8 +84,11 @@ public class JournalEntryController {
     private final SearchJournalEntriesUseCase searchJournalEntriesUseCase;
     private final SubmitForApprovalUseCase submitForApprovalUseCase;
     private final ApproveJournalEntryUseCase approveJournalEntryUseCase;
+    private final RejectJournalEntryUseCase rejectJournalEntryUseCase;
+    private final ConfirmJournalEntryUseCase confirmJournalEntryUseCase;
     private final UserRepository userRepository;
 
+    @SuppressWarnings("java:S107") // コントローラは複数のユースケースを統合するため引数が多い
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
                                   UpdateJournalEntryUseCase updateJournalEntryUseCase,
                                   GetJournalEntryUseCase getJournalEntryUseCase,
@@ -85,6 +97,8 @@ public class JournalEntryController {
                                   SearchJournalEntriesUseCase searchJournalEntriesUseCase,
                                   SubmitForApprovalUseCase submitForApprovalUseCase,
                                   ApproveJournalEntryUseCase approveJournalEntryUseCase,
+                                  RejectJournalEntryUseCase rejectJournalEntryUseCase,
+                                  ConfirmJournalEntryUseCase confirmJournalEntryUseCase,
                                   UserRepository userRepository) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
@@ -94,6 +108,8 @@ public class JournalEntryController {
         this.searchJournalEntriesUseCase = searchJournalEntriesUseCase;
         this.submitForApprovalUseCase = submitForApprovalUseCase;
         this.approveJournalEntryUseCase = approveJournalEntryUseCase;
+        this.rejectJournalEntryUseCase = rejectJournalEntryUseCase;
+        this.confirmJournalEntryUseCase = confirmJournalEntryUseCase;
         this.userRepository = userRepository;
     }
 
@@ -410,6 +426,99 @@ public class JournalEntryController {
 
         return ResponseEntity.badRequest()
                 .body(ApproveJournalEntryResponse.failure(result.errorMessage()));
+    }
+
+    /**
+     * 仕訳確定
+     */
+    @Operation(
+            summary = "仕訳確定",
+            description = "管理者またはマネージャーが仕訳を確定します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "確定成功"
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "確定失敗（ステータスエラー等）"
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "仕訳が見つからない"
+    )
+    @PostMapping("/{id}/confirm")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ConfirmJournalEntryResponse> confirmJournalEntry(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        ConfirmJournalEntryCommand command = new ConfirmJournalEntryCommand(id, userDetails.getUsername());
+        ConfirmJournalEntryResult result = confirmJournalEntryUseCase.execute(command);
+
+        if (result.success()) {
+            return ResponseEntity.ok(ConfirmJournalEntryResponse.success(
+                    result.journalEntryId(),
+                    result.status(),
+                    result.confirmedBy(),
+                    result.confirmedAt(),
+                    result.message()
+            ));
+        }
+
+        if ("仕訳が見つかりません".equals(result.errorMessage())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.badRequest()
+                .body(ConfirmJournalEntryResponse.failure(result.errorMessage()));
+    }
+
+    /**
+     * 仕訳差し戻し
+     */
+    @Operation(
+            summary = "仕訳差し戻し",
+            description = "管理者またはマネージャーが仕訳を差し戻します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "差し戻し成功"
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "差し戻し失敗（ステータスエラー等）"
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "仕訳が見つからない"
+    )
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<RejectJournalEntryResponse> rejectJournalEntry(
+            @PathVariable Integer id,
+            @Valid @RequestBody RejectJournalEntryRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        RejectJournalEntryCommand command = new RejectJournalEntryCommand(
+                id, userDetails.getUsername(), request.rejectionReason());
+        RejectJournalEntryResult result = rejectJournalEntryUseCase.execute(command);
+
+        if (result.success()) {
+            return ResponseEntity.ok(RejectJournalEntryResponse.success(
+                    result.journalEntryId(),
+                    result.status(),
+                    result.rejectedBy(),
+                    result.rejectedAt(),
+                    result.rejectionReason(),
+                    result.message()
+            ));
+        }
+
+        if ("仕訳が見つかりません".equals(result.errorMessage())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.badRequest()
+                .body(RejectJournalEntryResponse.failure(result.errorMessage()));
     }
 
     /**

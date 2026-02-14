@@ -2,19 +2,25 @@ package com.example.accounting.infrastructure.web.controller;
 
 import com.example.accounting.application.port.in.CreateJournalEntryUseCase;
 import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
+import com.example.accounting.application.port.in.ConfirmJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
 import com.example.accounting.application.port.in.ApproveJournalEntryUseCase;
+import com.example.accounting.application.port.in.RejectJournalEntryUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SubmitForApprovalUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.in.command.ApproveJournalEntryCommand;
+import com.example.accounting.application.port.in.command.ConfirmJournalEntryCommand;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.SubmitForApprovalCommand;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
+import com.example.accounting.application.port.in.command.RejectJournalEntryCommand;
 import com.example.accounting.application.port.out.ApproveJournalEntryResult;
+import com.example.accounting.application.port.out.ConfirmJournalEntryResult;
+import com.example.accounting.application.port.out.RejectJournalEntryResult;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
 import com.example.accounting.application.port.out.DeleteJournalEntryResult;
 import com.example.accounting.application.port.out.GetJournalEntriesResult;
@@ -30,6 +36,9 @@ import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
 import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.web.dto.ApproveJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.ConfirmJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.RejectJournalEntryRequest;
+import com.example.accounting.infrastructure.web.dto.RejectJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.CreateJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.DeleteJournalEntryResponse;
@@ -96,6 +105,12 @@ class JournalEntryControllerTest {
     private ApproveJournalEntryUseCase approveJournalEntryUseCase;
 
     @Mock
+    private RejectJournalEntryUseCase rejectJournalEntryUseCase;
+
+    @Mock
+    private ConfirmJournalEntryUseCase confirmJournalEntryUseCase;
+
+    @Mock
     private UserRepository userRepository;
 
     private JournalEntryController journalEntryController;
@@ -111,6 +126,8 @@ class JournalEntryControllerTest {
                 searchJournalEntriesUseCase,
                 submitForApprovalUseCase,
                 approveJournalEntryUseCase,
+                rejectJournalEntryUseCase,
+                confirmJournalEntryUseCase,
                 userRepository
         );
     }
@@ -621,6 +638,116 @@ class JournalEntryControllerTest {
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("承認待ち状態の仕訳のみ承認できます");
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳確定")
+    class ConfirmJournalEntry {
+
+        @Test
+        @DisplayName("確定が成功した場合は200を返す")
+        void shouldReturnOkWhenConfirmSucceeds() {
+            LocalDateTime confirmedAt = LocalDateTime.of(2024, 2, 15, 10, 30);
+            ConfirmJournalEntryResult result = ConfirmJournalEntryResult.success(
+                    1, "CONFIRMED", "manager", confirmedAt);
+            when(confirmJournalEntryUseCase.execute(any(ConfirmJournalEntryCommand.class))).thenReturn(result);
+
+            ResponseEntity<ConfirmJournalEntryResponse> response =
+                    journalEntryController.confirmJournalEntry(1, userDetails("manager"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isTrue();
+            assertThat(response.getBody().journalEntryId()).isEqualTo(1);
+            assertThat(response.getBody().status()).isEqualTo("CONFIRMED");
+            assertThat(response.getBody().confirmedBy()).isEqualTo("manager");
+            assertThat(response.getBody().confirmedAt()).isEqualTo(confirmedAt);
+            assertThat(response.getBody().message()).isEqualTo("仕訳を確定しました");
+        }
+
+        @Test
+        @DisplayName("仕訳が見つからない場合は404を返す")
+        void shouldReturn404WhenNotFound() {
+            when(confirmJournalEntryUseCase.execute(any(ConfirmJournalEntryCommand.class)))
+                    .thenReturn(ConfirmJournalEntryResult.failure("仕訳が見つかりません"));
+
+            ResponseEntity<ConfirmJournalEntryResponse> response =
+                    journalEntryController.confirmJournalEntry(999, userDetails("manager"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("ステータスエラーの場合は400を返す")
+        void shouldReturn400WhenStatusError() {
+            when(confirmJournalEntryUseCase.execute(any(ConfirmJournalEntryCommand.class)))
+                    .thenReturn(ConfirmJournalEntryResult.failure("承認済み状態の仕訳のみ確定可能です"));
+
+            ResponseEntity<ConfirmJournalEntryResponse> response =
+                    journalEntryController.confirmJournalEntry(1, userDetails("manager"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+            assertThat(response.getBody().errorMessage()).isEqualTo("承認済み状態の仕訳のみ確定可能です");
+        }
+    }
+
+    @Nested
+    @DisplayName("仕訳差し戻し")
+    class RejectJournalEntry {
+
+        @Test
+        @DisplayName("差し戻しが成功した場合は200を返す")
+        void shouldReturnOkWhenRejectSucceeds() {
+            LocalDateTime rejectedAt = LocalDateTime.of(2024, 2, 20, 14, 0);
+            RejectJournalEntryResult result = RejectJournalEntryResult.success(
+                    1, "DRAFT", "manager", rejectedAt, "金額に誤りがあります");
+            when(rejectJournalEntryUseCase.execute(any(RejectJournalEntryCommand.class))).thenReturn(result);
+
+            RejectJournalEntryRequest request = new RejectJournalEntryRequest("金額に誤りがあります");
+            ResponseEntity<RejectJournalEntryResponse> response =
+                    journalEntryController.rejectJournalEntry(1, request, userDetails("manager"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isTrue();
+            assertThat(response.getBody().journalEntryId()).isEqualTo(1);
+            assertThat(response.getBody().status()).isEqualTo("DRAFT");
+            assertThat(response.getBody().rejectedBy()).isEqualTo("manager");
+            assertThat(response.getBody().rejectedAt()).isEqualTo(rejectedAt);
+            assertThat(response.getBody().rejectionReason()).isEqualTo("金額に誤りがあります");
+            assertThat(response.getBody().message()).isEqualTo("仕訳を差し戻しました");
+        }
+
+        @Test
+        @DisplayName("仕訳が見つからない場合は404を返す")
+        void shouldReturn404WhenNotFound() {
+            when(rejectJournalEntryUseCase.execute(any(RejectJournalEntryCommand.class)))
+                    .thenReturn(RejectJournalEntryResult.failure("仕訳が見つかりません"));
+
+            RejectJournalEntryRequest request = new RejectJournalEntryRequest("理由");
+            ResponseEntity<RejectJournalEntryResponse> response =
+                    journalEntryController.rejectJournalEntry(999, request, userDetails("manager"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("ステータスエラーの場合は400を返す")
+        void shouldReturn400WhenStatusError() {
+            when(rejectJournalEntryUseCase.execute(any(RejectJournalEntryCommand.class)))
+                    .thenReturn(RejectJournalEntryResult.failure("承認待ち状態の仕訳のみ差し戻し可能です"));
+
+            RejectJournalEntryRequest request = new RejectJournalEntryRequest("理由");
+            ResponseEntity<RejectJournalEntryResponse> response =
+                    journalEntryController.rejectJournalEntry(1, request, userDetails("manager"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+            assertThat(response.getBody().errorMessage()).isEqualTo("承認待ち状態の仕訳のみ差し戻し可能です");
         }
     }
 

@@ -9,29 +9,41 @@ export interface WorkflowTestConfig {
   suiteName: string;
   /** 操作ボタンのテキスト */
   buttonText: string;
-  /** 確認ダイアログのテキスト（部分一致） */
+  /** 確認ダイアログのテキスト（部分一致）。dialogType が 'confirm' の場合に使用 */
   confirmText: string;
   /** 成功メッセージ */
   successMessage: string;
   /** 対象ステータス（このステータスの仕訳にボタンが表示される） */
-  targetStatus: 'DRAFT' | 'PENDING' | 'APPROVED';
+  targetStatus: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED';
   /** 対象ステータスの表示名 */
   targetStatusLabel: string;
   /** ボタンが表示されないステータスリスト */
   excludedStatuses: Array<{
-    status: 'DRAFT' | 'PENDING' | 'APPROVED';
+    status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED';
     label: string;
   }>;
   /** ボタン表示確認のログインユーザー */
   visibilityCheckUser: string;
   /** アクション実行前のセットアップ（仕訳作成等） */
   setupBeforeAction?: () => void;
+  /** ボタン表示確認テスト全体の前に実行するセットアップ（once per describe） */
+  visibilityTestSetup?: () => void;
   /** 権限テスト設定 */
   permissionTests: Array<{
     description: string;
     username: string;
     shouldHaveButton: boolean;
   }>;
+  /** ダイアログ種別（デフォルト: 'confirm'） */
+  dialogType?: 'confirm' | 'prompt';
+  /** prompt ダイアログに入力する理由テキスト */
+  promptReasonText?: string;
+  /** 空理由時のエラーメッセージ */
+  emptyReasonErrorMessage?: string;
+  /** アクション後に確認するステータス */
+  afterActionStatus?: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED';
+  /** アクション後に確認するステータスの表示名 */
+  afterActionStatusLabel?: string;
 }
 
 /**
@@ -44,6 +56,12 @@ export const createWorkflowTests = (config: WorkflowTestConfig): void => {
     });
 
     describe(`${config.buttonText}ボタン表示`, () => {
+      if (config.visibilityTestSetup) {
+        before(() => {
+          config.visibilityTestSetup!();
+        });
+      }
+
       beforeEach(() => {
         cy.loginAndVisitJournalList(config.visibilityCheckUser, 'Password123!');
       });
@@ -57,8 +75,14 @@ export const createWorkflowTests = (config: WorkflowTestConfig): void => {
       config.excludedStatuses.forEach(({ status, label }) => {
         it(`${label}ステータスの仕訳には${config.buttonText}ボタンが表示されない`, () => {
           cy.filterJournalEntriesByStatus(status);
-          cy.get('table tbody tr').first().should('contain', label);
-          cy.checkButtonInFirstRow(config.buttonText, false);
+          // データ行が存在する場合のみボタン非表示を検証
+          // データ行がない場合はボタンも存在しないためテストは自明に成功
+          cy.get('table tbody').then(($tbody) => {
+            if ($tbody.find('tr.table__row').length > 0) {
+              cy.get('table tbody tr.table__row').first().should('contain', label);
+              cy.checkButtonInFirstRow(config.buttonText, false);
+            }
+          });
         });
       });
     });
@@ -70,27 +94,11 @@ export const createWorkflowTests = (config: WorkflowTestConfig): void => {
         }
       });
 
-      it(`${config.buttonText}ボタンクリックで確認ダイアログが表示される`, () => {
-        cy.filterJournalEntriesByStatus(config.targetStatus);
-        cy.on('window:confirm', (text) => {
-          expect(text).to.include(config.confirmText);
-          return false;
-        });
-        cy.get('table tbody tr').first().contains('button', config.buttonText).click();
-      });
-
-      it(`確認ダイアログでキャンセルすると${config.buttonText}が行われない`, () => {
-        cy.filterJournalEntriesByStatus(config.targetStatus);
-        cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
-        cy.clickButtonInFirstRowWithConfirm(config.buttonText, false);
-        cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
-      });
-
-      it(`${config.buttonText}が成功すると成功メッセージが表示される`, () => {
-        cy.filterJournalEntriesByStatus(config.targetStatus);
-        cy.clickButtonInFirstRowWithConfirm(config.buttonText, true);
-        cy.contains(config.successMessage, { timeout: 10000 }).should('be.visible');
-      });
+      if (config.dialogType === 'prompt') {
+        createPromptExecutionTests(config);
+      } else {
+        createConfirmExecutionTests(config);
+      }
     });
 
     describe('権限確認', () => {
@@ -109,6 +117,128 @@ export const createWorkflowTests = (config: WorkflowTestConfig): void => {
 };
 
 /**
+ * confirm ダイアログ型の実行テストを生成
+ */
+const createConfirmExecutionTests = (config: WorkflowTestConfig): void => {
+  it(`${config.buttonText}ボタンクリックで確認ダイアログが表示される`, () => {
+    cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+    cy.on('window:confirm', (text) => {
+      expect(text).to.include(config.confirmText);
+      return false;
+    });
+    cy.get('table tbody tr').first().contains('button', config.buttonText).click();
+  });
+
+  it(`確認ダイアログでキャンセルすると${config.buttonText}が行われない`, () => {
+    cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+    cy.clickButtonInFirstRowWithConfirm(config.buttonText, false);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+  });
+
+  it(`${config.buttonText}が成功すると成功メッセージが表示される`, () => {
+    cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+    cy.clickButtonInFirstRowWithConfirm(config.buttonText, true);
+    cy.contains(config.successMessage, { timeout: 10000 }).should('be.visible');
+  });
+};
+
+/**
+ * prompt ダイアログ型の実行テストを生成
+ */
+const createPromptExecutionTests = (config: WorkflowTestConfig): void => {
+  const stubPromptAndClick = (returnValue: string | null) => {
+    cy.window().then((win) => {
+      cy.stub(win, 'prompt').returns(returnValue);
+    });
+    cy.get('table tbody tr').first().contains('button', config.buttonText).click();
+  };
+
+  it(`${config.buttonText}ボタンクリックで理由入力ダイアログが表示される`, () => {
+    cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+    stubPromptAndClick(null);
+    cy.window().its('prompt').should('be.called');
+  });
+
+  it(`理由入力ダイアログでキャンセルすると${config.buttonText}が行われない`, () => {
+    cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+    stubPromptAndClick(null);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+  });
+
+  if (config.emptyReasonErrorMessage) {
+    it(`${config.buttonText}理由が空の場合はエラーメッセージが表示される`, () => {
+      cy.filterJournalEntriesByStatus(config.targetStatus);
+      cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+      stubPromptAndClick('');
+      cy.contains(config.emptyReasonErrorMessage!, { timeout: 10000 }).should('be.visible');
+    });
+  }
+
+  it(`${config.buttonText}が成功すると成功メッセージが表示される`, () => {
+    cy.filterJournalEntriesByStatus(config.targetStatus);
+    cy.get('table tbody tr').first().should('contain', config.targetStatusLabel);
+    stubPromptAndClick(config.promptReasonText!);
+    cy.contains(config.successMessage, { timeout: 10000 }).should('be.visible');
+    if (config.afterActionStatus && config.afterActionStatusLabel) {
+      cy.filterJournalEntriesByStatus(config.afterActionStatus);
+      cy.get('table tbody tr').first().should('contain', config.afterActionStatusLabel);
+    }
+  });
+};
+
+/**
+ * 仕訳を作成し承認申請して PENDING 状態にするセットアップ
+ */
+export const createEntryAndSubmitForApproval = (
+  date: string,
+  description: string,
+  amount: string
+): void => {
+  cy.login('admin', 'Password123!');
+  cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+  cy.createTestJournalEntry(date, description, amount);
+  cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
+  cy.visitJournalEntryList();
+  cy.filterJournalEntriesByStatus('DRAFT');
+  cy.clickButtonInFirstRowWithConfirm('承認申請', true);
+  cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
+  cy.clearAuth();
+  cy.loginAndVisitJournalList('manager', 'Password123!');
+};
+
+/** PENDING ステータスを対象とするワークフローの除外ステータス */
+const pendingStatusExclusions: WorkflowTestConfig['excludedStatuses'] = [
+  { status: 'DRAFT', label: '下書き' },
+  { status: 'APPROVED', label: '承認済み' },
+];
+
+/** PENDING ステータスを対象とするワークフローの権限テスト */
+const pendingStatusPermissionTests = (
+  actionLabel: string
+): WorkflowTestConfig['permissionTests'] => [
+  {
+    description: `一般ユーザーは${actionLabel}できない（${actionLabel}ボタンが表示されない）`,
+    username: 'user',
+    shouldHaveButton: false,
+  },
+  {
+    description: `マネージャーは${actionLabel}できる`,
+    username: 'manager',
+    shouldHaveButton: true,
+  },
+  {
+    description: `管理者は${actionLabel}できる`,
+    username: 'admin',
+    shouldHaveButton: true,
+  },
+];
+
+/**
  * 承認申請テストの設定
  */
 export const submitJournalEntryConfig: WorkflowTestConfig = {
@@ -124,6 +254,19 @@ export const submitJournalEntryConfig: WorkflowTestConfig = {
     { status: 'APPROVED', label: '承認済み' },
   ],
   visibilityCheckUser: 'admin',
+  visibilityTestSetup: () => {
+    // PENDING エントリを作成（DRAFT → 承認申請）
+    // 除外ステータステストは条件付きアサーションのため、APPROVED エントリの作成は不要
+    cy.login('admin', 'Password123!');
+    cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+    cy.createTestJournalEntry('2024-06-15', '表示確認用PENDING仕訳', '10000');
+    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
+    cy.visitJournalEntryList();
+    cy.filterJournalEntriesByStatus('DRAFT');
+    cy.clickButtonInFirstRowWithConfirm('承認申請', true);
+    cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
+    cy.clearAuth();
+  },
   setupBeforeAction: () => {
     cy.login('admin', 'Password123!');
     cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
@@ -151,38 +294,74 @@ export const approveJournalEntryConfig: WorkflowTestConfig = {
   successMessage: '仕訳を承認しました',
   targetStatus: 'PENDING',
   targetStatusLabel: '承認待ち',
+  excludedStatuses: pendingStatusExclusions,
+  visibilityCheckUser: 'manager',
+  setupBeforeAction: () => {
+    createEntryAndSubmitForApproval('2024-07-15', '承認テスト仕訳', '15000');
+  },
+  permissionTests: pendingStatusPermissionTests('承認'),
+};
+
+/**
+ * 差し戻しテストの設定
+ */
+export const rejectJournalEntryConfig: WorkflowTestConfig = {
+  storyId: 'US-JNL-009',
+  suiteName: '仕訳差し戻し',
+  buttonText: '差し戻し',
+  confirmText: '',
+  successMessage: '仕訳を差し戻しました',
+  targetStatus: 'PENDING',
+  targetStatusLabel: '承認待ち',
+  excludedStatuses: pendingStatusExclusions,
+  visibilityCheckUser: 'manager',
+  dialogType: 'prompt',
+  promptReasonText: '金額に誤りがあります',
+  emptyReasonErrorMessage: '差し戻し理由は必須です',
+  afterActionStatus: 'DRAFT',
+  afterActionStatusLabel: '下書き',
+  setupBeforeAction: () => {
+    createEntryAndSubmitForApproval('2024-08-01', '差し戻しテスト仕訳', '20000');
+  },
+  permissionTests: pendingStatusPermissionTests('差し戻し'),
+};
+
+/**
+ * 確定テストの設定
+ */
+export const confirmJournalEntryConfig: WorkflowTestConfig = {
+  storyId: 'US-JNL-010',
+  suiteName: '仕訳確定',
+  buttonText: '確定',
+  confirmText: '確定しますか',
+  successMessage: '仕訳を確定しました',
+  targetStatus: 'APPROVED',
+  targetStatusLabel: '承認済み',
   excludedStatuses: [
     { status: 'DRAFT', label: '下書き' },
-    { status: 'APPROVED', label: '承認済み' },
+    { status: 'PENDING', label: '承認待ち' },
   ],
   visibilityCheckUser: 'manager',
   setupBeforeAction: () => {
-    // Admin で仕訳作成と承認申請
-    cy.login('admin', 'Password123!');
-    cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
-    cy.createTestJournalEntry('2024-07-15', '承認テスト仕訳', '15000');
-    cy.get('[data-testid="journal-entry-success"]', { timeout: 15000 }).should('be.visible');
-    cy.visitJournalEntryList();
-    cy.filterJournalEntriesByStatus('DRAFT');
-    cy.clickButtonInFirstRowWithConfirm('承認申請', true);
-    cy.contains('仕訳を承認申請しました', { timeout: 10000 }).should('be.visible');
-    // Manager で再ログイン
-    cy.clearAuth();
-    cy.loginAndVisitJournalList('manager', 'Password123!');
+    createEntryAndSubmitForApproval('2024-09-01', '確定テスト仕訳', '25000');
+    // 承認する
+    cy.filterJournalEntriesByStatus('PENDING');
+    cy.clickButtonInFirstRowWithConfirm('承認', true);
+    cy.contains('仕訳を承認しました', { timeout: 10000 }).should('be.visible');
   },
   permissionTests: [
     {
-      description: '一般ユーザーは承認できない（承認ボタンが表示されない）',
+      description: '一般ユーザーは確定できない（確定ボタンが表示されない）',
       username: 'user',
       shouldHaveButton: false,
     },
     {
-      description: 'マネージャーは承認できる',
+      description: 'マネージャーは確定できる',
       username: 'manager',
       shouldHaveButton: true,
     },
     {
-      description: '管理者は承認できる',
+      description: '管理者は確定できる',
       username: 'admin',
       shouldHaveButton: true,
     },

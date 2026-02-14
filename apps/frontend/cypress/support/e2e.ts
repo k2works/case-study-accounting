@@ -83,7 +83,9 @@ declare global {
        * 仕訳一覧をステータスでフィルタリング
        * @param status - ステータス値 (DRAFT, PENDING, APPROVED)
        */
-      filterJournalEntriesByStatus(status: 'DRAFT' | 'PENDING' | 'APPROVED'): Chainable<void>;
+      filterJournalEntriesByStatus(
+        status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED'
+      ): Chainable<void>;
 
       /**
        * テーブルの先頭行でボタンの存在を確認
@@ -216,12 +218,13 @@ Cypress.Commands.add('createTestJournalEntry', (date: string, description: strin
 
 /**
  * 仕訳一覧ページ遷移コマンド
- * 一覧ページに遷移しデータ読み込み完了を待機する
+ * 一覧ページに遷移しデータ行の表示完了を待機する
+ * MSW 環境では cy.intercept がリクエストを検知できないため DOM アサーションで待機する
  */
 Cypress.Commands.add('visitJournalEntryList', () => {
   cy.visit('/journal/entries');
   cy.get('[data-testid="journal-entry-list-page"]', { timeout: 15000 }).should('be.visible');
-  cy.get('table tbody', { timeout: 15000 }).should('exist');
+  cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
 });
 
 /**
@@ -278,12 +281,39 @@ Cypress.Commands.add('selectAccountAndWaitForTable', (selectId: string, tableTes
 
 /**
  * 仕訳一覧をステータスでフィルタリング
+ * MSW 環境では cy.intercept が使えないため、フィルタ結果のステータスラベルで待機する。
+ * select 後に React controlled component の re-render を待ち、
+ * handleSearch closure が更新されてからクリックする。
  */
-Cypress.Commands.add('filterJournalEntriesByStatus', (status: 'DRAFT' | 'PENDING' | 'APPROVED') => {
-  cy.get('#journal-entry-filter-status').select(status);
-  cy.contains('button', '検索').click();
-  cy.get('table tbody tr', { timeout: 10000 }).should('exist');
-});
+Cypress.Commands.add(
+  'filterJournalEntriesByStatus',
+  (status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'CONFIRMED') => {
+    const statusLabelMap: Record<string, string> = {
+      DRAFT: '下書き',
+      PENDING: '承認待ち',
+      APPROVED: '承認済み',
+      CONFIRMED: '確定',
+    };
+    // React controlled component の stale closure により、cy.select() 直後の
+    // handleSearch が古い filterValues で実行されることがある。
+    // リトライパターンで結果が正しくない場合に再実行する。
+    const executeFilter = () => {
+      cy.get('#journal-entry-filter-status').select(status);
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(300);
+      cy.contains('button', '検索').click();
+    };
+    executeFilter();
+    cy.get('table tbody tr', { timeout: 5000 }).first().then(($row) => {
+      if (!$row.text().includes(statusLabelMap[status])) {
+        executeFilter();
+      }
+    });
+    cy.get('table tbody tr', { timeout: 15000 })
+      .first()
+      .should('contain', statusLabelMap[status]);
+  }
+);
 
 /**
  * テーブルの先頭行でボタンの存在を確認

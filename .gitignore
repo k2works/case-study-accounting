@@ -143,3 +143,5 @@ vite.config.ts.timestamp-*
 docs/wiki
 !/apps/backend/src/main/java/com/example/accounting/application/port/out/
 /docs/assets/schemaspy-output/
+.codex
+.gemini

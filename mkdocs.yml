@@ -91,12 +91,14 @@ nav:
           - イテレーション3: development/iteration_plan-3.md
           - イテレーション4: development/iteration_plan-4.md
           - イテレーション5: development/iteration_plan-5.md
+          - イテレーション6: development/iteration_plan-6.md
       - ふりかえり:
           - イテレーション1: development/retrospective-1.md
           - イテレーション2: development/retrospective-2.md
           - イテレーション3: development/retrospective-3.md
           - イテレーション4: development/retrospective-4.md
           - イテレーション5: development/retrospective-5.md
+          - イテレーション6: development/retrospective-6.md
   - 運用:
       - 開発環境解説: operation/dev_env.md
       - 開発コンテナ構築手順書: operation/dev_container.md
@@ -120,6 +122,7 @@ nav:
       - 分析・設計ガイド:
           - 要件定義ガイド: reference/要件定義ガイド.md
           - ユースケース作成ガイド: reference/ユースケース作成ガイド.md
+          - ビジネスアーキテクチャ設計ガイド: reference/ビジネスアーキテクチャ設計ガイド.md
           - アーキテクチャ設計ガイド: reference/アーキテクチャ設計ガイド.md
           - データモデル設計ガイド: reference/データモデル設計ガイド.md
           - ドメインモデル設計ガイド: reference/ドメインモデル設計ガイド.md
@@ -130,19 +133,26 @@ nav:
           - 非機能要件定義ガイド: reference/非機能要件定義ガイド.md
           - 運用要件定義ガイド: reference/運用要件定義ガイド.md
           - リリース・イテレーション計画ガイド: reference/リリース・イテレーション計画ガイド.md
+          - リリースガイド: reference/リリースガイド.md
       - 環境構築ガイド:
           - Javaアプリケーション環境構築ガイド: reference/Javaアプリケーション環境構築ガイド.md
           - TypeScriptアプリケーション環境構築ガイド: reference/TypeScriptアプリケーション環境構築ガイド.md
+          - 言語別開発ガイド: reference/言語別開発ガイド.md
+          - 環境変数管理ガイド: reference/環境変数管理ガイド.md
+          - Vim操作マニュアル: reference/Vim操作マニュアル.md
           - Codex CLI MCP サーバー設定手順: reference/CodexCLIMCPサーバー設定手順.md
           - Codex CLI MCP アプリケーション開発フロー: reference/CodexCLIMCPアプリケーション開発フロー.md
   - テンプレート:
       - ADR: template/ADR.md
       - イテレーション完了報告書: template/イテレーション完了報告書.md
+      - イテレーション計画: template/イテレーション計画.md
       - インセプションデッキ: template/インセプションデッキ.md
       - まずこれを読もうリスト: template/まずこれを読もうリスト.md
+      - リリース計画: template/リリース計画.md
       - 完全形式のユースケース: template/完全形式のユースケース.md
       - 要件定義: template/要件定義.md
       - 設計: template/設計.md
+      - README: template/README.md
   - 実践ガイド:
       - 概要: article/index.md
       - バックエンド編（Java版）:

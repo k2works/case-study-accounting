@@ -163,8 +163,13 @@ class JournalEntryTest {
                     1,
                     List.of(),
                     CREATED_BY,
-                    null,
-                    null,
+                    null,  // approvedBy
+                    null,  // approvedAt
+                    null,  // rejectedBy
+                    null,  // rejectedAt
+                    null,  // rejectionReason
+                    null,  // confirmedBy
+                    null,  // confirmedAt
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -213,6 +218,11 @@ class JournalEntryTest {
                 CREATED_BY,
                 UserId.of("approver-1"),
                 LocalDateTime.of(2024, 1, 2, 12, 0, 0),
+                null,
+                null,
+                null,
+                null,
+                null,
                 createdAt,
                 updatedAt
         );
@@ -277,7 +287,7 @@ class JournalEntryTest {
 
         assertThatThrownBy(() -> JournalEntry.reconstruct(
                 id, JOURNAL_DATE, "摘要", JournalEntryStatus.DRAFT,
-                0, null, CREATED_BY, null, null, now, now))
+                0, null, CREATED_BY, null, null, null, null, null, null, null, now, now))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("明細は必須");
     }
@@ -372,6 +382,11 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -399,6 +414,11 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -422,8 +442,13 @@ class JournalEntryTest {
                     1,
                     List.of(),
                     CREATED_BY,
-                    null,
-                    null,
+                    null,  // approvedBy
+                    null,  // approvedAt
+                    null,  // rejectedBy
+                    null,  // rejectedAt
+                    null,  // rejectionReason
+                    null,  // confirmedBy
+                    null,  // confirmedAt
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -446,6 +471,11 @@ class JournalEntryTest {
                     CREATED_BY,
                     null,
                     null,
+                    null,  // rejectedBy
+                    null,  // rejectedAt
+                    null,  // rejectionReason
+                    null,
+                    null,
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0),
                     LocalDateTime.of(2024, 1, 1, 9, 0, 0)
             );
@@ -453,6 +483,202 @@ class JournalEntryTest {
             assertThatThrownBy(() -> entry.approve(null, LocalDateTime.now()))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("承認者は必須です");
+        }
+    }
+
+    @Nested
+    @DisplayName("confirm")
+    class Confirm {
+
+        @Test
+        @DisplayName("承認済み仕訳を確定できる")
+        void shouldConfirmApprovedJournalEntry() {
+            JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "確定", CREATED_BY, 0)
+                    .submitForApproval()
+                    .approve(UserId.of("approver"), LocalDateTime.now());
+
+            JournalEntry confirmed = entry.confirm(UserId.of("confirmer"), LocalDateTime.now());
+
+            assertThat(confirmed.getStatus()).isEqualTo(JournalEntryStatus.CONFIRMED);
+            assertThat(confirmed.getConfirmedBy()).isEqualTo(UserId.of("confirmer"));
+            assertThat(confirmed.getConfirmedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("下書き仕訳は確定できない")
+        void shouldThrowWhenDraftEntryIsConfirmed() {
+            JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "確定", CREATED_BY, 0);
+
+            assertThatThrownBy(() -> entry.confirm(UserId.of("confirmer"), LocalDateTime.now()))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("承認済み状態の仕訳のみ確定可能です");
+        }
+
+        @Test
+        @DisplayName("承認待ち仕訳は確定できない")
+        void shouldThrowWhenPendingEntryIsConfirmed() {
+            JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "確定", CREATED_BY, 0)
+                    .submitForApproval();
+
+            assertThatThrownBy(() -> entry.confirm(UserId.of("confirmer"), LocalDateTime.now()))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("承認済み状態の仕訳のみ確定可能です");
+        }
+
+        @Test
+        @DisplayName("確定者が null の場合は例外をスローする")
+        void shouldThrowWhenConfirmerIsNull() {
+            JournalEntry entry = JournalEntry.create(JOURNAL_DATE, "確定", CREATED_BY, 0)
+                    .submitForApproval()
+                    .approve(UserId.of("approver"), LocalDateTime.now());
+
+            assertThatThrownBy(() -> entry.confirm(null, LocalDateTime.now()))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("確定者は必須です");
+        }
+    }
+
+    @Nested
+    @DisplayName("reject")
+    class Reject {
+
+        @Test
+        @DisplayName("承認待ち状態の仕訳を差し戻しできる")
+        void shouldRejectPendingJournalEntry() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "差し戻し",
+                    JournalEntryStatus.PENDING,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+            LocalDateTime rejectedAt = LocalDateTime.of(2024, 2, 1, 10, 0, 0);
+
+            JournalEntry rejected = entry.reject(UserId.of("manager-1"), rejectedAt, "金額に誤りがあります");
+
+            assertThat(rejected.getStatus()).isEqualTo(JournalEntryStatus.DRAFT);
+            assertThat(rejected.getRejectedBy()).isEqualTo(UserId.of("manager-1"));
+            assertThat(rejected.getRejectedAt()).isEqualTo(rejectedAt);
+            assertThat(rejected.getRejectionReason()).isEqualTo("金額に誤りがあります");
+        }
+
+        @Test
+        @DisplayName("承認待ち以外のステータスでは差し戻しできない")
+        void shouldThrowExceptionWhenStatusIsNotPending() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "差し戻し",
+                    JournalEntryStatus.DRAFT,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(() -> entry.reject(UserId.of("manager-1"), LocalDateTime.now(), "理由"))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("承認待ち状態の仕訳のみ差し戻し可能です");
+        }
+
+        @Test
+        @DisplayName("差し戻し者が null の場合は例外をスローする")
+        void shouldThrowExceptionWhenRejectorIsNull() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "差し戻し",
+                    JournalEntryStatus.PENDING,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(() -> entry.reject(null, LocalDateTime.now(), "理由"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("差し戻し者は必須です");
+        }
+
+        @Test
+        @DisplayName("差し戻し理由が null の場合は例外をスローする")
+        void shouldThrowExceptionWhenReasonIsNull() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "差し戻し",
+                    JournalEntryStatus.PENDING,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(() -> entry.reject(UserId.of("manager-1"), LocalDateTime.now(), null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("差し戻し理由は必須です");
+        }
+
+        @Test
+        @DisplayName("差し戻し理由が空白の場合は例外をスローする")
+        void shouldThrowExceptionWhenReasonIsBlank() {
+            JournalEntry entry = JournalEntry.reconstruct(
+                    JournalEntryId.of(1),
+                    JOURNAL_DATE,
+                    "差し戻し",
+                    JournalEntryStatus.PENDING,
+                    1,
+                    List.of(),
+                    CREATED_BY,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0),
+                    LocalDateTime.of(2024, 1, 1, 9, 0, 0)
+            );
+
+            assertThatThrownBy(() -> entry.reject(UserId.of("manager-1"), LocalDateTime.now(), "  "))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("差し戻し理由は必須です");
         }
     }
 

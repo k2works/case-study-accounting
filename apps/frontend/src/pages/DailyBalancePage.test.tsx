@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -18,21 +17,11 @@ vi.mock('../api/getDailyBalance', () => ({
     error instanceof Error ? error.message : '日次残高の取得に失敗しました',
 }));
 
-vi.mock('react-router-dom', () => ({
-  Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
-}));
-
-vi.mock('../views/common', () => ({
-  MainLayout: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="main-layout">{children}</div>
-  ),
-  Loading: ({ message }: { message?: string }) => <div data-testid="loading">{message}</div>,
-  ErrorMessage: ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
-    <button data-testid="error-message" onClick={onRetry}>
-      {message}
-    </button>
-  ),
-}));
+vi.mock(
+  'react-router-dom',
+  async () => (await import('../test/pageTestMocks')).reactRouterDomMocks
+);
+vi.mock('../views/common', async () => (await import('../test/pageTestMocks')).commonViewMocks);
 
 vi.mock('../views/ledger/DailyBalanceFilter', () => ({
   DailyBalanceFilter: ({
