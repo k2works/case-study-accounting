@@ -233,4 +233,123 @@
         </properties>
     </rule>
 
+    <!-- ================================================================
+         Rule 9: 伝統的な for ループを避ける
+         Part V: Stream / 関数型イテレーション
+         ================================================================ -->
+    <rule name="AvoidTraditionalForLoop"
+          language="java"
+          message="C スタイルの for ループの代わりに IntStream.range() や Stream API を使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            C スタイルの for(int i=0; i&lt;n; i++) ループは命令型のパターンです。
+            IntStream.range()、Stream API、または拡張 for-each を使用してください。
+            インデックスベースのイテレーションは関数型の合成を妨げ、
+            off-by-one エラーのリスクがあります。
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//ForStatement
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 10: throw 文を避ける
+         Part III: Either/Try による型安全なエラーハンドリング
+         ================================================================ -->
+    <rule name="AvoidThrowStatement"
+          language="java"
+          message="例外をスローする代わりに Either.left() や Try.failure() で型安全にエラーを表現してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            throw 文は参照透過性を破壊し、呼び出し側でのエラーハンドリングを強制できません。
+            Either.left(error) や Try.failure(exception) で戻り値としてエラーを表現すると、
+            コンパイラがエラーハンドリングの漏れを検出でき、関数の合成も容易になります。
+            注意: フレームワーク要件（Spring Security 等）で throw が必要な場合は
+            @SuppressWarnings で個別に除外してください。
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//ThrowStatement
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 11: setter メソッドを避ける
+         Part I-II: イミュータブルデータ
+         ================================================================ -->
+    <rule name="AvoidSetterMethod"
+          language="java"
+          message="setter の代わりに @With / toBuilder() / wither パターンを使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            setter メソッドはオブジェクトのミュータビリティを示します。
+            関数型プログラミングではイミュータブルオブジェクトを使用し、
+            変更は新しいオブジェクトを返す wither パターン（Lombok @With、
+            toBuilder().field(value).build()）で表現します。
+            ORM エンティティなどフレームワーク要件で setter が必要な場合は除外してください。
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//ClassDeclaration[
+    not(ends-with(@SimpleName, 'Entity'))
+    and not(ends-with(@SimpleName, 'Config'))
+    and not(ends-with(@SimpleName, 'Properties'))
+    and not(ends-with(@SimpleName, 'Filter'))
+    and not(ends-with(@SimpleName, 'Builder'))
+]/ClassBody/MethodDeclaration[
+    starts-with(@Name, 'set')
+    and @Arity = 1
+    and VoidType
+]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 12: checked 例外宣言を避ける
+         Part III-IV: 副作用の型による表現
+         ================================================================ -->
+    <rule name="AvoidCheckedExceptionDeclaration"
+          language="java"
+          message="throws 宣言の代わりに Try/Either で例外を戻り値として表現してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            checked 例外の throws 宣言はメソッドシグネチャを汚染し、
+            ラムダ式や関数合成との相性が悪くなります。
+            Try.of(() -> riskyOperation()) や Either で例外を値として扱うことで、
+            map/flatMap による合成が可能になります。
+            インフラストラクチャ層（I/O 操作等）では throws が必要な場合があります。
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//MethodDeclaration/ThrowsList[
+    not(ancestor::ClassDeclaration[
+        ends-with(@SimpleName, 'Filter')
+        or ends-with(@SimpleName, 'Handler')
+        or ends-with(@SimpleName, 'Interceptor')
+    ])
+]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
 </ruleset>

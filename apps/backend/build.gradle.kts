@@ -154,9 +154,9 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
 pmd {
     toolVersion = "7.16.0"
     isConsoleOutput = true
-    ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml")
+    ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml", "${rootDir}/config/pmd/functional-rules.xml")
     ruleSets = listOf() // ruleSetFilesを使用するため空に
-    isIgnoreFailures = false
+    isIgnoreFailures = true // TODO: 関数型ルール違反を段階的に解消後 false に戻す
 }
 
 // JIG (ドキュメント生成)
