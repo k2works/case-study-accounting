@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("AccountCode")
 class AccountCodeTest {
@@ -21,53 +20,53 @@ class AccountCodeTest {
 
             assertThat(code.value()).isEqualTo("1101");
         }
+    }
+
+    @Nested
+    @DisplayName("validated")
+    class Validated {
 
         @Test
-        @DisplayName("null の場合は例外をスローする")
-        void shouldThrowExceptionForNull() {
-            assertThatThrownBy(() -> AccountCode.of(null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは必須です");
+        @DisplayName("有効な 4 桁コードで Right を返す")
+        void shouldReturnRightForValidCode() {
+            assertThat(AccountCode.validated("1101").isRight()).isTrue();
+            assertThat(AccountCode.validated("1101").get().value()).isEqualTo("1101");
         }
 
         @Test
-        @DisplayName("空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmpty() {
-            assertThatThrownBy(() -> AccountCode.of(""))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは必須です");
+        @DisplayName("null の場合はエラーメッセージを返す")
+        void shouldReturnLeftForNull() {
+            assertThat(AccountCode.validated(null).getLeft()).isEqualTo("勘定科目コードは必須です");
         }
 
         @Test
-        @DisplayName("空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlank() {
-            assertThatThrownBy(() -> AccountCode.of("   "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは必須です");
+        @DisplayName("空文字の場合はエラーメッセージを返す")
+        void shouldReturnLeftForEmpty() {
+            assertThat(AccountCode.validated("").getLeft()).isEqualTo("勘定科目コードは必須です");
         }
 
         @Test
-        @DisplayName("3 桁の場合は例外をスローする")
-        void shouldThrowExceptionForThreeDigits() {
-            assertThatThrownBy(() -> AccountCode.of("123"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは 4 桁の数字である必要があります");
+        @DisplayName("空白のみの場合はエラーメッセージを返す")
+        void shouldReturnLeftForBlank() {
+            assertThat(AccountCode.validated("   ").getLeft()).isEqualTo("勘定科目コードは必須です");
         }
 
         @Test
-        @DisplayName("5 桁の場合は例外をスローする")
-        void shouldThrowExceptionForFiveDigits() {
-            assertThatThrownBy(() -> AccountCode.of("12345"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは 4 桁の数字である必要があります");
+        @DisplayName("3 桁の場合はエラーメッセージを返す")
+        void shouldReturnLeftForThreeDigits() {
+            assertThat(AccountCode.validated("123").getLeft()).isEqualTo("勘定科目コードは 4 桁の数字である必要があります");
         }
 
         @Test
-        @DisplayName("数字以外を含む場合は例外をスローする")
-        void shouldThrowExceptionForNonDigit() {
-            assertThatThrownBy(() -> AccountCode.of("12a4"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは 4 桁の数字である必要があります");
+        @DisplayName("5 桁の場合はエラーメッセージを返す")
+        void shouldReturnLeftForFiveDigits() {
+            assertThat(AccountCode.validated("12345").getLeft()).isEqualTo("勘定科目コードは 4 桁の数字である必要があります");
+        }
+
+        @Test
+        @DisplayName("数字以外を含む場合はエラーメッセージを返す")
+        void shouldReturnLeftForNonDigit() {
+            assertThat(AccountCode.validated("12a4").getLeft()).isEqualTo("勘定科目コードは 4 桁の数字である必要があります");
         }
     }
 

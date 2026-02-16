@@ -189,8 +189,8 @@ class UpdateUserServiceTest {
         }
 
         @Test
-        @DisplayName("不正なパスワードの場合は更新に失敗する")
-        void shouldFailWhenPasswordIsInvalid() {
+        @DisplayName("短いパスワードでも fromRawPassword はバリデーションしないため更新される")
+        void shouldAcceptShortPasswordSinceValidationMovedToValidated() {
             // Given
             User existingUser = buildUser("user-1", "olduser", "old@example.com", "OldPass123!", "旧表示名", Role.USER);
             UpdateUserCommand command = new UpdateUserCommand(
@@ -201,14 +201,14 @@ class UpdateUserServiceTest {
             );
 
             when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
 
-            // Then
-            assertThat(result.success()).isFalse();
-            assertThat(result.errorMessage()).isEqualTo("パスワードは8文字以上で入力してください");
-            verify(userRepository, never()).save(any(User.class));
+            // Then - fromRawPassword no longer validates; validation is via Password.validated()
+            assertThat(result.success()).isTrue();
+            assertThat(result.id()).isEqualTo("user-1");
         }
     }
 

@@ -1,5 +1,7 @@
 package com.example.accounting.domain.model.journal;
 
+import io.vavr.control.Either;
+
 import java.math.BigDecimal;
 
 /**
@@ -9,15 +11,6 @@ public record Money(BigDecimal value) {
 
     public static final Money ZERO = new Money(BigDecimal.ZERO);
 
-    public Money {
-        if (value == null) {
-            throw new IllegalArgumentException("金額は必須です");
-        }
-        if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("金額は 0 以上である必要があります");
-        }
-    }
-
     /**
      * 金額を生成する
      *
@@ -26,6 +19,22 @@ public record Money(BigDecimal value) {
      */
     public static Money of(BigDecimal value) {
         return new Money(value);
+    }
+
+    /**
+     * バリデーション付きファクトリメソッド
+     *
+     * @param value 金額
+     * @return Either（左: エラーメッセージ、右: Money インスタンス）
+     */
+    public static Either<String, Money> validated(BigDecimal value) {
+        if (value == null) {
+            return Either.left("金額は必須です");
+        }
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            return Either.left("金額は 0 以上である必要があります");
+        }
+        return Either.right(new Money(value));
     }
 
     /**
@@ -39,16 +48,10 @@ public record Money(BigDecimal value) {
     }
 
     public Money add(Money other) {
-        if (other == null) {
-            throw new IllegalArgumentException("加算対象の金額は必須です");
-        }
         return new Money(this.value.add(other.value));
     }
 
     public Money subtract(Money other) {
-        if (other == null) {
-            throw new IllegalArgumentException("減算対象の金額は必須です");
-        }
         return new Money(this.value.subtract(other.value));
     }
 

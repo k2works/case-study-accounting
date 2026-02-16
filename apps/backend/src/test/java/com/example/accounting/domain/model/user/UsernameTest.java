@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Username")
 class UsernameTest {
@@ -20,48 +19,6 @@ class UsernameTest {
             Username username = Username.of("testuser");
 
             assertThat(username.value()).isEqualTo("testuser");
-        }
-
-        @Test
-        @DisplayName("null の場合は例外をスローする")
-        void shouldThrowExceptionForNull() {
-            assertThatThrownBy(() -> Username.of(null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
-        }
-
-        @Test
-        @DisplayName("空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmpty() {
-            assertThatThrownBy(() -> Username.of(""))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
-        }
-
-        @Test
-        @DisplayName("空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlank() {
-            assertThatThrownBy(() -> Username.of("   "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
-        }
-
-        @Test
-        @DisplayName("3文字未満の場合は例外をスローする")
-        void shouldThrowExceptionForTooShort() {
-            assertThatThrownBy(() -> Username.of("ab"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は3〜50文字で入力してください");
-        }
-
-        @Test
-        @DisplayName("50文字を超える場合は例外をスローする")
-        void shouldThrowExceptionForTooLong() {
-            String longUsername = "a".repeat(51);
-
-            assertThatThrownBy(() -> Username.of(longUsername))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は3〜50文字で入力してください");
         }
 
         @Test
@@ -80,6 +37,52 @@ class UsernameTest {
             Username username = Username.of(maxUsername);
 
             assertThat(username.value()).isEqualTo(maxUsername);
+        }
+    }
+
+    @Nested
+    @DisplayName("validated")
+    class Validated {
+
+        @Test
+        @DisplayName("有効なユーザー名で Right を返す")
+        void shouldReturnRightForValidUsername() {
+            assertThat(Username.validated("testuser").isRight()).isTrue();
+            assertThat(Username.validated("testuser").get().value()).isEqualTo("testuser");
+        }
+
+        @Test
+        @DisplayName("null の場合はエラーメッセージを返す")
+        void shouldReturnLeftForNull() {
+            assertThat(Username.validated(null).getLeft()).isEqualTo("ユーザー名は必須です");
+        }
+
+        @Test
+        @DisplayName("空文字の場合はエラーメッセージを返す")
+        void shouldReturnLeftForEmpty() {
+            assertThat(Username.validated("").getLeft()).isEqualTo("ユーザー名は必須です");
+        }
+
+        @Test
+        @DisplayName("空白のみの場合はエラーメッセージを返す")
+        void shouldReturnLeftForBlank() {
+            assertThat(Username.validated("   ").getLeft()).isEqualTo("ユーザー名は必須です");
+        }
+
+        @Test
+        @DisplayName("3文字未満の場合はエラーメッセージを返す")
+        void shouldReturnLeftForTooShort() {
+            assertThat(Username.validated("ab").getLeft())
+                    .isEqualTo("ユーザー名は3〜50文字で入力してください");
+        }
+
+        @Test
+        @DisplayName("50文字を超える場合はエラーメッセージを返す")
+        void shouldReturnLeftForTooLong() {
+            String longUsername = "a".repeat(51);
+
+            assertThat(Username.validated(longUsername).getLeft())
+                    .isEqualTo("ユーザー名は3〜50文字で入力してください");
         }
     }
 

@@ -20,7 +20,6 @@ import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
 import com.example.accounting.infrastructure.web.dto.DeleteAccountResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountResponse;
-import com.example.accounting.infrastructure.web.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -427,10 +425,18 @@ class AccountControllerTest {
         }
 
         @Test
-        @DisplayName("不正なタイプの場合はBusinessExceptionをスローする")
-        void shouldThrowBusinessExceptionForInvalidType() {
-            assertThatThrownBy(() -> accountController.findAll("INVALID", null))
-                    .isInstanceOf(BusinessException.class);
+        @DisplayName("不正なタイプの場合はフィルタなしで全件取得する")
+        void shouldReturnAllAccountsForInvalidType() {
+            // Given - parseAccountType returns Optional.empty() for invalid type
+            when(accountRepository.findAll()).thenReturn(List.of());
+
+            // When
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll("INVALID", null);
+
+            // Then
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody()).isEmpty();
         }
     }
 }

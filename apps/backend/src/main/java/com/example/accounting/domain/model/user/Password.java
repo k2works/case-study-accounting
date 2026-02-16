@@ -1,5 +1,6 @@
 package com.example.accounting.domain.model.user;
 
+import io.vavr.control.Either;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -18,12 +19,28 @@ public record Password(String value) {
      *
      * @param rawPassword 平文パスワード
      * @return Password インスタンス
-     * @throws IllegalArgumentException パスワードが不正な場合
      */
     public static Password fromRawPassword(String rawPassword) {
-        validate(rawPassword);
         String hashed = PASSWORD_ENCODER.encode(rawPassword);
         return new Password(hashed);
+    }
+
+    /**
+     * バリデーション付きファクトリメソッド（生のパスワードからハッシュ化）
+     *
+     * @param rawPassword 平文パスワード
+     * @return Either（左: エラーメッセージ、右: Password インスタンス）
+     */
+    public static Either<String, Password> validated(String rawPassword) {
+        if (rawPassword == null || rawPassword.isBlank()) {
+            return Either.left("パスワードは必須です");
+        }
+        if (rawPassword.length() < MIN_LENGTH) {
+            return Either.left(
+                    String.format("パスワードは%d文字以上で入力してください", MIN_LENGTH));
+        }
+        String hashed = PASSWORD_ENCODER.encode(rawPassword);
+        return Either.right(new Password(hashed));
     }
 
     /**
@@ -34,16 +51,6 @@ public record Password(String value) {
      */
     public static Password reconstruct(String hashedValue) {
         return new Password(hashedValue);
-    }
-
-    private static void validate(String rawPassword) {
-        if (rawPassword == null || rawPassword.isBlank()) {
-            throw new IllegalArgumentException("パスワードは必須です");
-        }
-        if (rawPassword.length() < MIN_LENGTH) {
-            throw new IllegalArgumentException(
-                    String.format("パスワードは%d文字以上で入力してください", MIN_LENGTH));
-        }
     }
 
     /**

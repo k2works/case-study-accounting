@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("JournalEntryId")
 class JournalEntryIdTest {
@@ -30,10 +29,8 @@ class JournalEntryIdTest {
     }
 
     @Test
-    @DisplayName("null の場合は例外をスローする")
-    void shouldThrowExceptionWhenValueIsNull() {
-        assertThatThrownBy(() -> JournalEntryId.of(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("仕訳 ID は必須");
+    @DisplayName("null の場合はエラーメッセージを返す")
+    void shouldReturnLeftWhenValueIsNull() {
+        assertThat(JournalEntryId.validated(null).getLeft()).isEqualTo("仕訳 ID は必須です");
     }
 }

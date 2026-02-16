@@ -12,7 +12,6 @@ import com.example.accounting.application.port.out.UpdateAccountResult;
 import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
-import com.example.accounting.infrastructure.web.exception.BusinessException;
 import com.example.accounting.infrastructure.web.dto.AccountResponse;
 import com.example.accounting.infrastructure.web.dto.CreateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
@@ -146,7 +145,7 @@ public class AccountController {
         try {
             return Optional.of(AccountType.fromCode(type));
         } catch (IllegalArgumentException ex) {
-            throw new BusinessException("Invalid Parameter", ex.getMessage(), ex);
+            return Optional.empty();
         }
     }
 
