@@ -15,6 +15,13 @@ vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
 }));
 
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { username: 'admin', role: 'ADMIN' },
+    hasRole: () => true,
+  }),
+}));
+
 vi.mock('../../api/deleteJournalEntry', () => ({
   deleteJournalEntry: vi.fn(),
   deleteJournalEntryErrorMessage: (error: unknown) =>
@@ -308,12 +315,12 @@ describe('JournalEntryList', () => {
     expect(navigate).toHaveBeenCalledWith('/journal/entries/1/edit');
   });
 
-  it('DRAFT でない仕訳の削除ボタンは無効化される', () => {
+  it('DRAFT でない仕訳には削除ボタンが表示されない', () => {
     render(<JournalEntryList {...defaultProps} />);
 
     const deleteButtons = screen.getAllByText('削除');
-    // 2番目のエントリ（APPROVED）の削除ボタンは disabled
-    expect(deleteButtons[1]).toBeDisabled();
+    // DRAFT の仕訳にのみ削除ボタンが表示される（mockEntries の 1 番目のみ DRAFT）
+    expect(deleteButtons).toHaveLength(1);
   });
 
   it('削除ボタンをクリックして確認後に削除を実行する', async () => {

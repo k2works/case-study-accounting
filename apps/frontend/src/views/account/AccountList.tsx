@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import type { Account } from '../../api/getAccounts';
 import { deleteAccount, getDeleteAccountErrorMessage } from '../../api/deleteAccount';
 import { ErrorMessage, SuccessNotification, Table, TableColumn, Button } from '../common';
@@ -27,6 +28,8 @@ export const AccountList: React.FC<AccountListProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { hasRole } = useAuth();
+  const canManage = hasRole('MANAGER');
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null);
   const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
   const [deletingAccountId, setDeletingAccountId] = useState<number | null>(null);
@@ -63,29 +66,33 @@ export const AccountList: React.FC<AccountListProps> = ({
       { key: 'accountCode', header: '勘定科目コード', width: '160px' },
       { key: 'accountName', header: '勘定科目名' },
       { key: 'accountType', header: '勘定科目種別', width: '160px' },
-      {
-        key: 'actions',
-        header: '操作',
-        width: '180px',
-        align: 'center',
-        render: (_, row) => (
-          <div className="account-list__actions">
-            <Button variant="text" size="small" onClick={() => onEdit(row)}>
-              編集
-            </Button>
-            <Button
-              variant="danger"
-              size="small"
-              onClick={() => void handleDelete(row)}
-              disabled={deletingAccountId === row.accountId}
-            >
-              削除
-            </Button>
-          </div>
-        ),
-      },
+      ...(canManage
+        ? [
+            {
+              key: 'actions',
+              header: '操作',
+              width: '180px',
+              align: 'center' as const,
+              render: (_: unknown, row: Account) => (
+                <div className="account-list__actions">
+                  <Button variant="text" size="small" onClick={() => onEdit(row)}>
+                    編集
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="small"
+                    onClick={() => void handleDelete(row)}
+                    disabled={deletingAccountId === row.accountId}
+                  >
+                    削除
+                  </Button>
+                </div>
+              ),
+            } satisfies TableColumn<Account>,
+          ]
+        : []),
     ],
-    [deletingAccountId, handleDelete, onEdit]
+    [canManage, deletingAccountId, handleDelete, onEdit]
   );
 
   return (

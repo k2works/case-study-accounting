@@ -5,6 +5,13 @@ import { AccountList } from './AccountList';
 import { deleteAccount } from '../../api/deleteAccount';
 import type { Account } from '../../api/getAccounts';
 
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { username: 'admin', role: 'ADMIN' },
+    hasRole: () => true,
+  }),
+}));
+
 vi.mock('../../api/deleteAccount', () => ({
   deleteAccount: vi.fn(),
   getDeleteAccountErrorMessage: (error: unknown) =>
