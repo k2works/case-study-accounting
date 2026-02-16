@@ -1,0 +1,236 @@
+<?xml version="1.0"?>
+<ruleset name="Functional Programming Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+         https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        関数型プログラミングのプラクティスを促進するカスタムルール。
+        Grokking Functional Programming (Java + Vavr) の知見に基づく。
+    </description>
+
+    <!-- ================================================================
+         Rule 1: null を返さない
+         Part III: Option/Either で null の代わりに型安全なエラーハンドリング
+         ================================================================ -->
+    <rule name="AvoidReturningNull"
+          language="java"
+          message="null を返す代わりに Option/Either/Optional を使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            関数型プログラミングでは null を返す代わりに Option、Either、Optional を使用します。
+            null を返すと NullPointerException のリスクがあり、呼び出し側で null チェックが必要になります。
+            Vavr の Option.none() や Either.left() で値の不在やエラーを型で表現してください。
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//ReturnStatement/NullLiteral
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 2: ミュータブルコレクションのインスタンス化を避ける
+         Part I-II: イミュータブルデータ、Vavr コレクション
+         ================================================================ -->
+    <rule name="AvoidMutableCollectionInstantiation"
+          language="java"
+          message="ミュータブルコレクション {0} の代わりに List.of()/Map.of() や Vavr コレクションを使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            関数型プログラミングではイミュータブルなデータ構造を使用します。
+            java.util の ArrayList、HashMap、HashSet などのミュータブルコレクションの代わりに、
+            Java 標準の List.of()、Map.of()、Set.of() や Vavr のイミュータブルコレクションを使用してください。
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//ConstructorCall/ClassType[
+    pmd-java:typeIs('java.util.ArrayList')
+    or pmd-java:typeIs('java.util.LinkedList')
+    or pmd-java:typeIs('java.util.HashMap')
+    or pmd-java:typeIs('java.util.LinkedHashMap')
+    or pmd-java:typeIs('java.util.TreeMap')
+    or pmd-java:typeIs('java.util.HashSet')
+    or pmd-java:typeIs('java.util.LinkedHashSet')
+    or pmd-java:typeIs('java.util.TreeSet')
+]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 3: Option.get() / Optional.get() を避ける
+         Part III: Option の安全な値の取り出し
+         ================================================================ -->
+    <rule name="AvoidOptionGet"
+          language="java"
+          message=".get() の代わりに getOrElse()、fold()、map() を使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            Option.get() や Optional.get() は値が存在しない場合に例外をスローします。
+            getOrElse()、fold()、map()、flatMap() などの安全なメソッドを使用してください。
+            Optional の場合は orElse()、orElseGet()、map() を使用してください。
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//MethodCall[@MethodName = 'get' and @ArgumentCount = 0]
+    [*[1][
+        pmd-java:typeIs('java.util.Optional')
+        or pmd-java:typeIs('io.vavr.control.Option')
+    ]]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 4: null 代入を避ける
+         Part III: null の排除
+         ================================================================ -->
+    <rule name="AvoidNullAssignment"
+          language="java"
+          message="null の代入を避け、Option.none() や適切な初期値を使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            変数に null を代入すると NullPointerException のリスクが高まります。
+            Option.none()、Optional.empty()、空コレクション、またはデフォルト値を使用してください。
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//AssignmentExpression/NullLiteral
+|
+//VariableDeclarator/NullLiteral
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 5: Either.get() を避ける
+         Part III: Either による型安全なエラーハンドリング
+         ================================================================ -->
+    <rule name="AvoidEitherGet"
+          language="java"
+          message="Either.get() の代わりに fold()、map()、flatMap() を使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            Either.get() は Left の場合に例外をスローします。
+            fold()、map()、flatMap()、getOrElse() などの安全なメソッドを使用してください。
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//MethodCall[@MethodName = 'get' and @ArgumentCount = 0]
+    [*[1][pmd-java:typeIs('io.vavr.control.Either')]]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 6: Try.get() を避ける
+         Part IV: IO と副作用の管理
+         ================================================================ -->
+    <rule name="AvoidTryGet"
+          language="java"
+          message="Try.get() の代わりに getOrElse()、recover()、fold() を使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            Vavr の Try.get() は失敗時に例外を再スローします。
+            getOrElse()、recover()、fold()、map() などの安全なメソッドを使用してください。
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//MethodCall[@MethodName = 'get' and @ArgumentCount = 0]
+    [*[1][pmd-java:typeIs('io.vavr.control.Try')]]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 7: データアクセスでは IO モナドを使用する
+         Part VI: DataAccess インターフェースの抽象化
+         ================================================================ -->
+    <rule name="DataAccessMustReturnIO"
+          language="java"
+          message="データアクセスメソッドは IO、Try、Either で副作用をラップしてください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            DataAccess / Repository のメソッドは副作用を IO モナド（IO、Try、Either）で
+            ラップして返す必要があります。生の型を返すと副作用が暗黙的になり、
+            合成・テスト・エラーハンドリングが困難になります。
+            IO.delay() で副作用をラップし、戻り値を IO&lt;T&gt;、Try&lt;T&gt;、Either&lt;L, R&gt; にしてください。
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//ClassDeclaration[
+    ends-with(@SimpleName, 'DataAccess')
+    or ends-with(@SimpleName, 'Repository')
+]
+/ClassBody/MethodDeclaration[
+    not(@Name = 'toString' or @Name = 'equals' or @Name = 'hashCode')
+    and ResultType[
+        not(ClassType[@SimpleName = 'IO'])
+        and not(ClassType[@SimpleName = 'Try'])
+        and not(ClassType[@SimpleName = 'Either'])
+    ]
+]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- ================================================================
+         Rule 8: instanceof チェーンを避ける
+         Part III: ADT と パターンマッチング（sealed interface + switch）
+         ================================================================ -->
+    <rule name="AvoidInstanceofChain"
+          language="java"
+          message="instanceof の連鎖を避け、sealed interface と switch パターンマッチングを使用してください"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            if-else-if で instanceof を連鎖させる代わりに、sealed interface で直和型を定義し、
+            Java 21 の switch パターンマッチングで網羅的に処理してください。
+            コンパイラが網羅性を検証するため、ケースの追加漏れを防げます。
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//IfStatement[
+    .//InfixExpression[@Operator = 'instanceof']
+]
+/Statement/IfStatement[
+    .//InfixExpression[@Operator = 'instanceof']
+]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+</ruleset>

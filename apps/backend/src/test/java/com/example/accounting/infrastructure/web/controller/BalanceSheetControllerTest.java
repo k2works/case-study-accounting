@@ -13,9 +13,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -112,5 +115,76 @@ class BalanceSheetControllerTest {
         verify(getBalanceSheetUseCase).execute(captor.capture());
         assertThat(captor.getValue().date()).isNull();
         assertThat(captor.getValue().comparativeDate()).isNull();
+    }
+
+    @Test
+    @DisplayName("Excel 形式でエクスポートできる")
+    void shouldExportToExcel() throws IOException {
+        LocalDate date = LocalDate.of(2026, 3, 31);
+        GetBalanceSheetResult result = new GetBalanceSheetResult(
+                date, null,
+                List.of(new BalanceSheetSection("ASSET", "資産の部",
+                        List.of(new BalanceSheetEntry("100", "現金", "ASSET",
+                                new BigDecimal("100000"), null)),
+                        new BigDecimal("100000"), null)),
+                new BigDecimal("100000"), BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, true, BigDecimal.ZERO
+        );
+        when(getBalanceSheetUseCase.execute(any(GetBalanceSheetQuery.class))).thenReturn(result);
+        byte[] excelBytes = {0x50, 0x4B, 0x03, 0x04};
+        when(exportService.exportToExcel(result)).thenReturn(excelBytes);
+
+        ResponseEntity<byte[]> response = controller.exportBalanceSheet(date, "excel");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(excelBytes);
+        assertThat(response.getHeaders().getContentType())
+                .isEqualTo(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        assertThat(response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION))
+                .contains("balance-sheet.xlsx");
+    }
+
+    @Test
+    @DisplayName("PDF 形式でエクスポートできる")
+    void shouldExportToPdf() throws IOException {
+        LocalDate date = LocalDate.of(2026, 3, 31);
+        GetBalanceSheetResult result = new GetBalanceSheetResult(
+                date, null,
+                List.of(), BigDecimal.ZERO, BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, true, BigDecimal.ZERO
+        );
+        when(getBalanceSheetUseCase.execute(any(GetBalanceSheetQuery.class))).thenReturn(result);
+        byte[] pdfBytes = "%PDF-1.4".getBytes();
+        when(exportService.exportToPdf(result)).thenReturn(pdfBytes);
+
+        ResponseEntity<byte[]> response = controller.exportBalanceSheet(date, "pdf");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(pdfBytes);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PDF);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION))
+                .contains("balance-sheet.pdf");
+    }
+
+    @Test
+    @DisplayName("format 未指定時は Excel をデフォルトとする")
+    void shouldDefaultToExcelWhenFormatNotSpecified() throws IOException {
+        GetBalanceSheetResult result = new GetBalanceSheetResult(
+                null, null,
+                List.of(), BigDecimal.ZERO, BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, true, BigDecimal.ZERO
+        );
+        when(getBalanceSheetUseCase.execute(any(GetBalanceSheetQuery.class))).thenReturn(result);
+        byte[] excelBytes = {0x50, 0x4B, 0x03, 0x04};
+        when(exportService.exportToExcel(result)).thenReturn(excelBytes);
+
+        ResponseEntity<byte[]> response = controller.exportBalanceSheet(null, "excel");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(excelBytes);
+        assertThat(response.getHeaders().getContentType())
+                .isEqualTo(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
     }
 }
