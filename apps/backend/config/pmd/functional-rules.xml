@@ -199,16 +199,19 @@
             <property name="xpath">
                 <value><![CDATA[
 //ClassDeclaration[
-    ends-with(@SimpleName, 'DataAccess')
+    (ends-with(@SimpleName, 'DataAccess')
     or ends-with(@SimpleName, 'Repository')
+    or contains(@SimpleName, 'Repository'))
+    and not(ends-with(@SimpleName, 'Test'))
+    and not(ends-with(@SimpleName, 'Tests'))
+    and not(ends-with(@SimpleName, 'IT'))
 ]
 /ClassBody/MethodDeclaration[
     not(@Name = 'toString' or @Name = 'equals' or @Name = 'hashCode')
-    and ResultType[
-        not(ClassType[@SimpleName = 'IO'])
-        and not(ClassType[@SimpleName = 'Try'])
-        and not(ClassType[@SimpleName = 'Either'])
-    ]
+    and @Visibility != 'private'
+    and not(ClassType[@SimpleName = 'IO'])
+    and not(ClassType[@SimpleName = 'Try'])
+    and not(ClassType[@SimpleName = 'Either'])
 ]
 ]]>
                 </value>
