@@ -113,6 +113,7 @@ public class JournalEntryEntity {
         );
     }
 
+    @SuppressWarnings("PMD.AvoidReturningNull")
     private static OffsetDateTime toOffsetDateTime(java.time.LocalDateTime value) {
         if (value == null) {
             return null;

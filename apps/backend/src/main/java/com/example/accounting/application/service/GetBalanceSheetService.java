@@ -105,6 +105,7 @@ public class GetBalanceSheetService implements GetBalanceSheetUseCase {
         );
     }
 
+    @SuppressWarnings("PMD.AvoidReturningNull")
     private ComparativeData buildComparativeSubtotal(List<BalanceSheetEntry> entries,
                                                       BigDecimal subtotal,
                                                       boolean hasComparative) {
@@ -121,19 +122,14 @@ public class GetBalanceSheetService implements GetBalanceSheetUseCase {
                                       Map<String, BigDecimal> comparativeAmounts,
                                       boolean hasComparative) {
         BigDecimal amount = toDisplayAmount(entity);
-
-        ComparativeData comparative = null;
-        if (hasComparative) {
-            BigDecimal prevAmount = comparativeAmounts.getOrDefault(entity.getAccountCode(), BigDecimal.ZERO);
-            comparative = buildComparativeData(amount, prevAmount);
-        }
-
         return new BalanceSheetEntry(
                 entity.getAccountCode(),
                 entity.getAccountName(),
                 entity.getAccountType(),
                 amount,
-                comparative
+                hasComparative
+                        ? buildComparativeData(amount, comparativeAmounts.getOrDefault(entity.getAccountCode(), BigDecimal.ZERO))
+                        : null
         );
     }
 

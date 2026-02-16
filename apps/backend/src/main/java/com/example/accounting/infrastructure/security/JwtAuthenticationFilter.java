@@ -1,6 +1,5 @@
 package com.example.accounting.infrastructure.security;
 
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,36 +34,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String token = extractToken(request);
+        extractToken(request)
+                .filter(jwtService::isTokenValid)
+                .flatMap(jwtService::extractClaims)
+                .ifPresent(claims -> {
+                    String username = claims.getSubject();
+                    String role = claims.get("role", String.class);
 
-        if (token != null && jwtService.isTokenValid(token)) {
-            Optional<Claims> claimsOpt = jwtService.extractClaims(token);
+                    List<SimpleGrantedAuthority> authorities = List.of(
+                            new SimpleGrantedAuthority("ROLE_" + role)
+                    );
 
-            if (claimsOpt.isPresent()) {
-                Claims claims = claimsOpt.get();
-                String username = claims.getSubject();
-                String role = claims.get("role", String.class);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
 
-                // ロールをGrantedAuthorityに変換
-                List<SimpleGrantedAuthority> authorities = List.of(
-                        new SimpleGrantedAuthority("ROLE_" + role)
-                );
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-        }
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                });
 
         filterChain.doFilter(request, response);
     }
 
-    private String extractToken(HttpServletRequest request) {
+    private Optional<String> extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            return Optional.of(bearerToken.substring(7));
         }
-        return null;
+        return Optional.empty();
     }
 }

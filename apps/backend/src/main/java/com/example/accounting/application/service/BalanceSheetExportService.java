@@ -29,6 +29,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 @Service
 public class BalanceSheetExportService {
@@ -166,14 +167,14 @@ public class BalanceSheetExportService {
         List<String[]> leftRowList = buildSectionRows(assetSection, nf);
         List<String[]> rightRowList = buildRightSectionRows(liabilitySection, equitySection, nf);
 
-        for (int i = 0; i < maxRows; i++) {
+        IntStream.range(0, maxRows).forEach(i -> {
             String[] left = i < leftRowList.size() ? leftRowList.get(i) : EMPTY_ROW;
             String[] right = i < rightRowList.size() ? rightRowList.get(i) : EMPTY_ROW;
             addPdfCell(table, left[0], font, false);
             addPdfCell(table, left[1], font, false);
             addPdfCell(table, right[0], font, false);
             addPdfCell(table, right[1], font, false);
-        }
+        });
     }
 
     private List<String[]> buildSectionRows(BalanceSheetSection section, NumberFormat nf) {

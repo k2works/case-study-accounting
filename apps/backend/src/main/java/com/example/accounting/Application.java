@@ -218,6 +218,7 @@ public class Application {
     /**
      * コンテナがヘルシーになるまで待機
      */
+    @SuppressWarnings("PMD.AvoidTraditionalForLoop")
     private static void waitForContainerHealthy() throws IOException, InterruptedException {
         LOGGER.info("DB コンテナのヘルスチェックを待機中...");
 
