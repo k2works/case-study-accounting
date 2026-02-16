@@ -16,7 +16,7 @@ const safeCurrency = (value: number | undefined | null): string => formatCurrenc
 
 interface SummaryItemProps {
   label: string;
-  value: string;
+  value: React.ReactNode;
 }
 
 const SummaryItem: React.FC<SummaryItemProps> = ({ label, value }) => (
@@ -52,16 +52,16 @@ export const BalanceSheetSummary: React.FC<BalanceSheetSummaryProps> = ({
         <SummaryItem label="負債合計" value={safeCurrency(totalLiabilities)} />
         <SummaryItem label="純資産合計" value={safeCurrency(totalEquity)} />
         <SummaryItem label="負債・純資産合計" value={safeCurrency(totalLiabilitiesAndEquity)} />
-        <div>
-          <div style={{ fontSize: '12px', color: '#666' }}>貸借一致</div>
-          <div style={{ fontSize: '18px', fontWeight: 600 }}>
-            {balanced ? (
+        <SummaryItem
+          label="貸借一致"
+          value={
+            balanced ? (
               <span style={{ color: '#16a34a' }}>一致</span>
             ) : (
               <span style={{ color: '#dc2626' }}>不一致（差額: {safeCurrency(difference)}）</span>
-            )}
-          </div>
-        </div>
+            )
+          }
+        />
       </div>
     </div>
   );
