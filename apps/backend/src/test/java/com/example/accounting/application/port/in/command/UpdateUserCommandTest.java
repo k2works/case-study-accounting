@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("UpdateUserCommand")
 class UpdateUserCommandTest {
@@ -34,101 +32,89 @@ class UpdateUserCommandTest {
         @Test
         @DisplayName("password が null でも生成できる")
         void shouldAllowNullPassword() {
-            assertThatCode(() -> new UpdateUserCommand(
+            assertThat(UpdateUserCommand.of(
                     "user-1",
                     "更新ユーザー",
                     null,
                     "USER"
-            )).doesNotThrowAnyException();
+            ).isRight()).isTrue();
         }
 
         @Test
         @DisplayName("password が空文字でも生成できる")
         void shouldAllowEmptyPassword() {
-            assertThatCode(() -> new UpdateUserCommand(
+            assertThat(UpdateUserCommand.of(
                     "user-1",
                     "更新ユーザー",
                     "",
                     "USER"
-            )).doesNotThrowAnyException();
+            ).isRight()).isTrue();
         }
 
         @Test
-        @DisplayName("userId が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullUserId() {
-            assertThatThrownBy(() -> new UpdateUserCommand(
+        @DisplayName("userId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullUserId() {
+            assertThat(UpdateUserCommand.of(
                     null,
                     "更新ユーザー",
                     "Password123!",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザーIDは必須です");
+            ).getLeft()).isEqualTo("ユーザーIDは必須です");
         }
 
         @Test
-        @DisplayName("userId が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyUserId() {
-            assertThatThrownBy(() -> new UpdateUserCommand(
+        @DisplayName("userId が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyUserId() {
+            assertThat(UpdateUserCommand.of(
                     "",
                     "更新ユーザー",
                     "Password123!",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザーIDは必須です");
+            ).getLeft()).isEqualTo("ユーザーIDは必須です");
         }
 
         @Test
-        @DisplayName("displayName が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullDisplayName() {
-            assertThatThrownBy(() -> new UpdateUserCommand(
+        @DisplayName("displayName が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullDisplayName() {
+            assertThat(UpdateUserCommand.of(
                     "user-1",
                     null,
                     "Password123!",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("表示名は必須です");
+            ).getLeft()).isEqualTo("表示名は必須です");
         }
 
         @Test
-        @DisplayName("displayName が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankDisplayName() {
-            assertThatThrownBy(() -> new UpdateUserCommand(
+        @DisplayName("displayName が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankDisplayName() {
+            assertThat(UpdateUserCommand.of(
                     "user-1",
                     "   ",
                     "Password123!",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("表示名は必須です");
+            ).getLeft()).isEqualTo("表示名は必須です");
         }
 
         @Test
-        @DisplayName("role が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullRole() {
-            assertThatThrownBy(() -> new UpdateUserCommand(
+        @DisplayName("role が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullRole() {
+            assertThat(UpdateUserCommand.of(
                     "user-1",
                     "更新ユーザー",
                     "Password123!",
                     null
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ロールは必須です");
+            ).getLeft()).isEqualTo("ロールは必須です");
         }
 
         @Test
-        @DisplayName("role が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankRole() {
-            assertThatThrownBy(() -> new UpdateUserCommand(
+        @DisplayName("role が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankRole() {
+            assertThat(UpdateUserCommand.of(
                     "user-1",
                     "更新ユーザー",
                     "Password123!",
                     "   "
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ロールは必須です");
+            ).getLeft()).isEqualTo("ロールは必須です");
         }
     }
 }

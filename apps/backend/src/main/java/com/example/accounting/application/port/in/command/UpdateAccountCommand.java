@@ -1,5 +1,7 @@
 package com.example.accounting.application.port.in.command;
 
+import io.vavr.control.Either;
+
 import java.util.Set;
 
 /**
@@ -22,18 +24,23 @@ public record UpdateAccountCommand(
             "EXPENSE"
     );
 
-    public UpdateAccountCommand {
+    public static Either<String, UpdateAccountCommand> of(
+            Integer accountId,
+            String accountName,
+            String accountType
+    ) {
         if (accountId == null) {
-            throw new IllegalArgumentException("勘定科目IDは必須です");
+            return Either.left("勘定科目IDは必須です");
         }
         if (accountName == null || accountName.isBlank()) {
-            throw new IllegalArgumentException("勘定科目名は必須です");
+            return Either.left("勘定科目名は必須です");
         }
         if (accountType == null || accountType.isBlank()) {
-            throw new IllegalArgumentException("勘定科目種別は必須です");
+            return Either.left("勘定科目種別は必須です");
         }
         if (!ALLOWED_ACCOUNT_TYPES.contains(accountType)) {
-            throw new IllegalArgumentException("無効な勘定科目種別コードです: " + accountType);
+            return Either.left("無効な勘定科目種別コードです: " + accountType);
         }
+        return Either.right(new UpdateAccountCommand(accountId, accountName, accountType));
     }
 }

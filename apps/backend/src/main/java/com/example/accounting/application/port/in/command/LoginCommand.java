@@ -1,5 +1,7 @@
 package com.example.accounting.application.port.in.command;
 
+import io.vavr.control.Either;
+
 /**
  * ログインコマンド
  *
@@ -10,12 +12,14 @@ public record LoginCommand(
         String username,
         String password
 ) {
-    public LoginCommand {
+
+    public static Either<String, LoginCommand> of(String username, String password) {
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("ユーザー名は必須です");
+            return Either.left("ユーザー名は必須です");
         }
         if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("パスワードは必須です");
+            return Either.left("パスワードは必須です");
         }
+        return Either.right(new LoginCommand(username, password));
     }
 }

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("DeleteAccountCommand")
 class DeleteAccountCommandTest {
@@ -18,10 +17,9 @@ class DeleteAccountCommandTest {
     }
 
     @Test
-    @DisplayName("accountId が null の場合は例外をスローする")
-    void shouldThrowExceptionWhenAccountIdIsNull() {
-        assertThatThrownBy(() -> new DeleteAccountCommand(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("勘定科目IDは必須です");
+    @DisplayName("accountId が null の場合はバリデーションエラーになる")
+    void shouldReturnLeftWhenAccountIdIsNull() {
+        assertThat(DeleteAccountCommand.of(null).getLeft())
+                .isEqualTo("勘定科目IDは必須です");
     }
 }

@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("SearchJournalEntriesQuery")
 class SearchJournalEntriesQueryTest {
@@ -19,30 +18,24 @@ class SearchJournalEntriesQueryTest {
     class Validation {
 
         @Test
-        @DisplayName("page が負の場合は例外をスローする")
-        void shouldThrowExceptionWhenPageIsNegative() {
-            assertThatThrownBy(() -> new SearchJournalEntriesQuery(
-                    -1, 20, List.of(), null, null, null, null, null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("page must be >= 0");
+        @DisplayName("page が負の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenPageIsNegative() {
+            assertThat(SearchJournalEntriesQuery.of(
+                    -1, 20, List.of(), null, null, null, null, null, null).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 0 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeIsZero() {
-            assertThatThrownBy(() -> new SearchJournalEntriesQuery(
-                    0, 0, List.of(), null, null, null, null, null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be between 1 and 100");
+        @DisplayName("size が 0 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeIsZero() {
+            assertThat(SearchJournalEntriesQuery.of(
+                    0, 0, List.of(), null, null, null, null, null, null).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 101 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeExceeds100() {
-            assertThatThrownBy(() -> new SearchJournalEntriesQuery(
-                    0, 101, List.of(), null, null, null, null, null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be between 1 and 100");
+        @DisplayName("size が 101 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeExceeds100() {
+            assertThat(SearchJournalEntriesQuery.of(
+                    0, 101, List.of(), null, null, null, null, null, null).isLeft()).isTrue();
         }
 
         @Test

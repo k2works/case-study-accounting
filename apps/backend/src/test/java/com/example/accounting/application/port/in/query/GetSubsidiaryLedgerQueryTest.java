@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("GetSubsidiaryLedgerQuery")
 class GetSubsidiaryLedgerQueryTest {
@@ -17,35 +16,28 @@ class GetSubsidiaryLedgerQueryTest {
     class Validation {
 
         @Test
-        @DisplayName("accountCode が null の場合は例外をスローする")
-        void shouldThrowExceptionWhenAccountCodeIsNull() {
-            assertThatThrownBy(() -> new GetSubsidiaryLedgerQuery(null, null, null, null, 0, 20))
-                    .isInstanceOf(NullPointerException.class)
-                    .hasMessageContaining("accountCode must not be null");
+        @DisplayName("accountCode が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenAccountCodeIsNull() {
+            assertThat(GetSubsidiaryLedgerQuery.of(null, null, null, null, 0, 20).getLeft())
+                    .isEqualTo("勘定科目コードは必須です");
         }
 
         @Test
-        @DisplayName("page が負の場合は例外をスローする")
-        void shouldThrowExceptionWhenPageIsNegative() {
-            assertThatThrownBy(() -> new GetSubsidiaryLedgerQuery("1100", null, null, null, -1, 20))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("page must be >= 0");
+        @DisplayName("page が負の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenPageIsNegative() {
+            assertThat(GetSubsidiaryLedgerQuery.of("1100", null, null, null, -1, 20).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 0 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeIsZero() {
-            assertThatThrownBy(() -> new GetSubsidiaryLedgerQuery("1100", null, null, null, 0, 0))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be 1-100");
+        @DisplayName("size が 0 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeIsZero() {
+            assertThat(GetSubsidiaryLedgerQuery.of("1100", null, null, null, 0, 0).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 101 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeExceeds100() {
-            assertThatThrownBy(() -> new GetSubsidiaryLedgerQuery("1100", null, null, null, 0, 101))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be 1-100");
+        @DisplayName("size が 101 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeExceeds100() {
+            assertThat(GetSubsidiaryLedgerQuery.of("1100", null, null, null, 0, 101).isLeft()).isTrue();
         }
 
         @Test

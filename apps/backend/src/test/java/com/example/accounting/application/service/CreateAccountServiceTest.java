@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -106,11 +105,10 @@ class CreateAccountServiceTest {
         }
 
         @Test
-        @DisplayName("無効なコマンドの場合は例外をスローする")
-        void shouldThrowExceptionWhenCommandIsInvalid() {
-            assertThatThrownBy(() -> new CreateAccountCommand("12", "現金", "ASSET"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは 4 桁の数字である必要があります");
+        @DisplayName("無効なコマンドの場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenCommandIsInvalid() {
+            assertThat(CreateAccountCommand.of("12", "現金", "ASSET").getLeft())
+                    .isEqualTo("勘定科目コードは 4 桁の数字である必要があります");
         }
     }
 }

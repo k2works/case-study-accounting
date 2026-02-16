@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("ApproveJournalEntryCommand")
 class ApproveJournalEntryCommandTest {
@@ -24,27 +23,24 @@ class ApproveJournalEntryCommandTest {
         }
 
         @Test
-        @DisplayName("journalEntryId が null の場合は例外をスローする")
-        void shouldThrowWhenJournalEntryIdIsNull() {
-            assertThatThrownBy(() -> new ApproveJournalEntryCommand(null, "manager"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("仕訳IDは必須です");
+        @DisplayName("journalEntryId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenJournalEntryIdIsNull() {
+            assertThat(ApproveJournalEntryCommand.of(null, "manager").getLeft())
+                    .isEqualTo("仕訳IDは必須です");
         }
 
         @Test
-        @DisplayName("approverId が null の場合は例外をスローする")
-        void shouldThrowWhenApproverIdIsNull() {
-            assertThatThrownBy(() -> new ApproveJournalEntryCommand(1, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("承認者IDは必須です");
+        @DisplayName("approverId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenApproverIdIsNull() {
+            assertThat(ApproveJournalEntryCommand.of(1, null).getLeft())
+                    .isEqualTo("承認者IDは必須です");
         }
 
         @Test
-        @DisplayName("approverId が空白の場合は例外をスローする")
-        void shouldThrowWhenApproverIdIsBlank() {
-            assertThatThrownBy(() -> new ApproveJournalEntryCommand(1, "   "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("承認者IDは必須です");
+        @DisplayName("approverId が空白の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenApproverIdIsBlank() {
+            assertThat(ApproveJournalEntryCommand.of(1, "   ").getLeft())
+                    .isEqualTo("承認者IDは必須です");
         }
     }
 }
