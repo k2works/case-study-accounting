@@ -1,6 +1,18 @@
 import React from 'react';
 import { formatCurrency } from '../../utils/formatCurrency';
 
+interface SummaryItemProps {
+  label: string;
+  value: number;
+}
+
+const SummaryItem: React.FC<SummaryItemProps> = ({ label, value }) => (
+  <div>
+    <div>{label}</div>
+    <div>{formatCurrency(value)}</div>
+  </div>
+);
+
 interface BalanceSummaryBaseProps {
   testId: string;
   title: string;
@@ -8,6 +20,7 @@ interface BalanceSummaryBaseProps {
   debitTotal: number;
   creditTotal: number;
   closingBalance: number;
+  openingBalanceLabel?: string;
 }
 
 export const BalanceSummaryBase: React.FC<BalanceSummaryBaseProps> = ({
@@ -17,27 +30,16 @@ export const BalanceSummaryBase: React.FC<BalanceSummaryBaseProps> = ({
   debitTotal,
   creditTotal,
   closingBalance,
+  openingBalanceLabel = '期首残高',
 }) => {
   return (
     <div data-testid={testId} style={{ marginTop: '16px' }}>
       <div style={{ marginBottom: '8px', fontWeight: 600 }}>{title}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <div>期首残高</div>
-          <div>{formatCurrency(openingBalance)}</div>
-        </div>
-        <div>
-          <div>借方合計</div>
-          <div>{formatCurrency(debitTotal)}</div>
-        </div>
-        <div>
-          <div>貸方合計</div>
-          <div>{formatCurrency(creditTotal)}</div>
-        </div>
-        <div>
-          <div>期末残高</div>
-          <div>{formatCurrency(closingBalance)}</div>
-        </div>
+        <SummaryItem label={openingBalanceLabel} value={openingBalance} />
+        <SummaryItem label="借方合計" value={debitTotal} />
+        <SummaryItem label="貸方合計" value={creditTotal} />
+        <SummaryItem label="期末残高" value={closingBalance} />
       </div>
     </div>
   );

@@ -14,6 +14,18 @@ interface BalanceSheetSummaryProps {
 
 const safeCurrency = (value: number | undefined | null): string => formatCurrency(value ?? 0);
 
+interface SummaryItemProps {
+  label: string;
+  value: string;
+}
+
+const SummaryItem: React.FC<SummaryItemProps> = ({ label, value }) => (
+  <div>
+    <div style={{ fontSize: '12px', color: '#666' }}>{label}</div>
+    <div style={{ fontSize: '18px', fontWeight: 600 }}>{value}</div>
+  </div>
+);
+
 export const BalanceSheetSummary: React.FC<BalanceSheetSummaryProps> = ({
   date,
   comparativeDate,
@@ -36,24 +48,10 @@ export const BalanceSheetSummary: React.FC<BalanceSheetSummaryProps> = ({
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginBottom: '12px' }}>
-        <div>
-          <div style={{ fontSize: '12px', color: '#666' }}>資産合計</div>
-          <div style={{ fontSize: '18px', fontWeight: 600 }}>{safeCurrency(totalAssets)}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: '12px', color: '#666' }}>負債合計</div>
-          <div style={{ fontSize: '18px', fontWeight: 600 }}>{safeCurrency(totalLiabilities)}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: '12px', color: '#666' }}>純資産合計</div>
-          <div style={{ fontSize: '18px', fontWeight: 600 }}>{safeCurrency(totalEquity)}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: '12px', color: '#666' }}>負債・純資産合計</div>
-          <div style={{ fontSize: '18px', fontWeight: 600 }}>
-            {safeCurrency(totalLiabilitiesAndEquity)}
-          </div>
-        </div>
+        <SummaryItem label="資産合計" value={safeCurrency(totalAssets)} />
+        <SummaryItem label="負債合計" value={safeCurrency(totalLiabilities)} />
+        <SummaryItem label="純資産合計" value={safeCurrency(totalEquity)} />
+        <SummaryItem label="負債・純資産合計" value={safeCurrency(totalLiabilitiesAndEquity)} />
         <div>
           <div style={{ fontSize: '12px', color: '#666' }}>貸借一致</div>
           <div style={{ fontSize: '18px', fontWeight: 600 }}>

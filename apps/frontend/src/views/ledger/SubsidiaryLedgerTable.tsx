@@ -2,14 +2,11 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import type { SubsidiaryLedgerEntry } from '../../api/getSubsidiaryLedger';
 import { Table, TableColumn } from '../common';
+import { currencyColumn } from './currencyColumn';
 
 interface SubsidiaryLedgerTableProps {
   entries: SubsidiaryLedgerEntry[];
 }
-
-const formatAmount = (amount: number): string => {
-  return amount.toLocaleString('ja-JP', { maximumFractionDigits: 0 });
-};
 
 export const SubsidiaryLedgerTable: React.FC<SubsidiaryLedgerTableProps> = ({ entries }) => {
   const columns = useMemo<TableColumn<SubsidiaryLedgerEntry>[]>(
@@ -24,27 +21,9 @@ export const SubsidiaryLedgerTable: React.FC<SubsidiaryLedgerTableProps> = ({ en
         ),
       },
       { key: 'description', header: '摘要' },
-      {
-        key: 'debitAmount',
-        header: '借方',
-        width: '130px',
-        align: 'right',
-        render: (value) => <>{formatAmount(value as number)}</>,
-      },
-      {
-        key: 'creditAmount',
-        header: '貸方',
-        width: '130px',
-        align: 'right',
-        render: (value) => <>{formatAmount(value as number)}</>,
-      },
-      {
-        key: 'runningBalance',
-        header: '残高',
-        width: '140px',
-        align: 'right',
-        render: (value) => <>{formatAmount(value as number)}</>,
-      },
+      currencyColumn('debitAmount', '借方'),
+      currencyColumn('creditAmount', '貸方'),
+      currencyColumn('runningBalance', '残高'),
     ],
     []
   );

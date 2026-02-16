@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 import { getSubsidiaryLedger, getSubsidiaryLedgerErrorMessage } from '../api/getSubsidiaryLedger';
 import type {
   SubsidiaryLedgerEntry,
@@ -233,7 +232,7 @@ const SubsidiaryLedgerPageContent: React.FC<SubsidiaryLedgerPageContentProps> = 
 };
 
 const SubsidiaryLedgerPage: React.FC = () => {
-  const { isAuthenticated, isLoading, hasRole } = useAuth();
+  const authGuard = useRequireAuth(['ADMIN', 'MANAGER', 'USER']);
   const {
     state,
     filterValues,
@@ -248,17 +247,7 @@ const SubsidiaryLedgerPage: React.FC = () => {
     []
   );
 
-  if (isLoading) {
-    return <Loading message="認証情報を確認中..." fullScreen />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole('ADMIN') && !hasRole('MANAGER') && !hasRole('USER')) {
-    return <Navigate to="/" replace />;
-  }
+  if (authGuard) return authGuard;
 
   return (
     <MainLayout breadcrumbs={breadcrumbs}>

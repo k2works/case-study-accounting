@@ -1,4 +1,5 @@
 import React from 'react';
+import { BalanceSummaryBase } from './BalanceSummaryBase';
 
 interface SubsidiaryLedgerSummaryProps {
   accountCode: string;
@@ -10,42 +11,18 @@ interface SubsidiaryLedgerSummaryProps {
   closingBalance: number;
 }
 
-const formatAmount = (amount: number): string => {
-  return amount.toLocaleString('ja-JP', { maximumFractionDigits: 0 });
-};
-
 export const SubsidiaryLedgerSummary: React.FC<SubsidiaryLedgerSummaryProps> = ({
   accountCode,
   accountName,
   subAccountCode,
-  openingBalance,
-  debitTotal,
-  creditTotal,
-  closingBalance,
+  ...rest
 }) => {
   return (
-    <div data-testid="subsidiary-ledger-summary" style={{ marginTop: '16px' }}>
-      <div style={{ marginBottom: '8px', fontWeight: 600 }}>
-        科目: {accountCode} {accountName} - {subAccountCode}
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <div>前期繰越</div>
-          <div>{formatAmount(openingBalance)}</div>
-        </div>
-        <div>
-          <div>借方合計</div>
-          <div>{formatAmount(debitTotal)}</div>
-        </div>
-        <div>
-          <div>貸方合計</div>
-          <div>{formatAmount(creditTotal)}</div>
-        </div>
-        <div>
-          <div>期末残高</div>
-          <div>{formatAmount(closingBalance)}</div>
-        </div>
-      </div>
-    </div>
+    <BalanceSummaryBase
+      testId="subsidiary-ledger-summary"
+      title={`科目: ${accountCode} ${accountName} - ${subAccountCode}`}
+      openingBalanceLabel="前期繰越"
+      {...rest}
+    />
   );
 };
