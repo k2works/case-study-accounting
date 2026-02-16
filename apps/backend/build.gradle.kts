@@ -156,7 +156,7 @@ pmd {
     isConsoleOutput = true
     ruleSetFiles = files("${rootDir}/config/pmd/ruleset.xml", "${rootDir}/config/pmd/functional-rules.xml")
     ruleSets = listOf() // ruleSetFilesを使用するため空に
-    isIgnoreFailures = true // TODO: 関数型ルール違反を段階的に解消後 false に戻す
+    isIgnoreFailures = false
 }
 
 // JIG (ドキュメント生成)

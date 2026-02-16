@@ -23,6 +23,7 @@ import java.util.Optional;
  * 仕訳リポジトリ実装
  */
 @Repository
+@SuppressWarnings("PMD.AvoidThrowStatement")
 public class JournalEntryRepositoryImpl implements JournalEntryRepository {
 
     private final JournalEntryMapper journalEntryMapper;

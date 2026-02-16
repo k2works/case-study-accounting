@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,11 +74,9 @@ public class GetBalanceSheetService implements GetBalanceSheetUseCase {
         Map<String, List<BalanceSheetEntity>> grouped = entities.stream()
                 .collect(Collectors.groupingBy(BalanceSheetEntity::getAccountType));
 
-        List<BalanceSheetSection> sections = new ArrayList<>();
-        for (String sectionType : SECTION_ORDER) {
-            sections.add(buildOneSection(sectionType, grouped, comparativeAmounts, hasComparative));
-        }
-        return sections;
+        return SECTION_ORDER.stream()
+                .map(sectionType -> buildOneSection(sectionType, grouped, comparativeAmounts, hasComparative))
+                .toList();
     }
 
     private BalanceSheetSection buildOneSection(String sectionType,

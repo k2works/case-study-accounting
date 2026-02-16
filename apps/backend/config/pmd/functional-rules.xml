@@ -27,7 +27,13 @@
         <properties>
             <property name="xpath">
                 <value><![CDATA[
-//ReturnStatement/NullLiteral
+//ReturnStatement/NullLiteral[
+    not(ancestor::ClassDeclaration[
+        ends-with(@SimpleName, 'Test')
+        or ends-with(@SimpleName, 'Tests')
+        or ends-with(@SimpleName, 'IT')
+    ])
+]
 ]]>
                 </value>
             </property>
@@ -60,6 +66,12 @@
     or pmd-java:typeIs('java.util.HashSet')
     or pmd-java:typeIs('java.util.LinkedHashSet')
     or pmd-java:typeIs('java.util.TreeSet')
+][
+    not(ancestor::ClassDeclaration[
+        ends-with(@SimpleName, 'Test')
+        or ends-with(@SimpleName, 'Tests')
+        or ends-with(@SimpleName, 'IT')
+    ])
 ]
 ]]>
                 </value>
@@ -277,7 +289,13 @@
         <properties>
             <property name="xpath">
                 <value><![CDATA[
-//ThrowStatement
+//ThrowStatement[
+    not(ancestor::ClassDeclaration[
+        ends-with(@SimpleName, 'Test')
+        or ends-with(@SimpleName, 'Tests')
+        or ends-with(@SimpleName, 'IT')
+    ])
+]
 ]]>
                 </value>
             </property>
@@ -344,6 +362,10 @@
         ends-with(@SimpleName, 'Filter')
         or ends-with(@SimpleName, 'Handler')
         or ends-with(@SimpleName, 'Interceptor')
+        or ends-with(@SimpleName, 'EntryPoint')
+        or ends-with(@SimpleName, 'Test')
+        or ends-with(@SimpleName, 'Tests')
+        or ends-with(@SimpleName, 'IT')
     ])
 ]
 ]]>

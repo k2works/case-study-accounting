@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@SuppressWarnings({"PMD.AvoidThrowStatement", "PMD.AvoidCheckedExceptionDeclaration"})
 public class Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);

@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 仕訳エンティティ（永続化用）
  */
-@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessivePublicCount", "PMD.CognitiveComplexity", "PMD.NPathComplexity", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessivePublicCount", "PMD.CognitiveComplexity", "PMD.NPathComplexity", "PMD.CyclomaticComplexity", "PMD.AvoidMutableCollectionInstantiation"})
 public class JournalEntryEntity {
 
     private Integer id;
