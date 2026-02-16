@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * OpenAPI / Swagger UI 設定
@@ -27,25 +28,19 @@ public class OpenApiConfig {
     private String serverUrl;
 
     @Bean
+    @SuppressWarnings("PMD.AvoidMutableCollectionInstantiation") // SecurityRequirement は OpenAPI ライブラリの可変コレクション型
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
 
-        List<Server> servers = new java.util.ArrayList<>();
-
-        // 環境変数で指定されたサーバー（Heroku等）
-        if (serverUrl != null && !serverUrl.isBlank()) {
-            servers.add(new Server()
-                    .url(serverUrl)
-                    .description("本番/デモ環境"));
-        }
-
-        // デフォルトサーバー
-        servers.add(new Server()
-                .url("http://localhost:8080")
-                .description("ローカル開発環境"));
-        servers.add(new Server()
-                .url("http://localhost:8081")
-                .description("Docker Compose 環境"));
+        List<Server> servers = Stream.concat(
+                Stream.of(serverUrl)
+                        .filter(url -> url != null && !url.isBlank())
+                        .map(url -> new Server().url(url).description("本番/デモ環境")),
+                Stream.of(
+                        new Server().url("http://localhost:8080").description("ローカル開発環境"),
+                        new Server().url("http://localhost:8081").description("Docker Compose 環境")
+                )
+        ).toList();
 
         return new OpenAPI()
                 .info(new Info()

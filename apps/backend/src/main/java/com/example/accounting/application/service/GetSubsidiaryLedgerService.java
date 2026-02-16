@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(readOnly = true)
@@ -85,35 +85,32 @@ public class GetSubsidiaryLedgerService implements GetSubsidiaryLedgerUseCase {
     private BalanceCalculation calculateBalances(AccountType accountType,
                                                  BigDecimal openingBalance,
                                                  List<SubsidiaryLedgerEntry> rawEntries) {
-        BigDecimal debitTotal = BigDecimal.ZERO;
-        BigDecimal creditTotal = BigDecimal.ZERO;
-        BigDecimal running = openingBalance;
-        List<SubsidiaryLedgerEntry> entries = new ArrayList<>();
+        record Accumulator(List<SubsidiaryLedgerEntry> entries, BigDecimal debitTotal,
+                           BigDecimal creditTotal, BigDecimal running) {}
 
-        for (SubsidiaryLedgerEntry entry : rawEntries) {
-            BigDecimal debitAmount = defaultAmount(entry.debitAmount());
-            BigDecimal creditAmount = defaultAmount(entry.creditAmount());
-            debitTotal = debitTotal.add(debitAmount);
-            creditTotal = creditTotal.add(creditAmount);
+        Accumulator result = rawEntries.stream().reduce(
+                new Accumulator(List.of(), BigDecimal.ZERO, BigDecimal.ZERO, openingBalance),
+                (acc, entry) -> {
+                    BigDecimal debitAmount = defaultAmount(entry.debitAmount());
+                    BigDecimal creditAmount = defaultAmount(entry.creditAmount());
+                    BigDecimal delta = accountType.isDebitBalance()
+                            ? debitAmount.subtract(creditAmount)
+                            : creditAmount.subtract(debitAmount);
+                    BigDecimal newRunning = acc.running.add(delta);
 
-            BigDecimal delta = accountType.isDebitBalance()
-                    ? debitAmount.subtract(creditAmount)
-                    : creditAmount.subtract(debitAmount);
-            running = running.add(delta);
+                    var newEntry = new SubsidiaryLedgerEntry(
+                            entry.journalEntryId(), entry.journalDate(), entry.description(),
+                            debitAmount, creditAmount, newRunning);
 
-            entries.add(new SubsidiaryLedgerEntry(
-                    entry.journalEntryId(),
-                    entry.journalDate(),
-                    entry.description(),
-                    debitAmount,
-                    creditAmount,
-                    running
-            ));
-        }
+                    return new Accumulator(
+                            Stream.concat(acc.entries.stream(), Stream.of(newEntry)).toList(),
+                            acc.debitTotal.add(debitAmount),
+                            acc.creditTotal.add(creditAmount),
+                            newRunning);
+                },
+                (a, b) -> b);
 
-        BigDecimal closingBalance = running;
-
-        return new BalanceCalculation(entries, debitTotal, creditTotal, closingBalance);
+        return new BalanceCalculation(result.entries(), result.debitTotal(), result.creditTotal(), result.running());
     }
 
     private BigDecimal defaultAmount(BigDecimal amount) {

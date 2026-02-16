@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(readOnly = true)
@@ -73,34 +73,31 @@ public class GetDailyBalanceService implements GetDailyBalanceUseCase {
     private BalanceCalculation calculateBalances(AccountType accountType,
                                                  BigDecimal openingBalance,
                                                  List<DailyBalanceEntry> rawEntries) {
-        BigDecimal debitTotal = BigDecimal.ZERO;
-        BigDecimal creditTotal = BigDecimal.ZERO;
-        BigDecimal running = openingBalance;
-        List<DailyBalanceEntry> entries = new ArrayList<>();
+        record Accumulator(List<DailyBalanceEntry> entries, BigDecimal debitTotal,
+                           BigDecimal creditTotal, BigDecimal running) {}
 
-        for (DailyBalanceEntry entry : rawEntries) {
-            BigDecimal debitAmount = defaultAmount(entry.debitTotal());
-            BigDecimal creditAmount = defaultAmount(entry.creditTotal());
-            debitTotal = debitTotal.add(debitAmount);
-            creditTotal = creditTotal.add(creditAmount);
+        Accumulator result = rawEntries.stream().reduce(
+                new Accumulator(List.of(), BigDecimal.ZERO, BigDecimal.ZERO, openingBalance),
+                (acc, entry) -> {
+                    BigDecimal debitAmount = defaultAmount(entry.debitTotal());
+                    BigDecimal creditAmount = defaultAmount(entry.creditTotal());
+                    BigDecimal delta = accountType.isDebitBalance()
+                            ? debitAmount.subtract(creditAmount)
+                            : creditAmount.subtract(debitAmount);
+                    BigDecimal newRunning = acc.running.add(delta);
 
-            BigDecimal delta = accountType.isDebitBalance()
-                    ? debitAmount.subtract(creditAmount)
-                    : creditAmount.subtract(debitAmount);
-            running = running.add(delta);
+                    var newEntry = new DailyBalanceEntry(
+                            entry.date(), debitAmount, creditAmount, newRunning, entry.transactionCount());
 
-            entries.add(new DailyBalanceEntry(
-                    entry.date(),
-                    debitAmount,
-                    creditAmount,
-                    running,
-                    entry.transactionCount()
-            ));
-        }
+                    return new Accumulator(
+                            Stream.concat(acc.entries.stream(), Stream.of(newEntry)).toList(),
+                            acc.debitTotal.add(debitAmount),
+                            acc.creditTotal.add(creditAmount),
+                            newRunning);
+                },
+                (a, b) -> b);
 
-        BigDecimal closingBalance = running;
-
-        return new BalanceCalculation(entries, debitTotal, creditTotal, closingBalance);
+        return new BalanceCalculation(result.entries(), result.debitTotal(), result.creditTotal(), result.running());
     }
 
     private BigDecimal defaultAmount(BigDecimal amount) {

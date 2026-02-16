@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * JWT アクセス拒否ハンドラ
@@ -23,6 +21,8 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    record ErrorResponse(String timestamp, int status, String error, String message, String path) {}
+
     @Override
     public void handle(
             HttpServletRequest request,
@@ -33,13 +33,9 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        Map<String, Object> errorDetails = new LinkedHashMap<>();
-        errorDetails.put("timestamp", Instant.now().toString());
-        errorDetails.put("status", 403);
-        errorDetails.put("error", "Forbidden");
-        errorDetails.put("message", "権限がありません");
-        errorDetails.put("path", request.getRequestURI());
+        var errorResponse = new ErrorResponse(
+                Instant.now().toString(), 403, "Forbidden", "権限がありません", request.getRequestURI());
 
-        objectMapper.writeValue(response.getOutputStream(), errorDetails);
+        objectMapper.writeValue(response.getOutputStream(), errorResponse);
     }
 }
