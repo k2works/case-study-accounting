@@ -14,6 +14,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -116,7 +117,7 @@ class UpdateJournalEntryServiceTest {
             );
 
             when(journalEntryRepository.findById(JournalEntryId.of(99)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             UpdateJournalEntryResult result = updateJournalEntryService.execute(command);
 
@@ -254,7 +255,7 @@ class UpdateJournalEntryServiceTest {
 
             stubJournalEntryFound(existingEntry);
             when(accountRepository.findById(AccountId.of(1)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             UpdateJournalEntryResult result = updateJournalEntryService.execute(command);
 
@@ -360,19 +361,19 @@ class UpdateJournalEntryServiceTest {
 
     private void stubJournalEntryFound(JournalEntry journalEntry) {
         when(journalEntryRepository.findById(journalEntry.getId()))
-                .thenReturn(Optional.of(journalEntry));
+                .thenReturn(Try.success(Optional.of(journalEntry)));
     }
 
     private void stubAccountsExistence(Integer... ids) {
         for (Integer id : ids) {
             when(accountRepository.findById(AccountId.of(id)))
-                    .thenReturn(Optional.of(dummyAccount(id)));
+                    .thenReturn(Try.success(Optional.of(dummyAccount(id))));
         }
     }
 
     private void stubSavePassThrough() {
         when(journalEntryRepository.save(any(JournalEntry.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
     }
 
     private Account dummyAccount(Integer id) {

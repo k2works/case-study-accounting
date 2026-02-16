@@ -24,6 +24,7 @@ public class SubmitForApprovalService implements SubmitForApprovalUseCase {
         try {
             JournalEntry journalEntry = journalEntryRepository
                     .findById(new JournalEntryId(command.journalEntryId()))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                     .orElse(null);
 
             if (journalEntry == null) {
@@ -31,7 +32,8 @@ public class SubmitForApprovalService implements SubmitForApprovalUseCase {
             }
 
             JournalEntry updated = journalEntry.submitForApproval();
-            journalEntryRepository.save(updated);
+            journalEntryRepository.save(updated)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             return SubmitForApprovalResult.success(
                     updated.getId().value(),

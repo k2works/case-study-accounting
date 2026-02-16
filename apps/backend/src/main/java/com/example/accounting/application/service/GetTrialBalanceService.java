@@ -27,7 +27,8 @@ public class GetTrialBalanceService implements GetTrialBalanceUseCase {
 
     @Override
     public GetTrialBalanceResult execute(GetTrialBalanceQuery query) {
-        List<TrialBalanceEntity> entities = trialBalanceRepository.findTrialBalance(query.date());
+        List<TrialBalanceEntity> entities = trialBalanceRepository.findTrialBalance(query.date())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         List<TrialBalanceEntry> entries = entities.stream()
                 .map(this::toEntry)

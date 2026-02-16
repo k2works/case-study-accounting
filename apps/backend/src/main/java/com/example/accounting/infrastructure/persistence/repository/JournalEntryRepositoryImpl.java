@@ -12,6 +12,7 @@ import com.example.accounting.infrastructure.persistence.entity.JournalEntryLine
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity;
 import com.example.accounting.infrastructure.persistence.entity.DailyBalanceEntryEntity;
 import com.example.accounting.infrastructure.persistence.mapper.JournalEntryMapper;
+import io.vavr.control.Try;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -33,102 +34,105 @@ public class JournalEntryRepositoryImpl implements JournalEntryRepository {
     }
 
     @Override
-    public JournalEntry save(JournalEntry journalEntry) {
-        JournalEntryEntity entity = JournalEntryEntity.fromDomain(journalEntry);
+    @SuppressWarnings("PMD.CognitiveComplexity")
+    public Try<JournalEntry> save(JournalEntry journalEntry) {
+        return Try.of(() -> {
+            JournalEntryEntity entity = JournalEntryEntity.fromDomain(journalEntry);
 
-        if (entity.getId() != null && journalEntryMapper.findById(entity.getId()).isPresent()) {
-            int updatedCount = journalEntryMapper.update(entity);
-            if (updatedCount == 0) {
-                throw new OptimisticLockException("仕訳の更新に失敗しました。再読み込みしてください。");
+            if (entity.getId() != null && journalEntryMapper.findById(entity.getId()).isPresent()) {
+                int updatedCount = journalEntryMapper.update(entity);
+                if (updatedCount == 0) {
+                    throw new OptimisticLockException("仕訳の更新に失敗しました。再読み込みしてください。");
+                }
+                journalEntryMapper.deleteLines(entity.getId());
+            } else {
+                journalEntryMapper.insert(entity);
             }
-            journalEntryMapper.deleteLines(entity.getId());
-        } else {
-            journalEntryMapper.insert(entity);
-        }
 
-        List<JournalEntryLineEntity> lineEntities = journalEntry.getLines().stream()
-                .map(line -> JournalEntryLineEntity.fromDomain(line, entity.getId()))
-                .toList();
-        if (!lineEntities.isEmpty()) {
-            journalEntryMapper.insertLines(lineEntities);
-        }
+            List<JournalEntryLineEntity> lineEntities = journalEntry.getLines().stream()
+                    .map(line -> JournalEntryLineEntity.fromDomain(line, entity.getId()))
+                    .toList();
+            if (!lineEntities.isEmpty()) {
+                journalEntryMapper.insertLines(lineEntities);
+            }
 
-        return journalEntryMapper.findById(entity.getId())
+            return journalEntryMapper.findById(entity.getId())
+                    .map(JournalEntryEntity::toDomain)
+                    .orElseThrow(() -> new IllegalStateException("保存後の仕訳取得に失敗しました"));
+        });
+    }
+
+    @Override
+    public Try<Optional<JournalEntry>> findById(JournalEntryId id) {
+        return Try.of(() -> journalEntryMapper.findById(id.value())
+                .map(JournalEntryEntity::toDomain));
+    }
+
+    @Override
+    public Try<List<JournalEntry>> findAll() {
+        return Try.of(() -> journalEntryMapper.findAll().stream()
                 .map(JournalEntryEntity::toDomain)
-                .orElseThrow(() -> new IllegalStateException("保存後の仕訳取得に失敗しました"));
+                .toList());
     }
 
     @Override
-    public Optional<JournalEntry> findById(JournalEntryId id) {
-        return journalEntryMapper.findById(id.value())
-                .map(JournalEntryEntity::toDomain);
+    public Try<Void> deleteById(JournalEntryId id) {
+        return Try.run(() -> journalEntryMapper.deleteById(id.value()));
     }
 
     @Override
-    public List<JournalEntry> findAll() {
-        return journalEntryMapper.findAll().stream()
-                .map(JournalEntryEntity::toDomain)
-                .toList();
-    }
-
-    @Override
-    public void deleteById(JournalEntryId id) {
-        journalEntryMapper.deleteById(id.value());
-    }
-
-    @Override
-    public List<JournalEntry> findByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo, int offset, int limit) {
-        return journalEntryMapper.findByConditions(statuses, dateFrom, dateTo, offset, limit)
+    public Try<List<JournalEntry>> findByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo, int offset, int limit) {
+        return Try.of(() -> journalEntryMapper.findByConditions(statuses, dateFrom, dateTo, offset, limit)
                 .stream()
                 .map(JournalEntryEntity::toDomain)
-                .toList();
+                .toList());
     }
 
     @Override
-    public long countByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo) {
-        return journalEntryMapper.countByConditions(statuses, dateFrom, dateTo);
+    public Try<Long> countByConditions(List<String> statuses, LocalDate dateFrom, LocalDate dateTo) {
+        return Try.of(() -> journalEntryMapper.countByConditions(statuses, dateFrom, dateTo));
     }
 
     @Override
-    public List<JournalEntry> searchByConditions(JournalEntrySearchCriteria criteria) {
-        return journalEntryMapper.searchByConditions(criteria)
+    public Try<List<JournalEntry>> searchByConditions(JournalEntrySearchCriteria criteria) {
+        return Try.of(() -> journalEntryMapper.searchByConditions(criteria)
                 .stream()
                 .map(JournalEntryEntity::toDomain)
-                .toList();
+                .toList());
     }
 
     @Override
-    public long countBySearchConditions(JournalEntrySearchCriteria criteria) {
-        return journalEntryMapper.countBySearchConditions(criteria);
+    public Try<Long> countBySearchConditions(JournalEntrySearchCriteria criteria) {
+        return Try.of(() -> journalEntryMapper.countBySearchConditions(criteria));
     }
 
     @Override
-    public List<GeneralLedgerEntry> findPostedLinesByAccountAndPeriod(Integer accountId, LocalDate dateFrom,
-                                                                      LocalDate dateTo, int offset, int limit) {
-        return journalEntryMapper.findPostedLinesByAccountAndPeriod(accountId, dateFrom, dateTo, offset, limit)
+    public Try<List<GeneralLedgerEntry>> findPostedLinesByAccountAndPeriod(Integer accountId, LocalDate dateFrom,
+                                                                           LocalDate dateTo, int offset, int limit) {
+        return Try.of(() -> journalEntryMapper.findPostedLinesByAccountAndPeriod(accountId, dateFrom, dateTo, offset, limit)
                 .stream()
                 .map(this::toGeneralLedgerEntry)
-                .toList();
+                .toList());
     }
 
     @Override
-    public long countPostedLinesByAccountAndPeriod(Integer accountId, LocalDate dateFrom, LocalDate dateTo) {
-        return journalEntryMapper.countPostedLinesByAccountAndPeriod(accountId, dateFrom, dateTo);
+    public Try<Long> countPostedLinesByAccountAndPeriod(Integer accountId, LocalDate dateFrom, LocalDate dateTo) {
+        return Try.of(() -> journalEntryMapper.countPostedLinesByAccountAndPeriod(accountId, dateFrom, dateTo));
     }
 
     @Override
-    public BigDecimal calculateBalanceBeforeDate(Integer accountId, LocalDate date) {
-        return journalEntryMapper.calculateBalanceBeforeDate(accountId, date);
+    public Try<BigDecimal> calculateBalanceBeforeDate(Integer accountId, LocalDate date) {
+        return Try.of(() -> journalEntryMapper.calculateBalanceBeforeDate(accountId, date));
     }
 
     @Override
-    public List<DailyBalanceEntry> findDailyBalanceByAccountAndPeriod(Integer accountId,
-                                                                      LocalDate dateFrom,
-                                                                      LocalDate dateTo) {
-        return journalEntryMapper.findDailyBalanceByAccountAndPeriod(accountId, dateFrom, dateTo)
+    public Try<List<DailyBalanceEntry>> findDailyBalanceByAccountAndPeriod(Integer accountId,
+                                                                           LocalDate dateFrom,
+                                                                           LocalDate dateTo) {
+        return Try.of(() -> journalEntryMapper.findDailyBalanceByAccountAndPeriod(accountId, dateFrom, dateTo)
                 .stream()
                 .map(this::toDailyBalanceEntry)
-                .toList();
+                .toList());
     }
 
     private GeneralLedgerEntry toGeneralLedgerEntry(JournalEntryLineWithHeaderEntity entity) {

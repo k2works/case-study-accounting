@@ -36,10 +36,12 @@ public class GetBalanceSheetService implements GetBalanceSheetUseCase {
 
     @Override
     public GetBalanceSheetResult execute(GetBalanceSheetQuery query) {
-        List<BalanceSheetEntity> currentEntities = balanceSheetRepository.findBalanceSheet(query.date());
+        List<BalanceSheetEntity> currentEntities = balanceSheetRepository.findBalanceSheet(query.date())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         List<BalanceSheetEntity> comparativeEntities = query.comparativeDate() != null
                 ? balanceSheetRepository.findBalanceSheet(query.comparativeDate())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 : List.of();
 
         Map<String, BigDecimal> comparativeAmounts = buildComparativeAmountMap(comparativeEntities);

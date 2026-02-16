@@ -30,11 +30,13 @@ public class GetMonthlyBalanceService implements GetMonthlyBalanceUseCase {
     @Override
     public GetMonthlyBalanceResult execute(GetMonthlyBalanceQuery query) {
         Account account = accountRepository.findByCode(query.accountCode())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .orElseThrow(() -> new IllegalArgumentException("勘定科目が見つかりません: " + query.accountCode()));
 
         List<MonthlyAccountBalanceEntity> entities =
                 monthlyAccountBalanceRepository.findByAccountCodeAndFiscalPeriod(
-                        query.accountCode(), query.fiscalPeriod());
+                                query.accountCode(), query.fiscalPeriod())
+                        .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         List<MonthlyBalanceEntry> entries = entities.stream()
                 .map(e -> new MonthlyBalanceEntry(

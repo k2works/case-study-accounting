@@ -6,6 +6,7 @@ import com.example.accounting.application.port.out.GetBalanceSheetResult;
 import com.example.accounting.application.port.out.GetBalanceSheetResult.BalanceSheetEntry;
 import com.example.accounting.application.port.out.GetBalanceSheetResult.BalanceSheetSection;
 import com.example.accounting.infrastructure.persistence.entity.BalanceSheetEntity;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ class GetBalanceSheetServiceTest {
         BalanceSheetEntity capital = createEntity("300", "資本金", "EQUITY",
                 BigDecimal.ZERO, new BigDecimal("2000"), new BigDecimal("-2000"));
 
-        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(List.of(cash, ap, capital));
+        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(Try.success(List.of(cash, ap, capital)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(null, null));
 
@@ -66,7 +67,7 @@ class GetBalanceSheetServiceTest {
         BalanceSheetEntity capital = createEntity("300", "資本金", "EQUITY",
                 BigDecimal.ZERO, new BigDecimal("2000"), new BigDecimal("-2000"));
 
-        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(List.of(cash, ap, capital));
+        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(Try.success(List.of(cash, ap, capital)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(null, null));
 
@@ -84,7 +85,7 @@ class GetBalanceSheetServiceTest {
         BalanceSheetEntity capital = createEntity("300", "資本金", "EQUITY",
                 BigDecimal.ZERO, new BigDecimal("2000"), new BigDecimal("-2000"));
 
-        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(List.of(cash, ap, capital));
+        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(Try.success(List.of(cash, ap, capital)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(null, null));
 
@@ -105,7 +106,7 @@ class GetBalanceSheetServiceTest {
         BalanceSheetEntity ap = createEntity("200", "買掛金", "LIABILITY",
                 BigDecimal.ZERO, new BigDecimal("3000"), new BigDecimal("-3000"));
 
-        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(List.of(cash, ap));
+        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(Try.success(List.of(cash, ap)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(null, null));
 
@@ -143,9 +144,9 @@ class GetBalanceSheetServiceTest {
                 BigDecimal.ZERO, new BigDecimal("2000"), new BigDecimal("-2000"));
 
         when(balanceSheetRepository.findBalanceSheet(currentDate))
-                .thenReturn(List.of(currentCash, currentAp, currentCapital));
+                .thenReturn(Try.success(List.of(currentCash, currentAp, currentCapital)));
         when(balanceSheetRepository.findBalanceSheet(prevDate))
-                .thenReturn(List.of(prevCash, prevAp, prevCapital));
+                .thenReturn(Try.success(List.of(prevCash, prevAp, prevCapital)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(currentDate, prevDate));
 
@@ -170,7 +171,7 @@ class GetBalanceSheetServiceTest {
         BalanceSheetEntity cash = createEntity("100", "現金", "ASSET",
                 new BigDecimal("5000"), BigDecimal.ZERO, new BigDecimal("5000"));
 
-        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(List.of(cash));
+        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(Try.success(List.of(cash)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(null, null));
 
@@ -183,7 +184,7 @@ class GetBalanceSheetServiceTest {
     @Test
     @DisplayName("データがない場合は空の結果を返す")
     void shouldReturnEmptyResultWhenNoData() {
-        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(List.of());
+        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(Try.success(List.of()));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(null, null));
 
@@ -198,7 +199,7 @@ class GetBalanceSheetServiceTest {
     @DisplayName("指定日の貸借対照表を取得できる")
     void shouldExecuteQueryWithSpecifiedDate() {
         LocalDate date = LocalDate.of(2026, 1, 31);
-        when(balanceSheetRepository.findBalanceSheet(date)).thenReturn(List.of());
+        when(balanceSheetRepository.findBalanceSheet(date)).thenReturn(Try.success(List.of()));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(date, null));
 
@@ -212,11 +213,11 @@ class GetBalanceSheetServiceTest {
         LocalDate prevDate = LocalDate.of(2025, 3, 31);
 
         // 当期にはデータなし
-        when(balanceSheetRepository.findBalanceSheet(currentDate)).thenReturn(List.of());
+        when(balanceSheetRepository.findBalanceSheet(currentDate)).thenReturn(Try.success(List.of()));
 
         BalanceSheetEntity prevCash = createEntity("100", "現金", "ASSET",
                 new BigDecimal("5000"), BigDecimal.ZERO, new BigDecimal("5000"));
-        when(balanceSheetRepository.findBalanceSheet(prevDate)).thenReturn(List.of(prevCash));
+        when(balanceSheetRepository.findBalanceSheet(prevDate)).thenReturn(Try.success(List.of(prevCash)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(currentDate, prevDate));
 
@@ -236,7 +237,7 @@ class GetBalanceSheetServiceTest {
         entityWithNullBalance.setTotalCredit(BigDecimal.ZERO);
         entityWithNullBalance.setBalance(null);
 
-        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(List.of(entityWithNullBalance));
+        when(balanceSheetRepository.findBalanceSheet(null)).thenReturn(Try.success(List.of(entityWithNullBalance)));
 
         GetBalanceSheetResult result = service.execute(new GetBalanceSheetQuery(null, null));
 

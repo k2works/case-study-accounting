@@ -47,6 +47,7 @@ public class DeleteJournalEntryService implements DeleteJournalEntryUseCase {
 
     private IO<Either<String, JournalEntry>> findJournalEntryIO(Integer journalEntryId) {
         return IO.delay(() -> journalEntryRepository.findById(JournalEntryId.of(journalEntryId))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .<Either<String, JournalEntry>>map(Either::right)
                 .orElseGet(() -> Either.left("仕訳が見つかりません")));
     }
@@ -67,6 +68,7 @@ public class DeleteJournalEntryService implements DeleteJournalEntryUseCase {
     }
 
     private IO<Void> deleteJournalEntryIO(JournalEntryId journalEntryId) {
-        return IO.effect(() -> journalEntryRepository.deleteById(journalEntryId));
+        return IO.effect(() -> journalEntryRepository.deleteById(journalEntryId)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 }

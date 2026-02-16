@@ -33,11 +33,13 @@ public class GetGeneralLedgerService implements GetGeneralLedgerUseCase {
     @Override
     public GetGeneralLedgerResult execute(GetGeneralLedgerQuery query) {
         Account account = accountRepository.findById(AccountId.of(query.accountId()))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .orElseThrow(() -> new IllegalArgumentException("勘定科目が見つかりません"));
 
         int offset = query.page() * query.size();
         long totalElements = journalEntryRepository.countPostedLinesByAccountAndPeriod(
-                query.accountId(), query.dateFrom(), query.dateTo());
+                query.accountId(), query.dateFrom(), query.dateTo())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         BigDecimal rawOpeningBalance = calculateOpeningBalance(query.accountId(), query.dateFrom());
         BigDecimal openingBalance = normalizeBalance(account.getAccountType(), rawOpeningBalance);
@@ -45,7 +47,8 @@ public class GetGeneralLedgerService implements GetGeneralLedgerUseCase {
         List<GeneralLedgerEntry> rawEntries = totalElements == 0
                 ? List.of()
                 : journalEntryRepository.findPostedLinesByAccountAndPeriod(
-                query.accountId(), query.dateFrom(), query.dateTo(), offset, query.size());
+                query.accountId(), query.dateFrom(), query.dateTo(), offset, query.size())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         BalanceCalculation calculation = calculateBalances(account.getAccountType(), openingBalance, rawEntries);
         int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / query.size());
@@ -70,7 +73,8 @@ public class GetGeneralLedgerService implements GetGeneralLedgerUseCase {
         if (dateFrom == null) {
             return BigDecimal.ZERO;
         }
-        BigDecimal balance = journalEntryRepository.calculateBalanceBeforeDate(accountId, dateFrom);
+        BigDecimal balance = journalEntryRepository.calculateBalanceBeforeDate(accountId, dateFrom)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         return balance == null ? BigDecimal.ZERO : balance;
     }
 

@@ -27,6 +27,7 @@ public class ApproveJournalEntryService implements ApproveJournalEntryUseCase {
         try {
             JournalEntry journalEntry = journalEntryRepository
                     .findById(new JournalEntryId(command.journalEntryId()))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                     .orElse(null);
 
             if (journalEntry == null) {
@@ -34,7 +35,8 @@ public class ApproveJournalEntryService implements ApproveJournalEntryUseCase {
             }
 
             JournalEntry updated = journalEntry.approve(UserId.of(command.approverId()), LocalDateTime.now());
-            journalEntryRepository.save(updated);
+            journalEntryRepository.save(updated)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             return ApproveJournalEntryResult.success(
                     updated.getId().value(),

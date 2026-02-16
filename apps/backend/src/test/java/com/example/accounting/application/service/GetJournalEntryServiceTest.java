@@ -13,6 +13,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,11 +61,11 @@ class GetJournalEntryServiceTest {
                     AccountId.of(100), AccountCode.of("1101"), "現金", AccountType.ASSET);
 
             when(journalEntryRepository.findById(JournalEntryId.of(1)))
-                    .thenReturn(Optional.of(entry));
+                    .thenReturn(Try.success(Optional.of(entry)));
             when(accountRepository.findById(AccountId.of(100)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(accountRepository.findById(AccountId.of(200)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             Optional<JournalEntryDetailResult> result = service.findById(1);
 
@@ -88,7 +89,7 @@ class GetJournalEntryServiceTest {
         @DisplayName("存在しない ID の場合は empty を返す")
         void shouldReturnEmptyForNonExistentId() {
             when(journalEntryRepository.findById(JournalEntryId.of(999)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             Optional<JournalEntryDetailResult> result = service.findById(999);
 
@@ -101,9 +102,9 @@ class GetJournalEntryServiceTest {
             JournalEntry entry = createTestEntry();
 
             when(journalEntryRepository.findById(JournalEntryId.of(1)))
-                    .thenReturn(Optional.of(entry));
+                    .thenReturn(Try.success(Optional.of(entry)));
             when(accountRepository.findById(any(AccountId.class)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             Optional<JournalEntryDetailResult> result = service.findById(1);
 
@@ -125,11 +126,11 @@ class GetJournalEntryServiceTest {
             Account account = Account.reconstruct(
                     AccountId.of(100), AccountCode.of("1101"), "現金", AccountType.ASSET);
 
-            when(journalEntryRepository.findAll()).thenReturn(List.of(entry));
+            when(journalEntryRepository.findAll()).thenReturn(Try.success(List.of(entry)));
             when(accountRepository.findById(AccountId.of(100)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(accountRepository.findById(AccountId.of(200)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             List<JournalEntryDetailResult> results = service.findAll();
 
@@ -140,7 +141,7 @@ class GetJournalEntryServiceTest {
         @Test
         @DisplayName("仕訳がない場合は空リストを返す")
         void shouldReturnEmptyListWhenNoEntries() {
-            when(journalEntryRepository.findAll()).thenReturn(List.of());
+            when(journalEntryRepository.findAll()).thenReturn(Try.success(List.of()));
 
             List<JournalEntryDetailResult> results = service.findAll();
 

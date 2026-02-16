@@ -20,9 +20,11 @@ public class GetUsersService implements GetUsersUseCase {
     public List<UserSummary> execute(GetUsersQuery query) {
         List<User> users;
         if (query.role() == null && query.keyword() == null) {
-            users = userRepository.findAll();
+            users = userRepository.findAll()
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         } else {
-            users = userRepository.search(query.role(), query.keyword());
+            users = userRepository.search(query.role(), query.keyword())
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         }
         return users.stream()
                 .map(UserSummary::from)

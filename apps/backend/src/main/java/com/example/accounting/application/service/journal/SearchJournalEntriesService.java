@@ -28,13 +28,15 @@ public class SearchJournalEntriesService implements SearchJournalEntriesUseCase 
                 query.accountId(), query.amountFrom(), query.amountTo(),
                 query.description(), offset, query.size());
 
-        long totalElements = journalEntryRepository.countBySearchConditions(criteria);
+        long totalElements = journalEntryRepository.countBySearchConditions(criteria)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         if (totalElements == 0) {
             return GetJournalEntriesResult.empty(query.page(), query.size());
         }
 
         List<JournalEntry> journalEntries =
-                journalEntryRepository.searchByConditions(criteria);
+                journalEntryRepository.searchByConditions(criteria)
+                        .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         List<JournalEntrySummary> summaries =
                 journalEntries.stream()
                         .map(journalEntry ->

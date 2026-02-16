@@ -58,7 +58,8 @@ class SubsidiaryLedgerRepositoryImplTest {
                 .thenReturn(List.of(entity));
 
         List<SubsidiaryLedgerEntry> result = repository
-                .findPostedLinesByAccountAndSubAccountAndPeriod("1100", "001", dateFrom, dateTo, 0, 20);
+                .findPostedLinesByAccountAndSubAccountAndPeriod("1100", "001", dateFrom, dateTo, 0, 20)
+                .getOrElse(List.of());
 
         assertThat(result).hasSize(1);
         SubsidiaryLedgerEntry entry = result.get(0);
@@ -84,7 +85,8 @@ class SubsidiaryLedgerRepositoryImplTest {
                 .thenReturn(List.of());
 
         List<SubsidiaryLedgerEntry> result = repository
-                .findPostedLinesByAccountAndSubAccountAndPeriod("9999", null, dateFrom, dateTo, 0, 20);
+                .findPostedLinesByAccountAndSubAccountAndPeriod("9999", null, dateFrom, dateTo, 0, 20)
+                .getOrElse(List.of());
 
         assertThat(result).isEmpty();
     }
@@ -100,7 +102,8 @@ class SubsidiaryLedgerRepositoryImplTest {
                 .thenReturn(42L);
 
         long count = repository.countPostedLinesByAccountAndSubAccountAndPeriod(
-                "1100", "001", dateFrom, dateTo);
+                "1100", "001", dateFrom, dateTo)
+                .getOrElse(0L);
 
         assertThat(count).isEqualTo(42L);
         verify(subsidiaryLedgerMapper).countPostedLinesByAccountAndSubAccountAndPeriod(
@@ -117,7 +120,8 @@ class SubsidiaryLedgerRepositoryImplTest {
                 .thenReturn(new BigDecimal("50000"));
 
         BigDecimal balance = repository.calculateBalanceBeforeDateByAccountAndSubAccount(
-                "1100", "001", date);
+                "1100", "001", date)
+                .getOrElse(BigDecimal.ZERO);
 
         assertThat(balance).isEqualByComparingTo(new BigDecimal("50000"));
         verify(subsidiaryLedgerMapper).calculateBalanceBeforeDateByAccountAndSubAccount(

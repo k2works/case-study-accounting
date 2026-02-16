@@ -32,11 +32,13 @@ public class GetSubsidiaryLedgerService implements GetSubsidiaryLedgerUseCase {
     @Override
     public GetSubsidiaryLedgerResult execute(GetSubsidiaryLedgerQuery query) {
         Account account = accountRepository.findByCode(query.accountCode())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .orElseThrow(() -> new IllegalArgumentException("勘定科目が見つかりません: " + query.accountCode()));
 
         int offset = query.page() * query.size();
         long totalElements = subsidiaryLedgerRepository.countPostedLinesByAccountAndSubAccountAndPeriod(
-                query.accountCode(), query.subAccountCode(), query.dateFrom(), query.dateTo());
+                        query.accountCode(), query.subAccountCode(), query.dateFrom(), query.dateTo())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         BigDecimal rawOpeningBalance = calculateOpeningBalance(
                 query.accountCode(), query.subAccountCode(), query.dateFrom());
@@ -45,7 +47,8 @@ public class GetSubsidiaryLedgerService implements GetSubsidiaryLedgerUseCase {
         List<SubsidiaryLedgerEntry> rawEntries = totalElements == 0
                 ? List.of()
                 : subsidiaryLedgerRepository.findPostedLinesByAccountAndSubAccountAndPeriod(
-                query.accountCode(), query.subAccountCode(), query.dateFrom(), query.dateTo(), offset, query.size());
+                        query.accountCode(), query.subAccountCode(), query.dateFrom(), query.dateTo(), offset, query.size())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         BalanceCalculation calculation = calculateBalances(account.getAccountType(), openingBalance, rawEntries);
         int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / query.size());
@@ -71,7 +74,8 @@ public class GetSubsidiaryLedgerService implements GetSubsidiaryLedgerUseCase {
             return BigDecimal.ZERO;
         }
         BigDecimal balance = subsidiaryLedgerRepository.calculateBalanceBeforeDateByAccountAndSubAccount(
-                accountCode, subAccountCode, dateFrom);
+                        accountCode, subAccountCode, dateFrom)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         return balance == null ? BigDecimal.ZERO : balance;
     }
 

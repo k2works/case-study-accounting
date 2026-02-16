@@ -4,6 +4,7 @@ import com.example.accounting.application.port.in.command.RegisterUserCommand;
 import com.example.accounting.application.port.out.RegisterUserResult;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.User;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -52,9 +53,9 @@ class RegisterUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.existsByUsername(command.username())).thenReturn(false);
-            when(userRepository.existsByEmail(command.email())).thenReturn(false);
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.existsByUsername(command.username())).thenReturn(Try.success(false));
+            when(userRepository.existsByEmail(command.email())).thenReturn(Try.success(false));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             RegisterUserResult result = registerUserService.execute(command);
@@ -94,7 +95,7 @@ class RegisterUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.existsByUsername(command.username())).thenReturn(true);
+            when(userRepository.existsByUsername(command.username())).thenReturn(Try.success(true));
 
             // When
             RegisterUserResult result = registerUserService.execute(command);
@@ -117,8 +118,8 @@ class RegisterUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.existsByUsername(command.username())).thenReturn(false);
-            when(userRepository.existsByEmail(command.email())).thenReturn(true);
+            when(userRepository.existsByUsername(command.username())).thenReturn(Try.success(false));
+            when(userRepository.existsByEmail(command.email())).thenReturn(Try.success(true));
 
             // When
             RegisterUserResult result = registerUserService.execute(command);
@@ -141,8 +142,8 @@ class RegisterUserServiceTest {
                     "INVALID"
             );
 
-            when(userRepository.existsByUsername(command.username())).thenReturn(false);
-            when(userRepository.existsByEmail(command.email())).thenReturn(false);
+            when(userRepository.existsByUsername(command.username())).thenReturn(Try.success(false));
+            when(userRepository.existsByEmail(command.email())).thenReturn(Try.success(false));
 
             // When
             RegisterUserResult result = registerUserService.execute(command);

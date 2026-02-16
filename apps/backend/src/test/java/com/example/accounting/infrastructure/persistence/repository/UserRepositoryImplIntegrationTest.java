@@ -56,7 +56,8 @@ class UserRepositoryImplIntegrationTest {
             User user = createTestUser("newuser", "newuser@example.com", "新規ユーザー", Role.USER);
 
             // When
-            User savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // Then
             assertThat(savedUser).isNotNull();
@@ -74,11 +75,13 @@ class UserRepositoryImplIntegrationTest {
         void shouldUpdateExistingUser() {
             // Given
             User user = createTestUser("updateuser", "updateuser@example.com", "更新前ユーザー", Role.USER);
-            userRepository.save(user);
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // When（イミュータブルなので結果を受け取る）
             User changedUser = user.changeRole(Role.MANAGER);
-            User updatedUser = userRepository.save(changedUser);
+            User updatedUser = userRepository.save(changedUser)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // Then
             assertThat(updatedUser.getRole()).isEqualTo(Role.MANAGER);
@@ -96,7 +99,8 @@ class UserRepositoryImplIntegrationTest {
                     .recordFailedLoginAttempt();
 
             // When
-            User savedUser = userRepository.save(lockedUser);
+            User savedUser = userRepository.save(lockedUser)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // Then
             assertThat(savedUser.isLocked()).isTrue();
@@ -113,10 +117,12 @@ class UserRepositoryImplIntegrationTest {
         void shouldFindExistingUserById() {
             // Given
             User user = createTestUser("findbyiduser", "findbyiduser@example.com", "ID検索ユーザー", Role.USER);
-            userRepository.save(user);
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // When
-            Optional<User> found = userRepository.findById(user.getId());
+            Optional<User> found = userRepository.findById(user.getId())
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();
@@ -130,7 +136,8 @@ class UserRepositoryImplIntegrationTest {
             UserId nonExistentId = UserId.generate();
 
             // When
-            Optional<User> found = userRepository.findById(nonExistentId);
+            Optional<User> found = userRepository.findById(nonExistentId)
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isEmpty();
@@ -146,10 +153,12 @@ class UserRepositoryImplIntegrationTest {
         void shouldFindExistingUserByUsername() {
             // Given
             User user = createTestUser("findbyusernameuser", "findbyusernameuser@example.com", "ユーザー名検索ユーザー", Role.USER);
-            userRepository.save(user);
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // When
-            Optional<User> found = userRepository.findByUsername("findbyusernameuser");
+            Optional<User> found = userRepository.findByUsername("findbyusernameuser")
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();
@@ -160,7 +169,8 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("存在しないユーザー名では empty を返す")
         void shouldReturnEmptyForNonExistentUsername() {
             // When
-            Optional<User> found = userRepository.findByUsername("nonexistent");
+            Optional<User> found = userRepository.findByUsername("nonexistent")
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isEmpty();
@@ -176,10 +186,12 @@ class UserRepositoryImplIntegrationTest {
         void shouldFindExistingUserByEmail() {
             // Given
             User user = createTestUser("findbyemailuser", "findbyemailuser@example.com", "メール検索ユーザー", Role.USER);
-            userRepository.save(user);
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // When
-            Optional<User> found = userRepository.findByEmail("findbyemailuser@example.com");
+            Optional<User> found = userRepository.findByEmail("findbyemailuser@example.com")
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();
@@ -190,7 +202,8 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("存在しないメールアドレスでは empty を返す")
         void shouldReturnEmptyForNonExistentEmail() {
             // When
-            Optional<User> found = userRepository.findByEmail("nonexistent@example.com");
+            Optional<User> found = userRepository.findByEmail("nonexistent@example.com")
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isEmpty();
@@ -206,7 +219,8 @@ class UserRepositoryImplIntegrationTest {
         void shouldFindAllUsers() {
             // Given - 初期データに admin, manager, user, viewer, locked が存在
             // When
-            List<User> users = userRepository.findAll();
+            List<User> users = userRepository.findAll()
+                    .getOrElse(List.of());
 
             // Then
             assertThat(users)
@@ -224,13 +238,16 @@ class UserRepositoryImplIntegrationTest {
         void shouldDeleteExistingUser() {
             // Given
             User user = createTestUser("deleteuser", "deleteuser@example.com", "削除ユーザー", Role.USER);
-            userRepository.save(user);
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // When
-            userRepository.deleteById(user.getId());
+            userRepository.deleteById(user.getId())
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // Then
-            Optional<User> found = userRepository.findById(user.getId());
+            Optional<User> found = userRepository.findById(user.getId())
+                    .getOrElse(Optional.empty());
             assertThat(found).isEmpty();
         }
     }
@@ -244,10 +261,12 @@ class UserRepositoryImplIntegrationTest {
         void shouldReturnTrueForExistingUsername() {
             // Given
             User user = createTestUser("existsusernameuser", "existsusernameuser@example.com", "存在確認ユーザー", Role.USER);
-            userRepository.save(user);
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // When
-            boolean exists = userRepository.existsByUsername("existsusernameuser");
+            boolean exists = userRepository.existsByUsername("existsusernameuser")
+                    .getOrElse(false);
 
             // Then
             assertThat(exists).isTrue();
@@ -257,7 +276,8 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("存在しないユーザー名で false を返す")
         void shouldReturnFalseForNonExistentUsername() {
             // When
-            boolean exists = userRepository.existsByUsername("nonexistentusername");
+            boolean exists = userRepository.existsByUsername("nonexistentusername")
+                    .getOrElse(false);
 
             // Then
             assertThat(exists).isFalse();
@@ -273,10 +293,12 @@ class UserRepositoryImplIntegrationTest {
         void shouldReturnTrueForExistingEmail() {
             // Given
             User user = createTestUser("existsemailuser", "existsemailuser@example.com", "メール存在確認ユーザー", Role.USER);
-            userRepository.save(user);
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             // When
-            boolean exists = userRepository.existsByEmail("existsemailuser@example.com");
+            boolean exists = userRepository.existsByEmail("existsemailuser@example.com")
+                    .getOrElse(false);
 
             // Then
             assertThat(exists).isTrue();
@@ -286,7 +308,8 @@ class UserRepositoryImplIntegrationTest {
         @DisplayName("存在しないメールアドレスで false を返す")
         void shouldReturnFalseForNonExistentEmail() {
             // When
-            boolean exists = userRepository.existsByEmail("nonexistent@example.com");
+            boolean exists = userRepository.existsByEmail("nonexistent@example.com")
+                    .getOrElse(false);
 
             // Then
             assertThat(exists).isFalse();
@@ -306,8 +329,10 @@ class UserRepositoryImplIntegrationTest {
             User loggedInUser = user.recordSuccessfulLogin();
 
             // When
-            userRepository.save(loggedInUser);
-            Optional<User> found = userRepository.findById(loggedInUser.getId());
+            userRepository.save(loggedInUser)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Optional<User> found = userRepository.findById(loggedInUser.getId())
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();
@@ -339,8 +364,10 @@ class UserRepositoryImplIntegrationTest {
             );
 
             // When
-            userRepository.save(user);
-            Optional<User> found = userRepository.findById(user.getId());
+            userRepository.save(user)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Optional<User> found = userRepository.findById(user.getId())
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();

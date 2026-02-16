@@ -155,9 +155,11 @@ public class AccountController {
 
     private List<Account> fetchAccounts(Optional<AccountType> accountType, Optional<String> keyword) {
         if (accountType.isPresent() || keyword.isPresent()) {
-            return accountRepository.search(accountType.orElse(null), keyword.orElse(null));
+            return accountRepository.search(accountType.orElse(null), keyword.orElse(null))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         }
-        return accountRepository.findAll();
+        return accountRepository.findAll()
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
     }
 
     /**
@@ -186,6 +188,7 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AccountResponse> findById(@PathVariable("id") Integer id) {
         return accountRepository.findById(AccountId.of(id))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .map(account -> ResponseEntity.ok(toResponse(account)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

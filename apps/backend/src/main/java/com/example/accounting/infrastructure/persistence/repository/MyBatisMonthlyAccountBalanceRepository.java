@@ -3,6 +3,7 @@ package com.example.accounting.infrastructure.persistence.repository;
 import com.example.accounting.application.port.out.MonthlyAccountBalanceRepository;
 import com.example.accounting.infrastructure.persistence.entity.MonthlyAccountBalanceEntity;
 import com.example.accounting.infrastructure.persistence.mapper.MonthlyAccountBalanceMapper;
+import io.vavr.control.Try;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -16,8 +17,8 @@ public class MyBatisMonthlyAccountBalanceRepository implements MonthlyAccountBal
     }
 
     @Override
-    public List<MonthlyAccountBalanceEntity> findByAccountCodeAndFiscalPeriod(
+    public Try<List<MonthlyAccountBalanceEntity>> findByAccountCodeAndFiscalPeriod(
             String accountCode, Integer fiscalPeriod) {
-        return mapper.findByAccountCodeAndFiscalPeriod(accountCode, fiscalPeriod);
+        return Try.of(() -> mapper.findByAccountCodeAndFiscalPeriod(accountCode, fiscalPeriod));
     }
 }

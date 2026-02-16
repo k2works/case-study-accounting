@@ -49,10 +49,12 @@ public class RegisterUserService implements RegisterUserUseCase {
 
     private IO<Either<String, RegisterUserCommand>> validateUniquenessIO(RegisterUserCommand command) {
         return IO.delay(() -> {
-            if (userRepository.existsByUsername(command.username())) {
+            if (userRepository.existsByUsername(command.username())
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))) {
                 return Either.left("ユーザー名は既に使用されています");
             }
-            if (userRepository.existsByEmail(command.email())) {
+            if (userRepository.existsByEmail(command.email())
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))) {
                 return Either.left("メールアドレスは既に使用されています");
             }
             return Either.right(command);
@@ -82,7 +84,8 @@ public class RegisterUserService implements RegisterUserUseCase {
     }
 
     private IO<User> registerUserIO(User user) {
-        return IO.delay(() -> userRepository.save(user));
+        return IO.delay(() -> userRepository.save(user)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 
     private RegisterUserResult createRegisterResult(User user) {

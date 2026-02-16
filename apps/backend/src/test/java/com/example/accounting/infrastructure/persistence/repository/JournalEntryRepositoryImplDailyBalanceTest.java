@@ -53,7 +53,8 @@ class JournalEntryRepositoryImplDailyBalanceTest {
                     .thenReturn(List.of(entity));
 
             List<DailyBalanceEntry> result = repository.findDailyBalanceByAccountAndPeriod(
-                    accountId, dateFrom, dateTo);
+                    accountId, dateFrom, dateTo)
+                    .getOrElse(List.of());
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).date()).isEqualTo(LocalDate.of(2024, 1, 15));
@@ -79,7 +80,8 @@ class JournalEntryRepositoryImplDailyBalanceTest {
                     .thenReturn(List.of(entity));
 
             List<DailyBalanceEntry> result = repository.findDailyBalanceByAccountAndPeriod(
-                    accountId, dateFrom, dateTo);
+                    accountId, dateFrom, dateTo)
+                    .getOrElse(List.of());
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).transactionCount()).isEqualTo(0L);
@@ -96,7 +98,8 @@ class JournalEntryRepositoryImplDailyBalanceTest {
                     .thenReturn(List.of());
 
             List<DailyBalanceEntry> result = repository.findDailyBalanceByAccountAndPeriod(
-                    accountId, dateFrom, dateTo);
+                    accountId, dateFrom, dateTo)
+                    .getOrElse(List.of());
 
             assertThat(result).isEmpty();
         }
@@ -115,7 +118,8 @@ class JournalEntryRepositoryImplDailyBalanceTest {
             when(journalEntryMapper.calculateBalanceBeforeDate(accountId, date))
                     .thenReturn(new BigDecimal("5000"));
 
-            BigDecimal result = repository.calculateBalanceBeforeDate(accountId, date);
+            BigDecimal result = repository.calculateBalanceBeforeDate(accountId, date)
+                    .getOrElse((BigDecimal) null);
 
             assertThat(result).isEqualByComparingTo("5000");
         }

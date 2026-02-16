@@ -8,6 +8,7 @@ import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,9 +61,11 @@ class DeleteAccountServiceTest {
             );
 
             when(accountRepository.findById(AccountId.of(command.accountId())))
-                    .thenReturn(Optional.of(existingAccount));
+                    .thenReturn(Try.success(Optional.of(existingAccount)));
             when(accountUsageChecker.isAccountInUse(AccountId.of(command.accountId())))
                     .thenReturn(false);
+            when(accountRepository.deleteById(AccountId.of(command.accountId())))
+                    .thenReturn(Try.success(null));
 
             DeleteAccountResult result = deleteAccountService.execute(command);
 
@@ -86,7 +89,7 @@ class DeleteAccountServiceTest {
             DeleteAccountCommand command = new DeleteAccountCommand(1);
 
             when(accountRepository.findById(AccountId.of(command.accountId())))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             DeleteAccountResult result = deleteAccountService.execute(command);
 
@@ -108,7 +111,7 @@ class DeleteAccountServiceTest {
             );
 
             when(accountRepository.findById(AccountId.of(command.accountId())))
-                    .thenReturn(Optional.of(existingAccount));
+                    .thenReturn(Try.success(Optional.of(existingAccount)));
             when(accountUsageChecker.isAccountInUse(AccountId.of(command.accountId())))
                     .thenReturn(true);
 

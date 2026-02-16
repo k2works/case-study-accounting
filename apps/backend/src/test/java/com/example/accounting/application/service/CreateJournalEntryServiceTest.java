@@ -14,6 +14,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -82,13 +83,13 @@ class CreateJournalEntryServiceTest {
             );
 
             when(accountRepository.findById(AccountId.of(1)))
-                    .thenReturn(Optional.of(dummyAccount(1)));
+                    .thenReturn(Try.success(Optional.of(dummyAccount(1))));
             when(accountRepository.findById(AccountId.of(2)))
-                    .thenReturn(Optional.of(dummyAccount(2)));
+                    .thenReturn(Try.success(Optional.of(dummyAccount(2))));
             when(journalEntryRepository.save(any(JournalEntry.class)))
                     .thenAnswer(invocation -> {
                         JournalEntry entry = invocation.getArgument(0);
-                        return entry.withId(JournalEntryId.of(10));
+                        return Try.success(entry.withId(JournalEntryId.of(10)));
                     });
 
             CreateJournalEntryResult result = createJournalEntryService.execute(command);
@@ -144,7 +145,7 @@ class CreateJournalEntryServiceTest {
                     )
             );
 
-            when(accountRepository.findById(AccountId.of(1))).thenReturn(Optional.empty());
+            when(accountRepository.findById(AccountId.of(1))).thenReturn(Try.success(Optional.empty()));
 
             CreateJournalEntryResult result = createJournalEntryService.execute(command);
 
@@ -177,9 +178,9 @@ class CreateJournalEntryServiceTest {
             );
 
             when(accountRepository.findById(AccountId.of(1)))
-                    .thenReturn(Optional.of(dummyAccount(1)));
+                    .thenReturn(Try.success(Optional.of(dummyAccount(1))));
             when(accountRepository.findById(AccountId.of(2)))
-                    .thenReturn(Optional.of(dummyAccount(2)));
+                    .thenReturn(Try.success(Optional.of(dummyAccount(2))));
 
             CreateJournalEntryResult result = createJournalEntryService.execute(command);
 

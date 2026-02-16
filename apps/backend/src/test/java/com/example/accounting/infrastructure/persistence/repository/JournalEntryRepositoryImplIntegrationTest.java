@@ -96,12 +96,16 @@ class JournalEntryRepositoryImplIntegrationTest {
         @DisplayName("新規仕訳を保存できる")
         void shouldSaveNewJournalEntry() {
             String suffix = UUID.randomUUID().toString().substring(0, 8);
-            User savedUser = userRepository.save(createTestUser(suffix));
-            Account debitAccount = accountRepository.save(createTestAccount("11", "現金", AccountType.ASSET));
-            Account creditAccount = accountRepository.save(createTestAccount("41", "売上", AccountType.REVENUE));
+            User savedUser = userRepository.save(createTestUser(suffix))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Account debitAccount = accountRepository.save(createTestAccount("11", "現金", AccountType.ASSET))
+                    .getOrElse((Account) null);
+            Account creditAccount = accountRepository.save(createTestAccount("41", "売上", AccountType.REVENUE))
+                    .getOrElse((Account) null);
             JournalEntry entry = createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount);
 
-            JournalEntry savedEntry = journalEntryRepository.save(entry);
+            JournalEntry savedEntry = journalEntryRepository.save(entry)
+                    .getOrElse((JournalEntry) null);
 
             assertThat(savedEntry.getId()).isNotNull();
             assertThat(savedEntry.getJournalDate()).isEqualTo(JOURNAL_DATE);
@@ -119,14 +123,18 @@ class JournalEntryRepositoryImplIntegrationTest {
         @DisplayName("既存仕訳を ID で検索できる")
         void shouldFindExistingJournalEntry() {
             String suffix = UUID.randomUUID().toString().substring(0, 8);
-            User savedUser = userRepository.save(createTestUser(suffix));
-            Account debitAccount = accountRepository.save(createTestAccount("12", "預金", AccountType.ASSET));
-            Account creditAccount = accountRepository.save(createTestAccount("42", "売上", AccountType.REVENUE));
+            User savedUser = userRepository.save(createTestUser(suffix))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Account debitAccount = accountRepository.save(createTestAccount("12", "預金", AccountType.ASSET))
+                    .getOrElse((Account) null);
+            Account creditAccount = accountRepository.save(createTestAccount("42", "売上", AccountType.REVENUE))
+                    .getOrElse((Account) null);
             JournalEntry savedEntry = journalEntryRepository.save(
                     createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount)
-            );
+            ).getOrElse((JournalEntry) null);
 
-            Optional<JournalEntry> found = journalEntryRepository.findById(savedEntry.getId());
+            Optional<JournalEntry> found = journalEntryRepository.findById(savedEntry.getId())
+                    .getOrElse(Optional.empty());
 
             assertThat(found).isPresent();
             assertThat(found.get().getLines()).hasSize(2);
@@ -142,12 +150,15 @@ class JournalEntryRepositoryImplIntegrationTest {
         @DisplayName("既存仕訳を更新できる")
         void shouldUpdateJournalEntry() {
             String suffix = UUID.randomUUID().toString().substring(0, 8);
-            User savedUser = userRepository.save(createTestUser(suffix));
-            Account debitAccount = accountRepository.save(createTestAccount("13", "現金", AccountType.ASSET));
-            Account creditAccount = accountRepository.save(createTestAccount("43", "売上", AccountType.REVENUE));
+            User savedUser = userRepository.save(createTestUser(suffix))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Account debitAccount = accountRepository.save(createTestAccount("13", "現金", AccountType.ASSET))
+                    .getOrElse((Account) null);
+            Account creditAccount = accountRepository.save(createTestAccount("43", "売上", AccountType.REVENUE))
+                    .getOrElse((Account) null);
             JournalEntry savedEntry = journalEntryRepository.save(
                     createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount)
-            );
+            ).getOrElse((JournalEntry) null);
 
             JournalEntry updatedEntry = savedEntry.withDescription("売上計上（更新）")
                     .withLines(List.of(
@@ -165,7 +176,8 @@ class JournalEntryRepositoryImplIntegrationTest {
                             )
                     ));
 
-            JournalEntry result = journalEntryRepository.save(updatedEntry);
+            JournalEntry result = journalEntryRepository.save(updatedEntry)
+                    .getOrElse((JournalEntry) null);
 
             assertThat(result.getDescription()).isEqualTo("売上計上（更新）");
             assertThat(result.getLines()).hasSize(2);
@@ -176,16 +188,20 @@ class JournalEntryRepositoryImplIntegrationTest {
         @DisplayName("仕訳更新時に version がインクリメントされる")
         void shouldIncrementVersionWhenUpdatingJournalEntry() {
             String suffix = UUID.randomUUID().toString().substring(0, 8);
-            User savedUser = userRepository.save(createTestUser(suffix));
-            Account debitAccount = accountRepository.save(createTestAccount("16", "現金", AccountType.ASSET));
-            Account creditAccount = accountRepository.save(createTestAccount("46", "売上", AccountType.REVENUE));
+            User savedUser = userRepository.save(createTestUser(suffix))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Account debitAccount = accountRepository.save(createTestAccount("16", "現金", AccountType.ASSET))
+                    .getOrElse((Account) null);
+            Account creditAccount = accountRepository.save(createTestAccount("46", "売上", AccountType.REVENUE))
+                    .getOrElse((Account) null);
             JournalEntry savedEntry = journalEntryRepository.save(
                     createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount)
-            );
+            ).getOrElse((JournalEntry) null);
 
             JournalEntry updatedEntry = savedEntry.withDescription("売上計上（更新2）");
 
-            JournalEntry result = journalEntryRepository.save(updatedEntry);
+            JournalEntry result = journalEntryRepository.save(updatedEntry)
+                    .getOrElse((JournalEntry) null);
 
             assertThat(savedEntry.getVersion()).isEqualTo(1);
             assertThat(result.getVersion()).isEqualTo(2);
@@ -195,21 +211,26 @@ class JournalEntryRepositoryImplIntegrationTest {
         @DisplayName("古い version で更新すると OptimisticLockException が発生する")
         void shouldThrowOptimisticLockExceptionWhenUpdatingWithOldVersion() {
             String suffix = UUID.randomUUID().toString().substring(0, 8);
-            User savedUser = userRepository.save(createTestUser(suffix));
-            Account debitAccount = accountRepository.save(createTestAccount("17", "現金", AccountType.ASSET));
-            Account creditAccount = accountRepository.save(createTestAccount("47", "売上", AccountType.REVENUE));
+            User savedUser = userRepository.save(createTestUser(suffix))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Account debitAccount = accountRepository.save(createTestAccount("17", "現金", AccountType.ASSET))
+                    .getOrElse((Account) null);
+            Account creditAccount = accountRepository.save(createTestAccount("47", "売上", AccountType.REVENUE))
+                    .getOrElse((Account) null);
             JournalEntry savedEntry = journalEntryRepository.save(
                     createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount)
-            );
+            ).getOrElse((JournalEntry) null);
 
             JournalEntry firstUpdate = savedEntry.withDescription("売上計上（更新3）");
-            journalEntryRepository.save(firstUpdate);
+            journalEntryRepository.save(firstUpdate)
+                    .getOrElse((JournalEntry) null);
 
             JournalEntry staleEntry = savedEntry.withDescription("売上計上（更新4）");
 
             assertThrows(
                     com.example.accounting.domain.shared.OptimisticLockException.class,
                     () -> journalEntryRepository.save(staleEntry)
+                            .getOrElseThrow(ex -> (RuntimeException) ex)
             );
         }
     }
@@ -222,12 +243,17 @@ class JournalEntryRepositoryImplIntegrationTest {
         @DisplayName("全仕訳を取得できる")
         void shouldFindAllJournalEntries() {
             String suffix = UUID.randomUUID().toString().substring(0, 8);
-            User savedUser = userRepository.save(createTestUser(suffix));
-            Account debitAccount = accountRepository.save(createTestAccount("14", "現金", AccountType.ASSET));
-            Account creditAccount = accountRepository.save(createTestAccount("44", "売上", AccountType.REVENUE));
-            journalEntryRepository.save(createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount));
+            User savedUser = userRepository.save(createTestUser(suffix))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Account debitAccount = accountRepository.save(createTestAccount("14", "現金", AccountType.ASSET))
+                    .getOrElse((Account) null);
+            Account creditAccount = accountRepository.save(createTestAccount("44", "売上", AccountType.REVENUE))
+                    .getOrElse((Account) null);
+            journalEntryRepository.save(createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount))
+                    .getOrElse((JournalEntry) null);
 
-            List<JournalEntry> entries = journalEntryRepository.findAll();
+            List<JournalEntry> entries = journalEntryRepository.findAll()
+                    .getOrElse(List.of());
 
             assertThat(entries).isNotEmpty();
         }
@@ -241,16 +267,21 @@ class JournalEntryRepositoryImplIntegrationTest {
         @DisplayName("既存仕訳を削除できる")
         void shouldDeleteJournalEntry() {
             String suffix = UUID.randomUUID().toString().substring(0, 8);
-            User savedUser = userRepository.save(createTestUser(suffix));
-            Account debitAccount = accountRepository.save(createTestAccount("15", "現金", AccountType.ASSET));
-            Account creditAccount = accountRepository.save(createTestAccount("45", "売上", AccountType.REVENUE));
+            User savedUser = userRepository.save(createTestUser(suffix))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
+            Account debitAccount = accountRepository.save(createTestAccount("15", "現金", AccountType.ASSET))
+                    .getOrElse((Account) null);
+            Account creditAccount = accountRepository.save(createTestAccount("45", "売上", AccountType.REVENUE))
+                    .getOrElse((Account) null);
             JournalEntry savedEntry = journalEntryRepository.save(
                     createTestJournalEntry(savedUser.getId(), debitAccount, creditAccount)
-            );
+            ).getOrElse((JournalEntry) null);
 
-            journalEntryRepository.deleteById(savedEntry.getId());
+            journalEntryRepository.deleteById(savedEntry.getId())
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
-            Optional<JournalEntry> found = journalEntryRepository.findById(savedEntry.getId());
+            Optional<JournalEntry> found = journalEntryRepository.findById(savedEntry.getId())
+                    .getOrElse(Optional.empty());
             assertThat(found).isEmpty();
         }
     }

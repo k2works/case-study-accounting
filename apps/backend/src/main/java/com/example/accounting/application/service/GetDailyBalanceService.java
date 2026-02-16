@@ -33,13 +33,15 @@ public class GetDailyBalanceService implements GetDailyBalanceUseCase {
     @Override
     public GetDailyBalanceResult execute(GetDailyBalanceQuery query) {
         Account account = accountRepository.findById(AccountId.of(query.accountId()))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .orElseThrow(() -> new IllegalArgumentException("勘定科目が見つかりません"));
 
         BigDecimal rawOpeningBalance = calculateOpeningBalance(query.accountId(), query.dateFrom());
         BigDecimal openingBalance = normalizeBalance(account.getAccountType(), rawOpeningBalance);
 
         List<DailyBalanceEntry> rawEntries = journalEntryRepository.findDailyBalanceByAccountAndPeriod(
-                query.accountId(), query.dateFrom(), query.dateTo());
+                query.accountId(), query.dateFrom(), query.dateTo())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         BalanceCalculation calculation = calculateBalances(account.getAccountType(), openingBalance, rawEntries);
 
@@ -59,7 +61,8 @@ public class GetDailyBalanceService implements GetDailyBalanceUseCase {
         if (dateFrom == null) {
             return BigDecimal.ZERO;
         }
-        BigDecimal balance = journalEntryRepository.calculateBalanceBeforeDate(accountId, dateFrom);
+        BigDecimal balance = journalEntryRepository.calculateBalanceBeforeDate(accountId, dateFrom)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         return balance == null ? BigDecimal.ZERO : balance;
     }
 

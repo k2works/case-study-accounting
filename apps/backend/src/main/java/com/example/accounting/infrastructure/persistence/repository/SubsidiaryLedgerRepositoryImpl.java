@@ -4,6 +4,7 @@ import com.example.accounting.application.port.out.GetSubsidiaryLedgerResult.Sub
 import com.example.accounting.application.port.out.SubsidiaryLedgerRepository;
 import com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity;
 import com.example.accounting.infrastructure.persistence.mapper.SubsidiaryLedgerMapper;
+import io.vavr.control.Try;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -23,34 +24,34 @@ public class SubsidiaryLedgerRepositoryImpl implements SubsidiaryLedgerRepositor
     }
 
     @Override
-    public List<SubsidiaryLedgerEntry> findPostedLinesByAccountAndSubAccountAndPeriod(String accountCode,
-                                                                                      String subAccountCode,
-                                                                                      LocalDate dateFrom,
-                                                                                      LocalDate dateTo,
-                                                                                      int offset,
-                                                                                      int limit) {
-        return subsidiaryLedgerMapper.findPostedLinesByAccountAndSubAccountAndPeriod(
-                        accountCode, subAccountCode, dateFrom, dateTo, offset, limit)
-                .stream()
-                .map(this::toSubsidiaryLedgerEntry)
-                .toList();
+    public Try<List<SubsidiaryLedgerEntry>> findPostedLinesByAccountAndSubAccountAndPeriod(String accountCode,
+                                                                                             String subAccountCode,
+                                                                                             LocalDate dateFrom,
+                                                                                             LocalDate dateTo,
+                                                                                             int offset,
+                                                                                             int limit) {
+        return Try.of(() -> subsidiaryLedgerMapper.findPostedLinesByAccountAndSubAccountAndPeriod(
+                                accountCode, subAccountCode, dateFrom, dateTo, offset, limit)
+                        .stream()
+                        .map(this::toSubsidiaryLedgerEntry)
+                        .toList());
     }
 
     @Override
-    public long countPostedLinesByAccountAndSubAccountAndPeriod(String accountCode,
-                                                                String subAccountCode,
-                                                                LocalDate dateFrom,
-                                                                LocalDate dateTo) {
-        return subsidiaryLedgerMapper.countPostedLinesByAccountAndSubAccountAndPeriod(
-                accountCode, subAccountCode, dateFrom, dateTo);
+    public Try<Long> countPostedLinesByAccountAndSubAccountAndPeriod(String accountCode,
+                                                                     String subAccountCode,
+                                                                     LocalDate dateFrom,
+                                                                     LocalDate dateTo) {
+        return Try.of(() -> subsidiaryLedgerMapper.countPostedLinesByAccountAndSubAccountAndPeriod(
+                accountCode, subAccountCode, dateFrom, dateTo));
     }
 
     @Override
-    public BigDecimal calculateBalanceBeforeDateByAccountAndSubAccount(String accountCode,
-                                                                       String subAccountCode,
-                                                                       LocalDate date) {
-        return subsidiaryLedgerMapper.calculateBalanceBeforeDateByAccountAndSubAccount(
-                accountCode, subAccountCode, date);
+    public Try<BigDecimal> calculateBalanceBeforeDateByAccountAndSubAccount(String accountCode,
+                                                                            String subAccountCode,
+                                                                            LocalDate date) {
+        return Try.of(() -> subsidiaryLedgerMapper.calculateBalanceBeforeDateByAccountAndSubAccount(
+                accountCode, subAccountCode, date));
     }
 
     private SubsidiaryLedgerEntry toSubsidiaryLedgerEntry(JournalEntryLineWithHeaderEntity entity) {

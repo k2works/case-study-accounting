@@ -35,6 +35,7 @@ import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
 import com.example.accounting.domain.shared.OptimisticLockException;
+import io.vavr.control.Try;
 import com.example.accounting.infrastructure.web.dto.ApproveJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.ConfirmJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.RejectJournalEntryRequest;
@@ -156,7 +157,7 @@ class JournalEntryControllerTest {
                     "DRAFT"
             );
             when(userRepository.findByUsername("user1"))
-                    .thenReturn(Optional.of(dummyUser("user-1", "user1")));
+                    .thenReturn(Try.success(Optional.of(dummyUser("user-1", "user1"))));
             when(createJournalEntryUseCase.execute(any(CreateJournalEntryCommand.class))).thenReturn(result);
 
             ResponseEntity<CreateJournalEntryResponse> response =
@@ -186,7 +187,7 @@ class JournalEntryControllerTest {
                     )
             );
             when(userRepository.findByUsername("user1"))
-                    .thenReturn(Optional.of(dummyUser("user-1", "user1")));
+                    .thenReturn(Try.success(Optional.of(dummyUser("user-1", "user1"))));
             when(createJournalEntryUseCase.execute(any(CreateJournalEntryCommand.class)))
                     .thenReturn(CreateJournalEntryResult.failure("error"));
 
@@ -223,7 +224,7 @@ class JournalEntryControllerTest {
                     )
             );
             when(userRepository.findByUsername("user1"))
-                    .thenReturn(Optional.of(dummyUser("user-1", "user1")));
+                    .thenReturn(Try.success(Optional.of(dummyUser("user-1", "user1"))));
             when(createJournalEntryUseCase.execute(any(CreateJournalEntryCommand.class)))
                     .thenReturn(CreateJournalEntryResult.failure("勘定科目が存在しません"));
 
@@ -535,7 +536,7 @@ class JournalEntryControllerTest {
                     List.of(new CreateJournalEntryRequest.JournalEntryLineRequest(1, 1,
                             new BigDecimal("1000"), null))
             );
-            when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+            when(userRepository.findByUsername("unknown")).thenReturn(Try.success(Optional.empty()));
 
             assertThatThrownBy(() -> journalEntryController.create(request, principal("unknown")))
                     .isInstanceOf(BusinessException.class)

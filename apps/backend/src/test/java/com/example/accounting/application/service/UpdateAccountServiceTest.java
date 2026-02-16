@@ -8,6 +8,7 @@ import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -71,10 +72,10 @@ class UpdateAccountServiceTest {
             );
 
             when(accountRepository.findById(AccountId.of(command.accountId())))
-                    .thenReturn(Optional.of(existingAccount));
+                    .thenReturn(Try.success(Optional.of(existingAccount)));
             when(accountUsageChecker.isAccountInUse(AccountId.of(command.accountId())))
                     .thenReturn(false);
-            when(accountRepository.save(any(Account.class))).thenReturn(updatedAccount);
+            when(accountRepository.save(any(Account.class))).thenReturn(Try.success(updatedAccount));
 
             UpdateAccountResult result = updateAccountService.execute(command);
 
@@ -111,7 +112,7 @@ class UpdateAccountServiceTest {
             );
 
             when(accountRepository.findById(AccountId.of(command.accountId())))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             UpdateAccountResult result = updateAccountService.execute(command);
 
@@ -137,7 +138,7 @@ class UpdateAccountServiceTest {
             );
 
             when(accountRepository.findById(AccountId.of(command.accountId())))
-                    .thenReturn(Optional.of(existingAccount));
+                    .thenReturn(Try.success(Optional.of(existingAccount)));
             when(accountUsageChecker.isAccountInUse(AccountId.of(command.accountId())))
                     .thenReturn(true);
 

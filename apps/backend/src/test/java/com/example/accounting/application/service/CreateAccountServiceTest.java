@@ -7,6 +7,7 @@ import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,8 +61,9 @@ class CreateAccountServiceTest {
                     AccountType.ASSET
             );
 
-            when(accountRepository.existsByCode(AccountCode.of(command.accountCode()))).thenReturn(false);
-            when(accountRepository.save(any(Account.class))).thenReturn(savedAccountWithId);
+            when(accountRepository.existsByCode(AccountCode.of(command.accountCode())))
+                    .thenReturn(Try.success(false));
+            when(accountRepository.save(any(Account.class))).thenReturn(Try.success(savedAccountWithId));
 
             CreateAccountResult result = createAccountService.execute(command);
 
@@ -95,7 +97,8 @@ class CreateAccountServiceTest {
                     "ASSET"
             );
 
-            when(accountRepository.existsByCode(AccountCode.of(command.accountCode()))).thenReturn(true);
+            when(accountRepository.existsByCode(AccountCode.of(command.accountCode())))
+                    .thenReturn(Try.success(true));
 
             CreateAccountResult result = createAccountService.execute(command);
 

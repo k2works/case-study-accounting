@@ -9,6 +9,7 @@ import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -64,16 +65,16 @@ class GetSubsidiaryLedgerServiceTest {
                     AccountId.of(1), AccountCode.of("1101"), "現金", AccountType.ASSET);
 
             when(accountRepository.findByCode("1101"))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(subsidiaryLedgerRepository.calculateBalanceBeforeDateByAccountAndSubAccount(
                     "1101", "S001", dateFrom))
-                    .thenReturn(new BigDecimal("1000"));
+                    .thenReturn(Try.success(new BigDecimal("1000")));
             when(subsidiaryLedgerRepository.countPostedLinesByAccountAndSubAccountAndPeriod(
                     "1101", "S001", dateFrom, dateTo))
-                    .thenReturn(2L);
+                    .thenReturn(Try.success(2L));
             when(subsidiaryLedgerRepository.findPostedLinesByAccountAndSubAccountAndPeriod(
                     "1101", "S001", dateFrom, dateTo, 0, 20))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new SubsidiaryLedgerEntry(
                                     10,
                                     LocalDate.of(2024, 1, 10),
@@ -90,7 +91,7 @@ class GetSubsidiaryLedgerServiceTest {
                                     new BigDecimal("200"),
                                     null
                             )
-                    ));
+                    )));
 
             GetSubsidiaryLedgerResult result = service.execute(query);
 
@@ -126,16 +127,16 @@ class GetSubsidiaryLedgerServiceTest {
                     AccountId.of(2), AccountCode.of("2101"), "買掛金", AccountType.LIABILITY);
 
             when(accountRepository.findByCode("2101"))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(subsidiaryLedgerRepository.calculateBalanceBeforeDateByAccountAndSubAccount(
                     "2101", null, dateFrom))
-                    .thenReturn(new BigDecimal("-300"));
+                    .thenReturn(Try.success(new BigDecimal("-300")));
             when(subsidiaryLedgerRepository.countPostedLinesByAccountAndSubAccountAndPeriod(
                     "2101", null, dateFrom, dateTo))
-                    .thenReturn(1L);
+                    .thenReturn(Try.success(1L));
             when(subsidiaryLedgerRepository.findPostedLinesByAccountAndSubAccountAndPeriod(
                     "2101", null, dateFrom, dateTo, 0, 20))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new SubsidiaryLedgerEntry(
                                     21,
                                     LocalDate.of(2024, 4, 15),
@@ -144,7 +145,7 @@ class GetSubsidiaryLedgerServiceTest {
                                     new BigDecimal("400"),
                                     null
                             )
-                    ));
+                    )));
 
             GetSubsidiaryLedgerResult result = service.execute(query);
 

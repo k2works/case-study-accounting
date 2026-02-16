@@ -9,6 +9,7 @@ import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,8 +61,8 @@ class UpdateUserServiceTest {
                     "MANAGER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -96,8 +97,8 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -123,8 +124,8 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -154,7 +155,7 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.empty());
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.empty()));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -177,7 +178,7 @@ class UpdateUserServiceTest {
                     "INVALID"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -200,8 +201,8 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
