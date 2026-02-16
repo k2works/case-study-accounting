@@ -78,6 +78,8 @@ nav:
           - ドメインモデル: design/domain-model.md
       - ユースケース設計:
           - 仕訳一覧取得: design/usecase/JNL-004-01_GetJournalEntries_UseCase_Design.md
+      - ワークフロー設計:
+          - 仕訳ステータス遷移図: design/journal-entry-status-diagram.md
       - UI 設計: design/ui-design.md
       - テスト戦略: design/test_strategy.md
       - 非機能要件: design/non_functional.md
@@ -85,6 +87,8 @@ nav:
       - 技術スタック選定: design/tech_stack.md
   - 開発:
       - リリース計画: development/release_plan.md
+      - リリースノート:
+          - v1.0 MVP: development/release_notes-v1.0.md
       - イテレーション計画:
           - イテレーション1: development/iteration_plan-1.md
           - イテレーション2: development/iteration_plan-2.md

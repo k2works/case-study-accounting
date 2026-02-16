@@ -31,6 +31,10 @@
 
 - [仕訳一覧取得ユースケース設計](./design/usecase/JNL-004-01_GetJournalEntries_UseCase_Design.md) - 仕訳一覧取得機能の詳細設計
 
+### ワークフロー設計
+
+- [仕訳ステータス遷移図](./design/journal-entry-status-diagram.md) - 仕訳のステータス遷移と操作権限
+
 ### その他
 
 - [UI 設計](./design/ui-design.md) - ユーザーインターフェース設計
@@ -44,6 +48,10 @@
 ### 計画
 
 - [リリース計画](./development/release_plan.md) - リリース計画とスケジュール
+
+### リリースノート
+
+- [リリースノート v1.0 MVP](./development/release_notes-v1.0.md) - リリース 1.0 MVP の変更内容
 
 ### イテレーション
 
