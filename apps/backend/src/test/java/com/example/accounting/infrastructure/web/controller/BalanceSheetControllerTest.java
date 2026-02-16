@@ -6,6 +6,7 @@ import com.example.accounting.application.port.out.GetBalanceSheetResult;
 import com.example.accounting.application.port.out.GetBalanceSheetResult.BalanceSheetEntry;
 import com.example.accounting.application.port.out.GetBalanceSheetResult.BalanceSheetSection;
 import com.example.accounting.application.service.BalanceSheetExportService;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -119,7 +119,7 @@ class BalanceSheetControllerTest {
 
     @Test
     @DisplayName("Excel 形式でエクスポートできる")
-    void shouldExportToExcel() throws IOException {
+    void shouldExportToExcel() {
         LocalDate date = LocalDate.of(2026, 3, 31);
         GetBalanceSheetResult result = new GetBalanceSheetResult(
                 date, null,
@@ -132,7 +132,7 @@ class BalanceSheetControllerTest {
         );
         when(getBalanceSheetUseCase.execute(any(GetBalanceSheetQuery.class))).thenReturn(result);
         byte[] excelBytes = {0x50, 0x4B, 0x03, 0x04};
-        when(exportService.exportToExcel(result)).thenReturn(excelBytes);
+        when(exportService.exportToExcel(result)).thenReturn(Try.success(excelBytes));
 
         ResponseEntity<byte[]> response = controller.exportBalanceSheet(date, "excel");
 
@@ -147,7 +147,7 @@ class BalanceSheetControllerTest {
 
     @Test
     @DisplayName("PDF 形式でエクスポートできる")
-    void shouldExportToPdf() throws IOException {
+    void shouldExportToPdf() {
         LocalDate date = LocalDate.of(2026, 3, 31);
         GetBalanceSheetResult result = new GetBalanceSheetResult(
                 date, null,
@@ -156,7 +156,7 @@ class BalanceSheetControllerTest {
         );
         when(getBalanceSheetUseCase.execute(any(GetBalanceSheetQuery.class))).thenReturn(result);
         byte[] pdfBytes = "%PDF-1.4".getBytes();
-        when(exportService.exportToPdf(result)).thenReturn(pdfBytes);
+        when(exportService.exportToPdf(result)).thenReturn(Try.success(pdfBytes));
 
         ResponseEntity<byte[]> response = controller.exportBalanceSheet(date, "pdf");
 
@@ -169,7 +169,7 @@ class BalanceSheetControllerTest {
 
     @Test
     @DisplayName("format 未指定時は Excel をデフォルトとする")
-    void shouldDefaultToExcelWhenFormatNotSpecified() throws IOException {
+    void shouldDefaultToExcelWhenFormatNotSpecified() {
         GetBalanceSheetResult result = new GetBalanceSheetResult(
                 null, null,
                 List.of(), BigDecimal.ZERO, BigDecimal.ZERO,
@@ -177,7 +177,7 @@ class BalanceSheetControllerTest {
         );
         when(getBalanceSheetUseCase.execute(any(GetBalanceSheetQuery.class))).thenReturn(result);
         byte[] excelBytes = {0x50, 0x4B, 0x03, 0x04};
-        when(exportService.exportToExcel(result)).thenReturn(excelBytes);
+        when(exportService.exportToExcel(result)).thenReturn(Try.success(excelBytes));
 
         ResponseEntity<byte[]> response = controller.exportBalanceSheet(null, "excel");
 
@@ -186,5 +186,21 @@ class BalanceSheetControllerTest {
         assertThat(response.getHeaders().getContentType())
                 .isEqualTo(MediaType.parseMediaType(
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+    }
+
+    @Test
+    @DisplayName("エクスポート失敗時は 500 エラーを返す")
+    void shouldReturn500WhenExportFails() {
+        GetBalanceSheetResult result = new GetBalanceSheetResult(
+                null, null,
+                List.of(), BigDecimal.ZERO, BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, true, BigDecimal.ZERO
+        );
+        when(getBalanceSheetUseCase.execute(any(GetBalanceSheetQuery.class))).thenReturn(result);
+        when(exportService.exportToExcel(result)).thenReturn(Try.failure(new RuntimeException("Export failed")));
+
+        ResponseEntity<byte[]> response = controller.exportBalanceSheet(null, "excel");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -53,10 +53,9 @@ class BalanceSheetExportServiceTest {
         void shouldExportFullResultToExcel() throws IOException {
             GetBalanceSheetResult result = createTestResult(LocalDate.of(2026, 3, 31));
 
-            byte[] bytes = service.exportToExcel(result);
+            byte[] bytes = service.exportToExcel(result).get();
 
             assertThat(bytes).isNotEmpty();
-            // 有効な XLSX ファイルとして読み込めることを検証
             try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
                 assertThat(workbook.getSheetAt(0).getSheetName()).isEqualTo("貸借対照表");
             }
@@ -67,7 +66,7 @@ class BalanceSheetExportServiceTest {
         void shouldExportWithNullDate() throws IOException {
             GetBalanceSheetResult result = createTestResult(null);
 
-            byte[] bytes = service.exportToExcel(result);
+            byte[] bytes = service.exportToExcel(result).get();
 
             assertThat(bytes).isNotEmpty();
             try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
@@ -77,7 +76,7 @@ class BalanceSheetExportServiceTest {
 
         @Test
         @DisplayName("セクションが空でも例外が発生しない")
-        void shouldExportWithEmptySections() throws IOException {
+        void shouldExportWithEmptySections() {
             GetBalanceSheetResult result = new GetBalanceSheetResult(
                     LocalDate.of(2026, 3, 31), null,
                     List.of(),
@@ -85,7 +84,7 @@ class BalanceSheetExportServiceTest {
                     BigDecimal.ZERO, BigDecimal.ZERO,
                     true, BigDecimal.ZERO);
 
-            byte[] bytes = service.exportToExcel(result);
+            byte[] bytes = service.exportToExcel(result).get();
 
             assertThat(bytes).isNotEmpty();
         }
@@ -97,22 +96,21 @@ class BalanceSheetExportServiceTest {
 
         @Test
         @DisplayName("全セクションを含む結果を PDF 形式でエクスポートできる")
-        void shouldExportFullResultToPdf() throws IOException {
+        void shouldExportFullResultToPdf() {
             GetBalanceSheetResult result = createTestResult(LocalDate.of(2026, 3, 31));
 
-            byte[] bytes = service.exportToPdf(result);
+            byte[] bytes = service.exportToPdf(result).get();
 
             assertThat(bytes).isNotEmpty();
-            // PDF ファイルは %PDF で始まる
             assertThat(new String(bytes, 0, 4)).isEqualTo("%PDF");
         }
 
         @Test
         @DisplayName("date が null でも例外が発生しない")
-        void shouldExportWithNullDate() throws IOException {
+        void shouldExportWithNullDate() {
             GetBalanceSheetResult result = createTestResult(null);
 
-            byte[] bytes = service.exportToPdf(result);
+            byte[] bytes = service.exportToPdf(result).get();
 
             assertThat(bytes).isNotEmpty();
             assertThat(new String(bytes, 0, 4)).isEqualTo("%PDF");
@@ -120,7 +118,7 @@ class BalanceSheetExportServiceTest {
 
         @Test
         @DisplayName("セクションが空でも例外が発生しない")
-        void shouldExportWithEmptySections() throws IOException {
+        void shouldExportWithEmptySections() {
             GetBalanceSheetResult result = new GetBalanceSheetResult(
                     LocalDate.of(2026, 3, 31), null,
                     List.of(),
@@ -128,7 +126,7 @@ class BalanceSheetExportServiceTest {
                     BigDecimal.ZERO, BigDecimal.ZERO,
                     true, BigDecimal.ZERO);
 
-            byte[] bytes = service.exportToPdf(result);
+            byte[] bytes = service.exportToPdf(result).get();
 
             assertThat(bytes).isNotEmpty();
             assertThat(new String(bytes, 0, 4)).isEqualTo("%PDF");
@@ -136,10 +134,10 @@ class BalanceSheetExportServiceTest {
 
         @Test
         @DisplayName("複数セクション（ASSET, LIABILITY, EQUITY）を含む結果をエクスポートできる")
-        void shouldExportWithMultipleSections() throws IOException {
+        void shouldExportWithMultipleSections() {
             GetBalanceSheetResult result = createTestResult(LocalDate.of(2026, 3, 31));
 
-            byte[] bytes = service.exportToPdf(result);
+            byte[] bytes = service.exportToPdf(result).get();
 
             assertThat(bytes).isNotEmpty();
             assertThat(bytes.length).isGreaterThan(100);

@@ -12,6 +12,7 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import io.vavr.control.Try;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -26,66 +27,71 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Service
+@SuppressWarnings("PMD.AvoidMutableCollectionInstantiation") // OpenPDF の Paragraph/Phrase は new 必須
 public class BalanceSheetExportService {
 
     private static final String FONT_PATH = "/fonts/NotoSansJP-Regular.ttf";
     private static final Color HEADER_BG = new Color(240, 240, 240);
     private static final String[] EMPTY_ROW = {"", ""};
 
-    public byte[] exportToExcel(GetBalanceSheetResult result) throws IOException {
-        try (Workbook workbook = new XSSFWorkbook();
-             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Sheet sheet = workbook.createSheet("貸借対照表");
-            CellStyle headerStyle = createHeaderStyle(workbook);
-            CellStyle currencyStyle = createCurrencyStyle(workbook);
+    public Try<byte[]> exportToExcel(GetBalanceSheetResult result) {
+        return Try.of(() -> {
+            try (Workbook workbook = new XSSFWorkbook();
+                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                Sheet sheet = workbook.createSheet("貸借対照表");
+                CellStyle headerStyle = createHeaderStyle(workbook);
+                CellStyle currencyStyle = createCurrencyStyle(workbook);
 
-            int currentRow = writeExcelTitle(sheet, result, 0);
-            currentRow++;
-
-            for (BalanceSheetSection section : result.sections()) {
-                currentRow = writeExcelSection(sheet, section, currentRow, headerStyle, currencyStyle);
+                int currentRow = writeExcelTitle(sheet, result, 0);
                 currentRow++;
+
+                for (BalanceSheetSection section : result.sections()) {
+                    currentRow = writeExcelSection(sheet, section, currentRow, headerStyle, currencyStyle);
+                    currentRow++;
+                }
+
+                currentRow++;
+                writeExcelTotals(sheet, result, currentRow, currencyStyle);
+
+                sheet.autoSizeColumn(0);
+                sheet.autoSizeColumn(1);
+
+                workbook.write(out);
+                return out.toByteArray();
             }
-
-            currentRow++;
-            writeExcelTotals(sheet, result, currentRow, currencyStyle);
-
-            sheet.autoSizeColumn(0);
-            sheet.autoSizeColumn(1);
-
-            workbook.write(out);
-            return out.toByteArray();
-        }
+        });
     }
 
-    public byte[] exportToPdf(GetBalanceSheetResult result) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (Document document = new Document(PageSize.A4.rotate())) {
-            PdfWriter.getInstance(document, out);
-            document.open();
+    public Try<byte[]> exportToPdf(GetBalanceSheetResult result) {
+        return Try.of(() -> {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (Document document = new Document(PageSize.A4.rotate())) {
+                PdfWriter.getInstance(document, out);
+                document.open();
 
-            Font titleFont = createJapaneseFont(16, Font.BOLD);
-            Font headerFont = createJapaneseFont(10, Font.BOLD);
-            Font bodyFont = createJapaneseFont(9, Font.NORMAL);
+                Font titleFont = createJapaneseFont(16, Font.BOLD);
+                Font headerFont = createJapaneseFont(10, Font.BOLD);
+                Font bodyFont = createJapaneseFont(9, Font.NORMAL);
 
-            writePdfTitle(document, result, titleFont, bodyFont);
+                writePdfTitle(document, result, titleFont, bodyFont);
 
-            PdfPTable table = new PdfPTable(new float[]{15f, 35f, 15f, 35f});
-            table.setWidthPercentage(100);
+                PdfPTable table = new PdfPTable(new float[]{15f, 35f, 15f, 35f});
+                table.setWidthPercentage(100);
 
-            addPdfHeaderRow(table, headerFont);
-            writePdfSections(table, result, bodyFont);
-            addPdfTotalRow(table, result, headerFont);
+                addPdfHeaderRow(table, headerFont);
+                writePdfSections(table, result, bodyFont);
+                addPdfTotalRow(table, result, headerFont);
 
-            document.add(table);
-        }
-        return out.toByteArray();
+                document.add(table);
+            }
+            return out.toByteArray();
+        });
     }
 
     private int writeExcelTitle(Sheet sheet, GetBalanceSheetResult result, int startRow) {
@@ -134,7 +140,7 @@ public class BalanceSheetExportService {
     }
 
     private void writePdfTitle(Document document, GetBalanceSheetResult result,
-                                Font titleFont, Font bodyFont) throws IOException {
+                                Font titleFont, Font bodyFont) {
         Paragraph title = new Paragraph("貸借対照表", titleFont);
         title.setAlignment(Paragraph.ALIGN_CENTER);
         document.add(title);
@@ -178,30 +184,31 @@ public class BalanceSheetExportService {
     }
 
     private List<String[]> buildSectionRows(BalanceSheetSection section, NumberFormat nf) {
-        List<String[]> rows = new ArrayList<>();
         if (section == null) {
-            return rows;
+            return List.of();
         }
-        rows.add(new String[]{section.sectionDisplayName(), ""});
-        for (BalanceSheetEntry entry : section.entries()) {
-            String label = "  " + entry.accountCode() + " " + entry.accountName();
-            rows.add(new String[]{label, nf.format(entry.amount())});
-        }
-        rows.add(new String[]{section.sectionDisplayName() + "合計", nf.format(section.subtotal())});
-        return rows;
+        String[] headerRow = {section.sectionDisplayName(), ""};
+        String[] subtotalRow = {section.sectionDisplayName() + "合計", nf.format(section.subtotal())};
+        Stream<String[]> entries = section.entries().stream()
+                .map(entry -> new String[]{
+                        "  " + entry.accountCode() + " " + entry.accountName(),
+                        nf.format(entry.amount())
+                });
+
+        return Stream.of(
+                Stream.<String[]>of(headerRow),
+                entries,
+                Stream.<String[]>of(subtotalRow)
+        ).flatMap(s -> s).toList();
     }
 
     private List<String[]> buildRightSectionRows(BalanceSheetSection liabilitySection,
                                                   BalanceSheetSection equitySection,
                                                   NumberFormat nf) {
-        List<String[]> rows = new ArrayList<>();
-        if (liabilitySection != null) {
-            rows.addAll(buildSectionRows(liabilitySection, nf));
-        }
-        if (equitySection != null) {
-            rows.addAll(buildSectionRows(equitySection, nf));
-        }
-        return rows;
+        return Stream.of(
+                buildSectionRows(liabilitySection, nf).stream(),
+                buildSectionRows(equitySection, nf).stream()
+        ).flatMap(s -> s).toList();
     }
 
     private void addPdfTotalRow(PdfPTable table, GetBalanceSheetResult result, Font font) {

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 @RestController
@@ -52,23 +51,25 @@ public class BalanceSheetController {
     public ResponseEntity<byte[]> exportBalanceSheet(
             @RequestParam(required = false) LocalDate date,
             @RequestParam(defaultValue = "excel") String format
-    ) throws IOException {
+    ) {
         GetBalanceSheetQuery query = new GetBalanceSheetQuery(date, null);
         GetBalanceSheetResult result = getBalanceSheetUseCase.execute(query);
 
         if ("pdf".equalsIgnoreCase(format)) {
-            byte[] pdfBytes = exportService.exportToPdf(result);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=balance-sheet.pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(pdfBytes);
+            return exportService.exportToPdf(result)
+                    .map(bytes -> ResponseEntity.ok()
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=balance-sheet.pdf")
+                            .contentType(MediaType.APPLICATION_PDF)
+                            .body(bytes))
+                    .getOrElseGet(error -> ResponseEntity.internalServerError().build());
         }
 
-        byte[] excelBytes = exportService.exportToExcel(result);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=balance-sheet.xlsx")
-                .contentType(MediaType.parseMediaType(
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(excelBytes);
+        return exportService.exportToExcel(result)
+                .map(bytes -> ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=balance-sheet.xlsx")
+                        .contentType(MediaType.parseMediaType(
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                        .body(bytes))
+                .getOrElseGet(error -> ResponseEntity.internalServerError().build());
     }
 }
