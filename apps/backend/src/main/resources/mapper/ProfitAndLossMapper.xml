@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.accounting.infrastructure.persistence.mapper.ProfitAndLossMapper">
+
+    <resultMap id="profitAndLossResultMap"
+               type="com.example.accounting.infrastructure.persistence.entity.ProfitAndLossEntity">
+        <result property="accountCode" column="account_code"/>
+        <result property="accountName" column="account_name"/>
+        <result property="accountType" column="account_type"/>
+        <result property="totalDebit" column="total_debit"/>
+        <result property="totalCredit" column="total_credit"/>
+        <result property="amount" column="amount"/>
+    </resultMap>
+
+    <select id="findProfitAndLoss" resultMap="profitAndLossResultMap">
+        SELECT
+            a.code AS account_code,
+            a.name AS account_name,
+            a.account_type,
+            COALESCE(SUM(d.debit_amount), 0) AS total_debit,
+            COALESCE(SUM(d.credit_amount), 0) AS total_credit,
+            CASE
+                WHEN a.account_type = 'EXPENSE'
+                    THEN COALESCE(SUM(d.debit_amount), 0) - COALESCE(SUM(d.credit_amount), 0)
+                WHEN a.account_type = 'REVENUE'
+                    THEN COALESCE(SUM(d.credit_amount), 0) - COALESCE(SUM(d.debit_amount), 0)
+                ELSE 0
+            END AS amount
+        FROM accounts a
+        LEFT JOIN daily_account_balances d
+            ON a.code = d.account_code
+            AND d.is_closing_entry = 0
+            <if test="dateFrom != null">
+                AND d.posting_date &gt;= #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND d.posting_date &lt;= #{dateTo}
+            </if>
+        WHERE a.bspl_category = 'P'
+        GROUP BY a.code, a.name, a.account_type
+        ORDER BY a.code
+    </select>
+
+</mapper>

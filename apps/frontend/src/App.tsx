@@ -16,6 +16,7 @@ import DailyBalancePage from './pages/DailyBalancePage';
 import MonthlyBalancePage from './pages/MonthlyBalancePage';
 import TrialBalancePage from './pages/TrialBalancePage';
 import BalanceSheetPage from './pages/BalanceSheetPage';
+import ProfitAndLossPage from './pages/ProfitAndLossPage';
 import UserEditPage from './pages/UserEditPage';
 import { Loading } from './views/common';
 
@@ -207,6 +208,14 @@ export const App = () => {
         element={
           <PrivateRoute>
             <BalanceSheetPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/financial-statements/income-statement"
+        element={
+          <PrivateRoute>
+            <ProfitAndLossPage />
           </PrivateRoute>
         }
       />

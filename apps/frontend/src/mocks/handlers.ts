@@ -1655,6 +1655,124 @@ export const balanceSheetHandlers = [
 ];
 
 /**
+ * 損益計算書関連のハンドラー
+ */
+interface PlEntry {
+  accountCode: string;
+  accountName: string;
+  accountType: string;
+  amount: number;
+  comparative: { previousAmount: number; difference: number; changeRate: number } | null;
+}
+
+interface PlSection {
+  sectionType: string;
+  sectionDisplayName: string;
+  entries: PlEntry[];
+  subtotal: number;
+  comparativeSubtotal: { previousAmount: number; difference: number; changeRate: number } | null;
+}
+
+const plSectionNames: Record<string, string> = {
+  REVENUE: '収益の部',
+  EXPENSE: '費用の部',
+};
+
+const plMockAmounts: Record<string, number> = {
+  '4001': 100000,
+  '5001': 40000,
+  '5002': 20000,
+};
+
+const plPrevAmounts: Record<string, number> = {
+  '4001': 80000,
+  '5001': 35000,
+  '5002': 18000,
+};
+
+const toPlEntry = (a: Account, hasComparative: boolean): PlEntry => {
+  const amount = plMockAmounts[a.accountCode] ?? 0;
+  const prev = plPrevAmounts[a.accountCode] ?? 0;
+  const diff = amount - prev;
+  return {
+    accountCode: a.accountCode,
+    accountName: a.accountName,
+    accountType: a.accountType,
+    amount,
+    comparative: hasComparative
+      ? { previousAmount: prev, difference: diff, changeRate: calcChangeRate(diff, prev) }
+      : null,
+  };
+};
+
+const toPlSection = (type: string, entries: PlEntry[], hasComparative: boolean): PlSection => {
+  const subtotal = entries.reduce((s, e) => s + e.amount, 0);
+  const prevSubtotal = entries.reduce((s, e) => s + (e.comparative?.previousAmount ?? 0), 0);
+  const subDiff = subtotal - prevSubtotal;
+  return {
+    sectionType: type,
+    sectionDisplayName: plSectionNames[type],
+    entries,
+    subtotal,
+    comparativeSubtotal: hasComparative
+      ? {
+          previousAmount: prevSubtotal,
+          difference: subDiff,
+          changeRate: calcChangeRate(subDiff, prevSubtotal),
+        }
+      : null,
+  };
+};
+
+const buildPlSections = (
+  hasComparative: boolean
+): { sections: PlSection[]; totalRevenue: number; totalExpense: number } => {
+  const plTypes = ['REVENUE', 'EXPENSE'];
+  const grouped: Record<string, PlEntry[]> = { REVENUE: [], EXPENSE: [] };
+  for (const a of mockAccounts.filter((ac) => plTypes.includes(ac.accountType))) {
+    grouped[a.accountType].push(toPlEntry(a, hasComparative));
+  }
+  const sections = plTypes.map((type) => toPlSection(type, grouped[type], hasComparative));
+  const totalRevenue = sections.find((s) => s.sectionType === 'REVENUE')?.subtotal ?? 0;
+  const totalExpense = sections.find((s) => s.sectionType === 'EXPENSE')?.subtotal ?? 0;
+  return { sections, totalRevenue, totalExpense };
+};
+
+export const profitAndLossHandlers = [
+  http.get('*/profit-and-loss/export', () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=profit-and-loss.xlsx',
+      },
+    });
+  }),
+  http.get('*/profit-and-loss', ({ request }) => {
+    const url = new URL(request.url);
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+    const comparativeDateFrom = url.searchParams.get('comparativeDateFrom');
+    const comparativeDateTo = url.searchParams.get('comparativeDateTo');
+    const hasComparative = !!(comparativeDateFrom || comparativeDateTo);
+
+    const { sections, totalRevenue, totalExpense } = buildPlSections(hasComparative);
+    const netIncome = totalRevenue - totalExpense;
+
+    return HttpResponse.json({
+      dateFrom,
+      dateTo,
+      comparativeDateFrom,
+      comparativeDateTo,
+      sections,
+      totalRevenue,
+      totalExpense,
+      netIncome,
+    });
+  }),
+];
+
+/**
  * すべてのハンドラー
  */
 export const handlers = [
@@ -1668,4 +1786,5 @@ export const handlers = [
   ...trialBalanceHandlers,
   ...monthlyBalanceHandlers,
   ...balanceSheetHandlers,
+  ...profitAndLossHandlers,
 ];
