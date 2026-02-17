@@ -109,6 +109,7 @@ const useJournalEntryListFetch = () => {
 
   const handleItemsPerPageChange = useCallback(
     (newSize: number) => {
+      setState((prev) => ({ ...prev, size: newSize, page: 0 }));
       void fetchEntries(buildSearchParams(0, newSize));
     },
     [fetchEntries, buildSearchParams]
