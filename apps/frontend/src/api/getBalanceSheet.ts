@@ -1,11 +1,8 @@
-import { AxiosError } from 'axios';
 import { axiosInstance } from './axios-instance';
+import { downloadExport, getStatementErrorMessage } from './statementShared';
+import type { ComparativeData } from './statementShared';
 
-export interface ComparativeData {
-  previousAmount: number;
-  difference: number;
-  changeRate: number;
-}
+export type { ComparativeData } from './statementShared';
 
 export interface BalanceSheetEntry {
   accountCode: string;
@@ -71,28 +68,9 @@ export const exportBalanceSheet = async (format: 'pdf' | 'excel', date?: string)
   if (date) {
     params.append('date', date);
   }
-  const url = `/api/balance-sheet/export?${params.toString()}`;
-  const response = await axiosInstance.get(url, { responseType: 'blob' });
-  const blob = new Blob([response.data as BlobPart]);
-  const downloadUrl = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = downloadUrl;
-  link.download = format === 'pdf' ? 'balance-sheet.pdf' : 'balance-sheet.xlsx';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(downloadUrl);
+  const filename = format === 'pdf' ? 'balance-sheet.pdf' : 'balance-sheet.xlsx';
+  await downloadExport(`/api/balance-sheet/export?${params.toString()}`, filename);
 };
 
-export const getBalanceSheetErrorMessage = (error: unknown): string => {
-  if (error instanceof AxiosError && error.response?.data) {
-    const data = error.response.data as { errorMessage?: string };
-    if (data.errorMessage) {
-      return data.errorMessage;
-    }
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return '貸借対照表の取得に失敗しました';
-};
+export const getBalanceSheetErrorMessage = (error: unknown): string =>
+  getStatementErrorMessage(error, '貸借対照表の取得に失敗しました');

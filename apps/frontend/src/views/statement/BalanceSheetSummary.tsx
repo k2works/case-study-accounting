@@ -1,5 +1,6 @@
 import React from 'react';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { safeCurrency } from './statementStyles';
+import { SummaryItem } from './SummaryItem';
 
 interface BalanceSheetSummaryProps {
   date: string | null;
@@ -11,20 +12,6 @@ interface BalanceSheetSummaryProps {
   balanced: boolean;
   difference: number;
 }
-
-const safeCurrency = (value: number | undefined | null): string => formatCurrency(value ?? 0);
-
-interface SummaryItemProps {
-  label: string;
-  value: React.ReactNode;
-}
-
-const SummaryItem: React.FC<SummaryItemProps> = ({ label, value }) => (
-  <div>
-    <div style={{ fontSize: '12px', color: '#666' }}>{label}</div>
-    <div style={{ fontSize: '18px', fontWeight: 600 }}>{value}</div>
-  </div>
-);
 
 export const BalanceSheetSummary: React.FC<BalanceSheetSummaryProps> = ({
   date,

@@ -1,5 +1,6 @@
 import React from 'react';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { safeCurrency } from './statementStyles';
+import { SummaryItem } from './SummaryItem';
 
 interface ProfitAndLossSummaryProps {
   dateFrom: string | null;
@@ -10,20 +11,6 @@ interface ProfitAndLossSummaryProps {
   totalExpense: number;
   netIncome: number;
 }
-
-const safeCurrency = (value: number | undefined | null): string => formatCurrency(value ?? 0);
-
-interface SummaryItemProps {
-  label: string;
-  value: React.ReactNode;
-}
-
-const SummaryItem: React.FC<SummaryItemProps> = ({ label, value }) => (
-  <div>
-    <div style={{ fontSize: '12px', color: '#666' }}>{label}</div>
-    <div style={{ fontSize: '18px', fontWeight: 600 }}>{value}</div>
-  </div>
-);
 
 const formatPeriod = (from: string | null, to: string | null): string => {
   if (from && to) return `${from} ~ ${to}`;
