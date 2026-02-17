@@ -97,6 +97,7 @@ nav:
           - イテレーション5: development/iteration_plan-5.md
           - イテレーション6: development/iteration_plan-6.md
           - イテレーション7: development/iteration_plan-7.md
+          - イテレーション8: development/iteration_plan-8.md
       - ふりかえり:
           - イテレーション1: development/retrospective-1.md
           - イテレーション2: development/retrospective-2.md
@@ -104,6 +105,7 @@ nav:
           - イテレーション4: development/retrospective-4.md
           - イテレーション5: development/retrospective-5.md
           - イテレーション6: development/retrospective-6.md
+          - イテレーション7: development/retrospective-7.md
   - 運用:
       - 開発環境解説: operation/dev_env.md
       - 開発コンテナ構築手順書: operation/dev_container.md
@@ -127,6 +129,7 @@ nav:
       - 分析・設計ガイド:
           - 要件定義ガイド: reference/要件定義ガイド.md
           - ユースケース作成ガイド: reference/ユースケース作成ガイド.md
+          - ビジネスアーキテクチャ分析ガイド: reference/ビジネスアーキテクチャ分析ガイド.md
           - ビジネスアーキテクチャ設計ガイド: reference/ビジネスアーキテクチャ設計ガイド.md
           - アーキテクチャ設計ガイド: reference/アーキテクチャ設計ガイド.md
           - データモデル設計ガイド: reference/データモデル設計ガイド.md
@@ -149,6 +152,7 @@ nav:
           - Codex CLI MCP アプリケーション開発フロー: reference/CodexCLIMCPアプリケーション開発フロー.md
   - テンプレート:
       - ADR: template/ADR.md
+      - ビジネスアーキテクチャ: template/ビジネスアーキテクチャ.md
       - イテレーション完了報告書: template/イテレーション完了報告書.md
       - イテレーション計画: template/イテレーション計画.md
       - インセプションデッキ: template/インセプションデッキ.md
