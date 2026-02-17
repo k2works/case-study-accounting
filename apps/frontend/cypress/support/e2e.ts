@@ -322,12 +322,21 @@ Cypress.Commands.add('checkButtonInFirstRow', (buttonText: string, shouldExist: 
   if (shouldExist) {
     cy.get('table tbody tr').first().contains('button', buttonText).should('be.visible');
   } else {
-    // 完全一致で検索（「承認」と「承認申請」を区別）
+    // 権限チェックによりボタンが0個の場合も考慮
     cy.get('table tbody tr')
       .first()
-      .find('button')
-      .contains(new RegExp(`^${buttonText}$`))
-      .should('not.exist');
+      .then(($row) => {
+        const buttons = $row.find('button');
+        if (buttons.length === 0) {
+          // ボタンが1つもない場合、対象ボタンも存在しない（テスト成功）
+          return;
+        }
+        // ボタンが存在する場合、完全一致で対象ボタンが無いことを確認
+        const matching = buttons.filter(
+          (_, el) => new RegExp(`^${buttonText}$`).test(el.textContent?.trim() ?? '')
+        );
+        expect(matching.length).to.equal(0);
+      });
   }
 });
 
