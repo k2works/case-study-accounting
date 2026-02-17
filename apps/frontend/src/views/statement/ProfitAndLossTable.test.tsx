@@ -198,4 +198,38 @@ describe('ProfitAndLossTable', () => {
 
     expect(screen.getByText('収益の部合計')).toBeInTheDocument();
   });
+
+  it('renders dash for null comparative entries when hasComparative is true', () => {
+    const sections: ProfitAndLossSection[] = [
+      {
+        sectionType: 'REVENUE',
+        sectionDisplayName: '収益の部',
+        entries: [
+          {
+            accountCode: '401',
+            accountName: '売上高',
+            accountType: 'REVENUE',
+            amount: 1000000,
+            comparative: null,
+          },
+        ],
+        subtotal: 1000000,
+        comparativeSubtotal: null,
+      },
+    ];
+
+    render(
+      <ProfitAndLossTable
+        sections={sections}
+        hasComparative={true}
+        netIncome={1000000}
+        comparativeNetIncome={null}
+      />
+    );
+
+    expect(screen.getByText('前期')).toBeInTheDocument();
+    expect(screen.getByText('増減')).toBeInTheDocument();
+    const dashes = screen.getAllByText('-');
+    expect(dashes.length).toBeGreaterThanOrEqual(4);
+  });
 });

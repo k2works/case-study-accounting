@@ -90,4 +90,36 @@ describe('ProfitAndLossSummary', () => {
     const netIncomeValue = screen.getByText('-200,000');
     expect(netIncomeValue).toHaveStyle({ color: '#dc2626' });
   });
+
+  it('shows period with dateFrom only', () => {
+    render(
+      <ProfitAndLossSummary
+        dateFrom="2024-01-01"
+        dateTo={null}
+        comparativeDateFrom={null}
+        comparativeDateTo={null}
+        totalRevenue={0}
+        totalExpense={0}
+        netIncome={0}
+      />
+    );
+
+    expect(screen.getByText(/2024-01-01 ~/)).toBeInTheDocument();
+  });
+
+  it('shows period with dateTo only', () => {
+    render(
+      <ProfitAndLossSummary
+        dateFrom={null}
+        dateTo="2024-12-31"
+        comparativeDateFrom={null}
+        comparativeDateTo={null}
+        totalRevenue={0}
+        totalExpense={0}
+        netIncome={0}
+      />
+    );
+
+    expect(screen.getByText(/~ 2024-12-31/)).toBeInTheDocument();
+  });
 });
