@@ -1,31 +1,22 @@
 package com.example.accounting.application.service;
 
 import com.example.accounting.application.port.out.GetBalanceSheetResult;
-import com.example.accounting.application.port.out.GetBalanceSheetResult.BalanceSheetEntry;
 import com.example.accounting.application.port.out.GetBalanceSheetResult.BalanceSheetSection;
 import com.lowagie.text.Document;
 import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import io.vavr.control.Try;
-import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-import java.awt.Color;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -34,10 +25,8 @@ import java.util.stream.Stream;
 
 @Service
 @SuppressWarnings("PMD.AvoidMutableCollectionInstantiation") // OpenPDF の Paragraph/Phrase は new 必須
-public class BalanceSheetExportService {
+public class BalanceSheetExportService extends AbstractStatementExportService {
 
-    private static final String FONT_PATH = "/fonts/NotoSansJP-Regular.ttf";
-    private static final Color HEADER_BG = new Color(240, 240, 240);
     private static final String[] EMPTY_ROW = {"", ""};
 
     public Try<byte[]> exportToExcel(GetBalanceSheetResult result) {
@@ -52,7 +41,8 @@ public class BalanceSheetExportService {
                 currentRow++;
 
                 for (BalanceSheetSection section : result.sections()) {
-                    currentRow = writeExcelSection(sheet, section, currentRow, headerStyle, currencyStyle);
+                    currentRow = writeExcelSection(sheet, toSectionData(section),
+                            currentRow, headerStyle, currencyStyle);
                     currentRow++;
                 }
 
@@ -94,6 +84,16 @@ public class BalanceSheetExportService {
         });
     }
 
+    private static SectionExcelData toSectionData(BalanceSheetSection section) {
+        return new SectionExcelData(
+                section.sectionDisplayName(),
+                section.entries().stream()
+                        .map(e -> new EntryExcelData(e.accountCode(), e.accountName(), e.amount()))
+                        .toList(),
+                section.subtotal()
+        );
+    }
+
     private int writeExcelTitle(Sheet sheet, GetBalanceSheetResult result, int startRow) {
         Row titleRow = sheet.createRow(startRow);
         titleRow.createCell(0).setCellValue("貸借対照表");
@@ -101,29 +101,6 @@ public class BalanceSheetExportService {
             titleRow.createCell(1).setCellValue("基準日: " + result.date());
         }
         return startRow + 1;
-    }
-
-    private int writeExcelSection(Sheet sheet, BalanceSheetSection section, int startRow,
-                                   CellStyle headerStyle, CellStyle currencyStyle) {
-        int currentRow = startRow;
-        Row sectionRow = sheet.createRow(currentRow++);
-        sectionRow.createCell(0).setCellValue(section.sectionDisplayName());
-        sectionRow.getCell(0).setCellStyle(headerStyle);
-
-        for (BalanceSheetEntry entry : section.entries()) {
-            Row entryRow = sheet.createRow(currentRow++);
-            entryRow.createCell(0).setCellValue("  " + entry.accountCode() + " " + entry.accountName());
-            entryRow.createCell(1).setCellValue(entry.amount().doubleValue());
-            entryRow.getCell(1).setCellStyle(currencyStyle);
-        }
-
-        Row subtotalRow = sheet.createRow(currentRow++);
-        subtotalRow.createCell(0).setCellValue(section.sectionDisplayName() + "合計");
-        subtotalRow.getCell(0).setCellStyle(headerStyle);
-        subtotalRow.createCell(1).setCellValue(section.subtotal().doubleValue());
-        subtotalRow.getCell(1).setCellStyle(currencyStyle);
-
-        return currentRow;
     }
 
     private void writeExcelTotals(Sheet sheet, GetBalanceSheetResult result, int startRow,
@@ -219,15 +196,6 @@ public class BalanceSheetExportService {
         addPdfCell(table, nf.format(result.totalLiabilitiesAndEquity()), font, true);
     }
 
-    private void addPdfCell(PdfPTable table, String text, Font font, boolean isHeader) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, font));
-        if (isHeader) {
-            cell.setBackgroundColor(HEADER_BG);
-        }
-        cell.setPadding(4);
-        table.addCell(cell);
-    }
-
     private BalanceSheetSection findSection(GetBalanceSheetResult result, String sectionType) {
         return result.sections().stream()
                 .filter(s -> s.sectionType().equals(sectionType))
@@ -244,36 +212,5 @@ public class BalanceSheetExportService {
             count += equitySection.entries().size() + 2;
         }
         return count;
-    }
-
-    private Font createJapaneseFont(int size, int style) {
-        try (InputStream fontStream = getClass().getResourceAsStream(FONT_PATH)) {
-            if (fontStream == null) {
-                return new Font(Font.HELVETICA, size, style);
-            }
-            byte[] fontBytes = fontStream.readAllBytes();
-            BaseFont baseFont = BaseFont.createFont(
-                    "NotoSansJP-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED,
-                    true, fontBytes, null);
-            return new Font(baseFont, size, style);
-        } catch (IOException | com.lowagie.text.DocumentException e) {
-            return new Font(Font.HELVETICA, size, style);
-        }
-    }
-
-    private CellStyle createHeaderStyle(Workbook workbook) {
-        CellStyle style = workbook.createCellStyle();
-        org.apache.poi.ss.usermodel.Font font = workbook.createFont();
-        font.setBold(true);
-        style.setFont(font);
-        style.setBorderBottom(BorderStyle.THIN);
-        return style;
-    }
-
-    private CellStyle createCurrencyStyle(Workbook workbook) {
-        CellStyle style = workbook.createCellStyle();
-        style.setDataFormat(workbook.createDataFormat().getFormat("#,##0"));
-        style.setAlignment(HorizontalAlignment.RIGHT);
-        return style;
     }
 }
