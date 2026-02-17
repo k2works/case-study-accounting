@@ -23,14 +23,16 @@ public class GetJournalEntriesService implements GetJournalEntriesUseCase {
     public GetJournalEntriesResult execute(GetJournalEntriesQuery query) {
         int offset = query.page() * query.size();
         long totalElements = journalEntryRepository.countByConditions(
-                query.statuses(), query.dateFrom(), query.dateTo());
+                query.statuses(), query.dateFrom(), query.dateTo())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         if (totalElements == 0) {
             return GetJournalEntriesResult.empty(query.page(), query.size());
         }
 
         List<JournalEntry> journalEntries =
                 journalEntryRepository.findByConditions(
-                        query.statuses(), query.dateFrom(), query.dateTo(), offset, query.size());
+                        query.statuses(), query.dateFrom(), query.dateTo(), offset, query.size())
+                        .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         List<JournalEntrySummary> summaries =
                 journalEntries.stream()
                         .map(

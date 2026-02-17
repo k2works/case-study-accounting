@@ -40,7 +40,8 @@ class MyBatisMonthlyAccountBalanceRepositoryTest {
                 .thenReturn(List.of(entity));
 
         List<MonthlyAccountBalanceEntity> result =
-                repository.findByAccountCodeAndFiscalPeriod("1100", 2024);
+                repository.findByAccountCodeAndFiscalPeriod("1100", 2024)
+                        .getOrElse(List.of());
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getAccountCode()).isEqualTo("1100");
@@ -53,7 +54,8 @@ class MyBatisMonthlyAccountBalanceRepositoryTest {
                 .thenReturn(List.of());
 
         List<MonthlyAccountBalanceEntity> result =
-                repository.findByAccountCodeAndFiscalPeriod("1100", null);
+                repository.findByAccountCodeAndFiscalPeriod("1100", null)
+                        .getOrElse(List.of());
 
         assertThat(result).isEmpty();
         verify(mapper).findByAccountCodeAndFiscalPeriod("1100", null);

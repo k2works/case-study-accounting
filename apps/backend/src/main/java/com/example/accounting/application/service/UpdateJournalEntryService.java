@@ -63,6 +63,7 @@ public class UpdateJournalEntryService implements UpdateJournalEntryUseCase {
 
     private IO<Either<String, JournalEntry>> findJournalEntryIO(Integer journalEntryId) {
         return IO.delay(() -> journalEntryRepository.findById(JournalEntryId.of(journalEntryId))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .<Either<String, JournalEntry>>map(Either::right)
                 .orElseGet(() -> Either.left("仕訳が見つかりません")));
     }
@@ -104,7 +105,9 @@ public class UpdateJournalEntryService implements UpdateJournalEntryUseCase {
         }
         try {
             AccountId accountId = AccountId.of(line.accountId());
-            if (accountRepository.findById(accountId).isEmpty()) {
+            if (accountRepository.findById(accountId)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
+                    .isEmpty()) {
                 return Either.left("勘定科目が存在しません");
             }
             return Either.right(accountId);
@@ -157,7 +160,8 @@ public class UpdateJournalEntryService implements UpdateJournalEntryUseCase {
     }
 
     private IO<JournalEntry> updateJournalEntryIO(JournalEntry journalEntry) {
-        return IO.delay(() -> journalEntryRepository.save(journalEntry));
+        return IO.delay(() -> journalEntryRepository.save(journalEntry)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 
     private UpdateJournalEntryResult updateJournalEntryResult(JournalEntry journalEntry) {

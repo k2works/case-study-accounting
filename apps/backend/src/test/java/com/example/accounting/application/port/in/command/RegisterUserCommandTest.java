@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("RegisterUserCommand")
 class RegisterUserCommandTest {
@@ -33,227 +32,195 @@ class RegisterUserCommandTest {
         }
 
         @Test
-        @DisplayName("username が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullUsername() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("username が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullUsername() {
+            assertThat(RegisterUserCommand.of(
                     null,
                     "test@example.com",
                     "password123",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
+            ).getLeft()).isEqualTo("ユーザー名は必須です");
         }
 
         @Test
-        @DisplayName("username が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyUsername() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("username が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyUsername() {
+            assertThat(RegisterUserCommand.of(
                     "",
                     "test@example.com",
                     "password123",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
+            ).getLeft()).isEqualTo("ユーザー名は必須です");
         }
 
         @Test
-        @DisplayName("username が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankUsername() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("username が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankUsername() {
+            assertThat(RegisterUserCommand.of(
                     "   ",
                     "test@example.com",
                     "password123",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
+            ).getLeft()).isEqualTo("ユーザー名は必須です");
         }
 
         @Test
-        @DisplayName("email が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullEmail() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("email が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullEmail() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     null,
                     "password123",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスは必須です");
+            ).getLeft()).isEqualTo("メールアドレスは必須です");
         }
 
         @Test
-        @DisplayName("email が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyEmail() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("email が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyEmail() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "",
                     "password123",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスは必須です");
+            ).getLeft()).isEqualTo("メールアドレスは必須です");
         }
 
         @Test
-        @DisplayName("email が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankEmail() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("email が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankEmail() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "   ",
                     "password123",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスは必須です");
+            ).getLeft()).isEqualTo("メールアドレスは必須です");
         }
 
         @Test
-        @DisplayName("password が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullPassword() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("password が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullPassword() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     null,
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
+            ).getLeft()).isEqualTo("パスワードは必須です");
         }
 
         @Test
-        @DisplayName("password が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyPassword() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("password が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyPassword() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
+            ).getLeft()).isEqualTo("パスワードは必須です");
         }
 
         @Test
-        @DisplayName("password が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankPassword() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("password が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankPassword() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "   ",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
+            ).getLeft()).isEqualTo("パスワードは必須です");
         }
 
         @Test
-        @DisplayName("password が 8 文字未満の場合は例外をスローする")
-        void shouldThrowExceptionForShortPassword() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("password が 8 文字未満の場合はバリデーションエラーになる")
+        void shouldReturnLeftForShortPassword() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "short",
                     "Test User",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは 8 文字以上で入力してください");
+            ).getLeft()).isEqualTo("パスワードは 8 文字以上で入力してください");
         }
 
         @Test
-        @DisplayName("displayName が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullDisplayName() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("displayName が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullDisplayName() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "password123",
                     null,
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("表示名は必須です");
+            ).getLeft()).isEqualTo("表示名は必須です");
         }
 
         @Test
-        @DisplayName("displayName が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyDisplayName() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("displayName が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyDisplayName() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "password123",
                     "",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("表示名は必須です");
+            ).getLeft()).isEqualTo("表示名は必須です");
         }
 
         @Test
-        @DisplayName("displayName が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankDisplayName() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("displayName が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankDisplayName() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "password123",
                     "   ",
                     "USER"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("表示名は必須です");
+            ).getLeft()).isEqualTo("表示名は必須です");
         }
 
         @Test
-        @DisplayName("role が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullRole() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("role が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullRole() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "password123",
                     "Test User",
                     null
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ロールは必須です");
+            ).getLeft()).isEqualTo("ロールは必須です");
         }
 
         @Test
-        @DisplayName("role が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyRole() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("role が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyRole() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "password123",
                     "Test User",
                     ""
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ロールは必須です");
+            ).getLeft()).isEqualTo("ロールは必須です");
         }
 
         @Test
-        @DisplayName("role が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankRole() {
-            assertThatThrownBy(() -> new RegisterUserCommand(
+        @DisplayName("role が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankRole() {
+            assertThat(RegisterUserCommand.of(
                     "testuser",
                     "test@example.com",
                     "password123",
                     "Test User",
                     "   "
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ロールは必須です");
+            ).getLeft()).isEqualTo("ロールは必須です");
         }
     }
 }

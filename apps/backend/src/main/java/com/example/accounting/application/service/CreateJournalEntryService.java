@@ -78,7 +78,9 @@ public class CreateJournalEntryService implements CreateJournalEntryUseCase {
         }
         try {
             AccountId accountId = AccountId.of(line.accountId());
-            if (accountRepository.findById(accountId).isEmpty()) {
+            if (accountRepository.findById(accountId)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
+                    .isEmpty()) {
                 return Either.left("勘定科目が存在しません");
             }
             return Either.right(accountId);
@@ -134,7 +136,8 @@ public class CreateJournalEntryService implements CreateJournalEntryUseCase {
     }
 
     private IO<JournalEntry> createJournalEntryIO(JournalEntry journalEntry) {
-        return IO.delay(() -> journalEntryRepository.save(journalEntry));
+        return IO.delay(() -> journalEntryRepository.save(journalEntry)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 
     private CreateJournalEntryResult createJournalEntryResult(JournalEntry journalEntry) {

@@ -64,11 +64,13 @@ describe('US-JNL-010: 仕訳確定', () => {
       cy.filterJournalEntriesByStatus('CONFIRMED');
     });
 
-    it('確定済み仕訳の削除ボタンが無効化されている', () => {
+    it('確定済み仕訳には操作ボタンが表示されない', () => {
       cy.get('table tbody tr')
         .first()
-        .contains('button', '削除')
-        .should('be.disabled');
+        .then(($row) => {
+          // 確定済みステータスでは編集・削除・ワークフローボタンがすべて非表示
+          expect($row.find('button').length).to.equal(0);
+        });
     });
   });
 
@@ -112,11 +114,11 @@ describe('US-JNL-010: 仕訳確定', () => {
       cy.checkButtonInFirstRow('確定', true);
     });
 
-    it('一般ユーザーにも確定ボタンが表示される（権限チェックはバックエンドで実施）', () => {
+    it('一般ユーザーには確定ボタンが表示されない（フロントエンド権限チェック）', () => {
       cy.loginAndVisitJournalList('user', 'Password123!');
       cy.filterJournalEntriesByStatus('APPROVED');
-      // フロントエンドではボタンを表示し、バックエンドの @PreAuthorize で権限制御
-      cy.checkButtonInFirstRow('確定', true);
+      // COMMON-24: フロントエンドで canApprove = hasRole('MANAGER') により制御
+      cy.checkButtonInFirstRow('確定', false);
     });
   });
 });

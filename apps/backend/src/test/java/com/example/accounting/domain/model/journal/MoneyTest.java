@@ -23,23 +23,31 @@ class MoneyTest {
 
             assertThat(money.value()).isEqualByComparingTo("1000");
         }
+    }
+
+    @Nested
+    @DisplayName("validated")
+    class Validated {
 
         @Test
-        @DisplayName("null の場合は例外をスローする")
-        void shouldThrowExceptionForNull() {
-            assertThatThrownBy(() -> Money.of(null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("金額は必須です");
+        @DisplayName("null の場合はエラーメッセージを返す")
+        void shouldReturnLeftForNull() {
+            assertThat(Money.validated(null).getLeft()).isEqualTo("金額は必須です");
         }
 
         @Test
-        @DisplayName("負の金額の場合は例外をスローする")
-        void shouldThrowExceptionForNegativeValue() {
-            BigDecimal negativeValue = new BigDecimal("-1");
+        @DisplayName("負の金額の場合はエラーメッセージを返す")
+        void shouldReturnLeftForNegativeValue() {
+            assertThat(Money.validated(new BigDecimal("-1")).getLeft())
+                    .isEqualTo("金額は 0 以上である必要があります");
+        }
 
-            assertThatThrownBy(() -> Money.of(negativeValue))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("金額は 0 以上");
+        @Test
+        @DisplayName("0 以上の金額で Right を返す")
+        void shouldReturnRightForValidValue() {
+            assertThat(Money.validated(new BigDecimal("1000")).isRight()).isTrue();
+            assertThat(Money.validated(new BigDecimal("1000")).get().value())
+                    .isEqualByComparingTo("1000");
         }
     }
 
@@ -64,34 +72,32 @@ class MoneyTest {
     }
 
     @Test
-    @DisplayName("add に null を渡すと例外をスローする")
-    void shouldThrowExceptionWhenAddNull() {
+    @DisplayName("add に null を渡すと NullPointerException をスローする")
+    void shouldThrowNpeWhenAddNull() {
         Money base = Money.of(new BigDecimal("100"));
 
         assertThatThrownBy(() -> base.add(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("加算対象の金額は必須");
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    @DisplayName("subtract に null を渡すと例外をスローする")
-    void shouldThrowExceptionWhenSubtractNull() {
+    @DisplayName("subtract に null を渡すと NullPointerException をスローする")
+    void shouldThrowNpeWhenSubtractNull() {
         Money base = Money.of(new BigDecimal("100"));
 
         assertThatThrownBy(() -> base.subtract(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("減算対象の金額は必須");
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    @DisplayName("減算結果が負になる場合は例外をスローする")
-    void shouldThrowExceptionWhenSubtractBecomesNegative() {
+    @DisplayName("減算結果が負になる場合でも計算される")
+    void shouldAllowNegativeSubtractionResult() {
         Money base = Money.of(new BigDecimal("100"));
         Money subtrahend = Money.of(new BigDecimal("200"));
 
-        assertThatThrownBy(() -> base.subtract(subtrahend))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("金額は 0 以上");
+        Money result = base.subtract(subtrahend);
+
+        assertThat(result.value()).isEqualByComparingTo("-100");
     }
 
     @Test

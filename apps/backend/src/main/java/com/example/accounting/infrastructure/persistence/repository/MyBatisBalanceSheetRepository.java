@@ -1,0 +1,23 @@
+package com.example.accounting.infrastructure.persistence.repository;
+
+import com.example.accounting.application.port.out.BalanceSheetRepository;
+import com.example.accounting.infrastructure.persistence.entity.BalanceSheetEntity;
+import com.example.accounting.infrastructure.persistence.mapper.BalanceSheetMapper;
+import io.vavr.control.Try;
+import org.springframework.stereotype.Repository;
+import java.time.LocalDate;
+import java.util.List;
+
+@Repository
+public class MyBatisBalanceSheetRepository implements BalanceSheetRepository {
+    private final BalanceSheetMapper balanceSheetMapper;
+
+    public MyBatisBalanceSheetRepository(BalanceSheetMapper balanceSheetMapper) {
+        this.balanceSheetMapper = balanceSheetMapper;
+    }
+
+    @Override
+    public Try<List<BalanceSheetEntity>> findBalanceSheet(LocalDate date) {
+        return Try.of(() -> balanceSheetMapper.findBalanceSheet(date));
+    }
+}

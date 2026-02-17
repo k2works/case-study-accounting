@@ -109,6 +109,7 @@ const useJournalEntryListFetch = () => {
 
   const handleItemsPerPageChange = useCallback(
     (newSize: number) => {
+      setState((prev) => ({ ...prev, size: newSize, page: 0 }));
       void fetchEntries(buildSearchParams(0, newSize));
     },
     [fetchEntries, buildSearchParams]
@@ -130,6 +131,51 @@ const useJournalEntryListFetch = () => {
   };
 };
 
+interface JournalEntryListBodyProps {
+  state: JournalEntryListState;
+  fetchEntries: (params?: SearchJournalEntriesParams) => Promise<void>;
+  filterValues: JournalEntryFilterValues;
+  onFilterChange: (values: JournalEntryFilterValues) => void;
+  onSearch: () => void;
+  onReset: () => void;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (size: number) => void;
+  shouldShowList: boolean;
+}
+
+const JournalEntryListBody: React.FC<JournalEntryListBodyProps> = ({
+  state,
+  fetchEntries,
+  filterValues,
+  onFilterChange,
+  onSearch,
+  onReset,
+  onPageChange,
+  onItemsPerPageChange,
+  shouldShowList,
+}) => {
+  if (state.errorMessage) {
+    return <ErrorMessage message={state.errorMessage} onRetry={() => void fetchEntries()} />;
+  }
+  if (!shouldShowList) return null;
+  return (
+    <JournalEntryList
+      entries={state.entries}
+      filterValues={filterValues}
+      onFilterChange={onFilterChange}
+      onSearch={onSearch}
+      onReset={onReset}
+      onDelete={onSearch}
+      currentPage={state.page + 1}
+      totalPages={state.totalPages}
+      totalItems={state.totalElements}
+      itemsPerPage={state.size}
+      onPageChange={onPageChange}
+      onItemsPerPageChange={onItemsPerPageChange}
+    />
+  );
+};
+
 interface JournalEntryListContentProps {
   state: JournalEntryListState;
   fetchEntries: (params?: SearchJournalEntriesParams) => Promise<void>;
@@ -142,6 +188,7 @@ interface JournalEntryListContentProps {
   successMessage: string | null;
   onDismissSuccess: () => void;
   onCreateNew: () => void;
+  canCreate: boolean;
 }
 
 const JournalEntryListContent: React.FC<JournalEntryListContentProps> = ({
@@ -156,8 +203,11 @@ const JournalEntryListContent: React.FC<JournalEntryListContentProps> = ({
   successMessage,
   onDismissSuccess,
   onCreateNew,
+  canCreate,
 }) => {
-  const shouldShowList = state.entries.length > 0 || !state.isLoading;
+  const shouldShowList = !state.isLoading || state.entries.length > 0;
+  const showInitialLoading = state.isLoading && state.entries.length === 0;
+  const hasSuccess = Boolean(successMessage);
 
   return (
     <div data-testid="journal-entry-list-page">
@@ -170,36 +220,29 @@ const JournalEntryListContent: React.FC<JournalEntryListContentProps> = ({
         }}
       >
         <h1>仕訳一覧</h1>
-        <Button variant="primary" onClick={onCreateNew}>
-          新規作成
-        </Button>
+        {canCreate && (
+          <Button variant="primary" onClick={onCreateNew}>
+            新規作成
+          </Button>
+        )}
       </div>
-      {successMessage && (
+      {hasSuccess && (
         <div style={{ marginBottom: '16px' }}>
-          <SuccessNotification message={successMessage} onDismiss={onDismissSuccess} />
+          <SuccessNotification message={successMessage!} onDismiss={onDismissSuccess} />
         </div>
       )}
-      {state.isLoading && state.entries.length === 0 && <Loading message="仕訳を読み込み中..." />}
-      {state.errorMessage ? (
-        <ErrorMessage message={state.errorMessage} onRetry={() => void fetchEntries()} />
-      ) : (
-        shouldShowList && (
-          <JournalEntryList
-            entries={state.entries}
-            filterValues={filterValues}
-            onFilterChange={onFilterChange}
-            onSearch={onSearch}
-            onReset={onReset}
-            onDelete={onSearch}
-            currentPage={state.page + 1}
-            totalPages={state.totalPages}
-            totalItems={state.totalElements}
-            itemsPerPage={state.size}
-            onPageChange={onPageChange}
-            onItemsPerPageChange={onItemsPerPageChange}
-          />
-        )
-      )}
+      {showInitialLoading && <Loading message="仕訳を読み込み中..." />}
+      <JournalEntryListBody
+        state={state}
+        fetchEntries={fetchEntries}
+        filterValues={filterValues}
+        onFilterChange={onFilterChange}
+        onSearch={onSearch}
+        onReset={onReset}
+        onPageChange={onPageChange}
+        onItemsPerPageChange={onItemsPerPageChange}
+        shouldShowList={shouldShowList}
+      />
     </div>
   );
 };
@@ -239,7 +282,8 @@ const JournalEntryListPage: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!hasRole('ADMIN') && !hasRole('MANAGER') && !hasRole('USER')) {
+  const canAccessPage = hasRole('ADMIN') || hasRole('MANAGER') || hasRole('USER');
+  if (!canAccessPage) {
     return <Navigate to="/" replace />;
   }
 
@@ -257,6 +301,7 @@ const JournalEntryListPage: React.FC = () => {
         successMessage={successMessage}
         onDismissSuccess={() => setSuccessMessage(null)}
         onCreateNew={() => navigate('/journal/entries/new')}
+        canCreate={hasRole('USER')}
       />
     </MainLayout>
   );

@@ -41,12 +41,14 @@ public class GetJournalEntryService implements GetJournalEntryUseCase {
             return Optional.empty();
         }
         return journalEntryRepository.findById(JournalEntryId.of(id))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .map(entry -> toDetailResult(entry, loadAccountMap(entry.getLines())));
     }
 
     @Override
     public List<JournalEntryDetailResult> findAll() {
-        List<JournalEntry> entries = journalEntryRepository.findAll();
+        List<JournalEntry> entries = journalEntryRepository.findAll()
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         Map<AccountId, Account> accountMap = loadAccountMap(
                 entries.stream()
                         .flatMap(entry -> entry.getLines().stream())
@@ -63,6 +65,7 @@ public class GetJournalEntryService implements GetJournalEntryUseCase {
                 .collect(Collectors.toSet());
         return accountIds.stream()
                 .map(id -> accountRepository.findById(id)
+                        .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                         .map(account -> Map.entry(id, account)))
                 .flatMap(Optional::stream)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

@@ -14,7 +14,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -26,7 +25,6 @@ import java.util.Map;
 public class HealthController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HealthController.class);
-    private static final String STATUS_KEY = "status";
     private static final String STATUS_UP = "UP";
     private static final String STATUS_DOWN = "DOWN";
     private final DataSource dataSource;
@@ -35,31 +33,35 @@ public class HealthController {
         this.dataSource = dataSource;
     }
 
+    record HealthResponse(String status, String timestamp, Map<String, Object> database) {}
+
     @Operation(
             summary = "ヘルスチェック",
             description = "アプリケーションとデータベースの稼働状態を返します"
     )
     @ApiResponse(responseCode = "200", description = "システム稼働状態")
     @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> health() {
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put(STATUS_KEY, STATUS_UP);
-        response.put("timestamp", Instant.now().toString());
+    public ResponseEntity<HealthResponse> health() {
+        Map<String, Object> databaseStatus = checkDatabase();
 
-        try (Connection connection = dataSource.getConnection()) {
-            response.put("database", Map.of(
-                    STATUS_KEY, STATUS_UP,
-                    "product", connection.getMetaData().getDatabaseProductName(),
-                    "version", connection.getMetaData().getDatabaseProductVersion()
-            ));
-        } catch (SQLException e) {
-            LOGGER.warn("Database health check failed", e);
-            response.put("database", Map.of(
-                    STATUS_KEY, STATUS_DOWN,
-                    "error", e.getMessage()
-            ));
-        }
+        var response = new HealthResponse(STATUS_UP, Instant.now().toString(), databaseStatus);
 
         return ResponseEntity.ok(response);
+    }
+
+    private Map<String, Object> checkDatabase() {
+        try (Connection connection = dataSource.getConnection()) {
+            return Map.of(
+                    "status", STATUS_UP,
+                    "product", connection.getMetaData().getDatabaseProductName(),
+                    "version", connection.getMetaData().getDatabaseProductVersion()
+            );
+        } catch (SQLException e) {
+            LOGGER.warn("Database health check failed", e);
+            return Map.of(
+                    "status", STATUS_DOWN,
+                    "error", e.getMessage()
+            );
+        }
     }
 }

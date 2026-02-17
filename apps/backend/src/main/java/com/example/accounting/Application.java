@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@SuppressWarnings({"PMD.AvoidThrowStatement", "PMD.AvoidCheckedExceptionDeclaration"})
 public class Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
@@ -218,6 +219,7 @@ public class Application {
     /**
      * コンテナがヘルシーになるまで待機
      */
+    @SuppressWarnings("PMD.AvoidTraditionalForLoop")
     private static void waitForContainerHealthy() throws IOException, InterruptedException {
         LOGGER.info("DB コンテナのヘルスチェックを待機中...");
 

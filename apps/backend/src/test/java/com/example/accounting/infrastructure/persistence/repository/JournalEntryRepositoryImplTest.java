@@ -66,7 +66,8 @@ class JournalEntryRepositoryImplTest {
                     .thenReturn(Optional.of(existingEntity), Optional.of(savedEntity));
             when(journalEntryMapper.update(any())).thenReturn(1);
 
-            JournalEntry result = repository.save(journalEntry.withDescription("更新後"));
+            JournalEntry result = repository.save(journalEntry.withDescription("更新後"))
+                    .getOrElse((JournalEntry) null);
 
             assertThat(result.getId()).isEqualTo(JournalEntryId.of(10));
             assertThat(result.getDescription()).isEqualTo("更新後");
@@ -83,7 +84,8 @@ class JournalEntryRepositoryImplTest {
             when(journalEntryMapper.findById(20)).thenReturn(Optional.of(existingEntity));
             when(journalEntryMapper.update(any())).thenReturn(0);
 
-            assertThrows(OptimisticLockException.class, () -> repository.save(journalEntry));
+            assertThrows(OptimisticLockException.class, () -> repository.save(journalEntry)
+                    .getOrElseThrow(ex -> (RuntimeException) ex));
             verify(journalEntryMapper, never()).deleteLines(20);
         }
 
@@ -100,7 +102,8 @@ class JournalEntryRepositoryImplTest {
             }).when(journalEntryMapper).insert(any());
             when(journalEntryMapper.findById(100)).thenReturn(Optional.of(savedEntity));
 
-            JournalEntry result = repository.save(journalEntry);
+            JournalEntry result = repository.save(journalEntry)
+                    .getOrElse((JournalEntry) null);
 
             assertThat(result.getId()).isEqualTo(JournalEntryId.of(100));
             verify(journalEntryMapper, never()).insertLines(any());
@@ -129,7 +132,8 @@ class JournalEntryRepositoryImplTest {
         when(journalEntryMapper.findPostedLinesByAccountAndPeriod(1, null, null, 0, 10))
                 .thenReturn(List.of(headerOnly, lineSpecific));
 
-        List<GeneralLedgerEntry> result = repository.findPostedLinesByAccountAndPeriod(1, null, null, 0, 10);
+        List<GeneralLedgerEntry> result = repository.findPostedLinesByAccountAndPeriod(1, null, null, 0, 10)
+                .getOrElse(List.of());
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).description()).isEqualTo("ヘッダ摘要");
@@ -150,7 +154,8 @@ class JournalEntryRepositoryImplTest {
         when(journalEntryMapper.findPostedLinesByAccountAndPeriod(1, null, null, 0, 10))
                 .thenReturn(List.of(entity));
 
-        List<GeneralLedgerEntry> result = repository.findPostedLinesByAccountAndPeriod(1, null, null, 0, 10);
+        List<GeneralLedgerEntry> result = repository.findPostedLinesByAccountAndPeriod(1, null, null, 0, 10)
+                .getOrElse(List.of());
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).description()).isEqualTo("ヘッダ摘要3");
@@ -168,7 +173,8 @@ class JournalEntryRepositoryImplTest {
         when(journalEntryMapper.findDailyBalanceByAccountAndPeriod(1, null, null))
                 .thenReturn(List.of(entity));
 
-        List<DailyBalanceEntry> result = repository.findDailyBalanceByAccountAndPeriod(1, null, null);
+        List<DailyBalanceEntry> result = repository.findDailyBalanceByAccountAndPeriod(1, null, null)
+                .getOrElse(List.of());
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).transactionCount()).isEqualTo(0L);
@@ -186,7 +192,8 @@ class JournalEntryRepositoryImplTest {
         when(journalEntryMapper.findDailyBalanceByAccountAndPeriod(1, null, null))
                 .thenReturn(List.of(entity));
 
-        List<DailyBalanceEntry> result = repository.findDailyBalanceByAccountAndPeriod(1, null, null);
+        List<DailyBalanceEntry> result = repository.findDailyBalanceByAccountAndPeriod(1, null, null)
+                .getOrElse(List.of());
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).transactionCount()).isEqualTo(5L);

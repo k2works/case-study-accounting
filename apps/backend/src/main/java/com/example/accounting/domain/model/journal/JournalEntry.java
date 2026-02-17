@@ -9,10 +9,10 @@ import lombok.With;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * 仕訳エンティティ
@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 @With
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@SuppressWarnings("PMD.TooManyFields") // 仕訳エンティティはワークフロー状態を含むため多フィールド
+@SuppressWarnings({"PMD.TooManyFields", "PMD.AvoidThrowStatement"}) // 仕訳エンティティはワークフロー状態を含むため多フィールド
 public class JournalEntry {
 
     JournalEntryId id;
@@ -286,9 +286,9 @@ public class JournalEntry {
         if (line == null) {
             throw new IllegalArgumentException("明細行は必須です");
         }
-        List<JournalEntryLine> updatedLines = new ArrayList<>(lines);
-        updatedLines.add(line);
-        return this.withLines(List.copyOf(updatedLines));
+        return this.withLines(
+                Stream.concat(lines.stream(), Stream.of(line)).toList()
+        );
     }
 
     /**

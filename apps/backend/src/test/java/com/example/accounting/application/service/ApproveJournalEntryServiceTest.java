@@ -10,6 +10,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -59,9 +60,9 @@ class ApproveJournalEntryServiceTest {
             JournalEntry existingEntry = pendingEntry();
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
             when(journalEntryRepository.save(any(JournalEntry.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(0));
+                    .thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             ApproveJournalEntryResult result = approveJournalEntryService.execute(command);
 
@@ -93,7 +94,7 @@ class ApproveJournalEntryServiceTest {
             ApproveJournalEntryCommand command = new ApproveJournalEntryCommand(99, "approver-1");
 
             when(journalEntryRepository.findById(JournalEntryId.of(99)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             ApproveJournalEntryResult result = approveJournalEntryService.execute(command);
 
@@ -133,7 +134,7 @@ class ApproveJournalEntryServiceTest {
             );
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
 
             ApproveJournalEntryResult result = approveJournalEntryService.execute(command);
 
@@ -173,7 +174,7 @@ class ApproveJournalEntryServiceTest {
             );
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
 
             ApproveJournalEntryResult result = approveJournalEntryService.execute(command);
 

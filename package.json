@@ -50,7 +50,7 @@
   "homepage": "https://github.com/k2works/{project_name}#readme",
   "type": "module",
   "dependencies": {
-    "@k2works/claude-code-booster": "^1.2.0",
+    "@k2works/claude-code-booster": "^1.3.0",
     "gulp": "^5.0.0"
   },
   "devDependencies": {

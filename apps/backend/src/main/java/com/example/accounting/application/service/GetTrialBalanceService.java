@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,7 +27,8 @@ public class GetTrialBalanceService implements GetTrialBalanceUseCase {
 
     @Override
     public GetTrialBalanceResult execute(GetTrialBalanceQuery query) {
-        List<TrialBalanceEntity> entities = trialBalanceRepository.findTrialBalance(query.date());
+        List<TrialBalanceEntity> entities = trialBalanceRepository.findTrialBalance(query.date())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         List<TrialBalanceEntry> entries = entities.stream()
                 .map(this::toEntry)
@@ -106,23 +106,23 @@ public class GetTrialBalanceService implements GetTrialBalanceUseCase {
         Map<String, List<TrialBalanceEntry>> grouped = entries.stream()
                 .collect(Collectors.groupingBy(TrialBalanceEntry::accountType));
 
-        List<CategorySubtotal> subtotals = new ArrayList<>();
-        for (String type : orderedTypes) {
-            List<TrialBalanceEntry> group = grouped.getOrDefault(type, List.of());
-            BigDecimal debitSubtotal = group.stream()
-                    .map(TrialBalanceEntry::debitBalance)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal creditSubtotal = group.stream()
-                    .map(TrialBalanceEntry::creditBalance)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            subtotals.add(new CategorySubtotal(
-                    type,
-                    displayNames.getOrDefault(type, type),
-                    debitSubtotal,
-                    creditSubtotal
-            ));
-        }
-        return subtotals;
+        return orderedTypes.stream()
+                .map(type -> {
+                    List<TrialBalanceEntry> group = grouped.getOrDefault(type, List.of());
+                    BigDecimal debitSubtotal = group.stream()
+                            .map(TrialBalanceEntry::debitBalance)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal creditSubtotal = group.stream()
+                            .map(TrialBalanceEntry::creditBalance)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    return new CategorySubtotal(
+                            type,
+                            displayNames.getOrDefault(type, type),
+                            debitSubtotal,
+                            creditSubtotal
+                    );
+                })
+                .toList();
     }
 
     private BigDecimal defaultAmount(BigDecimal amount) {

@@ -9,6 +9,7 @@ import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,7 +52,7 @@ class GetUsersServiceTest {
         void shouldGetAllUsersWhenNoFilter() {
             // Given
             User user = buildUser("user-1", "user1", "user1@example.com", "User One", Role.USER);
-            when(userRepository.findAll()).thenReturn(List.of(user));
+            when(userRepository.findAll()).thenReturn(Try.success(List.of(user)));
 
             // When
             List<UserSummary> summaries = getUsersService.execute(GetUsersQuery.all());
@@ -73,7 +74,7 @@ class GetUsersServiceTest {
         void shouldSearchUsersWhenFilterExists() {
             // Given
             User user = buildUser("user-2", "manager", "manager@example.com", "Manager", Role.MANAGER);
-            when(userRepository.search("MANAGER", "man")).thenReturn(List.of(user));
+            when(userRepository.search("MANAGER", "man")).thenReturn(Try.success(List.of(user)));
 
             // When
             List<UserSummary> summaries = getUsersService.execute(new GetUsersQuery("MANAGER", "man"));

@@ -47,6 +47,7 @@ public class UpdateUserService implements UpdateUserUseCase {
 
     private IO<Either<String, User>> findUserIO(String userId) {
         return IO.delay(() -> userRepository.findById(UserId.of(userId))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .<Either<String, User>>map(Either::right)
                 .orElseGet(() -> Either.left("ユーザーが見つかりません")));
     }
@@ -72,7 +73,8 @@ public class UpdateUserService implements UpdateUserUseCase {
     }
 
     private IO<User> updateUserIO(User user) {
-        return IO.delay(() -> userRepository.save(user));
+        return IO.delay(() -> userRepository.save(user)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 
     private UpdateUserResult updateUserResult(User user) {

@@ -27,6 +27,7 @@ public class ConfirmJournalEntryService implements ConfirmJournalEntryUseCase {
         try {
             JournalEntry journalEntry = journalEntryRepository
                     .findById(new JournalEntryId(command.journalEntryId()))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                     .orElse(null);
 
             if (journalEntry == null) {
@@ -34,7 +35,8 @@ public class ConfirmJournalEntryService implements ConfirmJournalEntryUseCase {
             }
 
             JournalEntry updated = journalEntry.confirm(UserId.of(command.confirmerId()), LocalDateTime.now());
-            journalEntryRepository.save(updated);
+            journalEntryRepository.save(updated)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             return ConfirmJournalEntryResult.success(
                     updated.getId().value(),

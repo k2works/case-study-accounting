@@ -1,5 +1,7 @@
 package com.example.accounting.domain.model.journal;
 
+import io.vavr.control.Either;
+
 import java.util.UUID;
 
 /**
@@ -8,12 +10,6 @@ import java.util.UUID;
  * <p>UUID を利用して一意な Integer 値を生成する。</p>
  */
 public record JournalEntryId(Integer value) {
-
-    public JournalEntryId {
-        if (value == null) {
-            throw new IllegalArgumentException("仕訳 ID は必須です");
-        }
-    }
 
     /**
      * 新しい仕訳 ID を生成する
@@ -32,5 +28,18 @@ public record JournalEntryId(Integer value) {
      */
     public static JournalEntryId of(Integer value) {
         return new JournalEntryId(value);
+    }
+
+    /**
+     * バリデーション付きファクトリメソッド
+     *
+     * @param value 仕訳 ID
+     * @return Either（左: エラーメッセージ、右: JournalEntryId インスタンス）
+     */
+    public static Either<String, JournalEntryId> validated(Integer value) {
+        if (value == null) {
+            return Either.left("仕訳 ID は必須です");
+        }
+        return Either.right(new JournalEntryId(value));
     }
 }

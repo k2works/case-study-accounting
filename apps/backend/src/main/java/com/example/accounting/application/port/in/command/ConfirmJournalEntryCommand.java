@@ -1,12 +1,16 @@
 package com.example.accounting.application.port.in.command;
 
+import io.vavr.control.Either;
+
 public record ConfirmJournalEntryCommand(Integer journalEntryId, String confirmerId) {
-    public ConfirmJournalEntryCommand {
+
+    public static Either<String, ConfirmJournalEntryCommand> of(Integer journalEntryId, String confirmerId) {
         if (journalEntryId == null) {
-            throw new IllegalArgumentException("仕訳IDは必須です");
+            return Either.left("仕訳IDは必須です");
         }
         if (confirmerId == null || confirmerId.isBlank()) {
-            throw new IllegalArgumentException("確定者IDは必須です");
+            return Either.left("確定者IDは必須です");
         }
+        return Either.right(new ConfirmJournalEntryCommand(journalEntryId, confirmerId));
     }
 }

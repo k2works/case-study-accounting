@@ -20,7 +20,7 @@ import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
 import com.example.accounting.infrastructure.web.dto.DeleteAccountResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateAccountResponse;
-import com.example.accounting.infrastructure.web.exception.BusinessException;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -245,7 +244,7 @@ class AccountControllerTest {
                     "買掛金",
                     AccountType.LIABILITY
             );
-            when(accountRepository.findAll()).thenReturn(List.of(account1, account2));
+            when(accountRepository.findAll()).thenReturn(Try.success(List.of(account1, account2)));
 
             // When
             ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, null);
@@ -264,7 +263,7 @@ class AccountControllerTest {
         @DisplayName("勘定科目がない場合は空リストを返す")
         void shouldReturnEmptyListWhenNoAccounts() {
             // Given
-            when(accountRepository.findAll()).thenReturn(List.of());
+            when(accountRepository.findAll()).thenReturn(Try.success(List.of()));
 
             // When
             ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, null);
@@ -290,7 +289,7 @@ class AccountControllerTest {
                     "現金",
                     AccountType.ASSET
             );
-            when(accountRepository.findById(AccountId.of(1))).thenReturn(Optional.of(account));
+            when(accountRepository.findById(AccountId.of(1))).thenReturn(Try.success(Optional.of(account)));
 
             // When
             ResponseEntity<AccountResponse> response = accountController.findById(1);
@@ -308,7 +307,7 @@ class AccountControllerTest {
         @DisplayName("存在しないIDの場合は404を返す")
         void shouldReturn404WhenAccountNotFound() {
             // Given
-            when(accountRepository.findById(AccountId.of(999))).thenReturn(Optional.empty());
+            when(accountRepository.findById(AccountId.of(999))).thenReturn(Try.success(Optional.empty()));
 
             // When
             ResponseEntity<AccountResponse> response = accountController.findById(999);
@@ -384,7 +383,7 @@ class AccountControllerTest {
             Account account = Account.reconstruct(
                     AccountId.of(1), AccountCode.of("1100"), "現金", AccountType.ASSET);
             when(accountRepository.search(eq(AccountType.ASSET), eq(null)))
-                    .thenReturn(List.of(account));
+                    .thenReturn(Try.success(List.of(account)));
 
             ResponseEntity<List<AccountResponse>> response = accountController.findAll("ASSET", null);
 
@@ -398,7 +397,7 @@ class AccountControllerTest {
             Account account = Account.reconstruct(
                     AccountId.of(1), AccountCode.of("1100"), "現金", AccountType.ASSET);
             when(accountRepository.search(eq(null), eq("現金")))
-                    .thenReturn(List.of(account));
+                    .thenReturn(Try.success(List.of(account)));
 
             ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, "現金");
 
@@ -409,7 +408,7 @@ class AccountControllerTest {
         @Test
         @DisplayName("空文字のタイプは無視される")
         void shouldIgnoreBlankType() {
-            when(accountRepository.findAll()).thenReturn(List.of());
+            when(accountRepository.findAll()).thenReturn(Try.success(List.of()));
 
             ResponseEntity<List<AccountResponse>> response = accountController.findAll("  ", null);
 
@@ -419,7 +418,7 @@ class AccountControllerTest {
         @Test
         @DisplayName("空文字のキーワードは無視される")
         void shouldIgnoreBlankKeyword() {
-            when(accountRepository.findAll()).thenReturn(List.of());
+            when(accountRepository.findAll()).thenReturn(Try.success(List.of()));
 
             ResponseEntity<List<AccountResponse>> response = accountController.findAll(null, "  ");
 
@@ -427,10 +426,18 @@ class AccountControllerTest {
         }
 
         @Test
-        @DisplayName("不正なタイプの場合はBusinessExceptionをスローする")
-        void shouldThrowBusinessExceptionForInvalidType() {
-            assertThatThrownBy(() -> accountController.findAll("INVALID", null))
-                    .isInstanceOf(BusinessException.class);
+        @DisplayName("不正なタイプの場合はフィルタなしで全件取得する")
+        void shouldReturnAllAccountsForInvalidType() {
+            // Given - parseAccountType returns Optional.empty() for invalid type
+            when(accountRepository.findAll()).thenReturn(Try.success(List.of()));
+
+            // When
+            ResponseEntity<List<AccountResponse>> response = accountController.findAll("INVALID", null);
+
+            // Then
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody()).isEmpty();
         }
     }
 }

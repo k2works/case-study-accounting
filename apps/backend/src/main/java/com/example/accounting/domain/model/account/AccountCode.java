@@ -1,5 +1,7 @@
 package com.example.accounting.domain.model.account;
 
+import io.vavr.control.Either;
+
 import java.util.regex.Pattern;
 
 /**
@@ -14,11 +16,25 @@ public record AccountCode(String value) {
      *
      * @param value 勘定科目コード
      * @return AccountCode インスタンス
-     * @throws IllegalArgumentException 勘定科目コードが不正な場合
      */
     public static AccountCode of(String value) {
-        validate(value);
         return new AccountCode(value);
+    }
+
+    /**
+     * バリデーション付きファクトリメソッド
+     *
+     * @param value 勘定科目コード
+     * @return Either（左: エラーメッセージ、右: AccountCode インスタンス）
+     */
+    public static Either<String, AccountCode> validated(String value) {
+        if (value == null || value.isBlank()) {
+            return Either.left("勘定科目コードは必須です");
+        }
+        if (!ACCOUNT_CODE_PATTERN.matcher(value).matches()) {
+            return Either.left("勘定科目コードは 4 桁の数字である必要があります");
+        }
+        return Either.right(new AccountCode(value));
     }
 
     /**
@@ -62,15 +78,6 @@ public record AccountCode(String value) {
 
     public boolean isProfitLossAccount() {
         return isRevenueAccount() || isExpenseAccount();
-    }
-
-    private static void validate(String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("勘定科目コードは必須です");
-        }
-        if (!ACCOUNT_CODE_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("勘定科目コードは 4 桁の数字である必要があります");
-        }
     }
 
     private int categoryPrefix() {

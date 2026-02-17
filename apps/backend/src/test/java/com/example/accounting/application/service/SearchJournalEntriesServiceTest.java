@@ -12,6 +12,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,9 +61,9 @@ class SearchJournalEntriesServiceTest {
             JournalEntry entry2 = createEntry(2, "交通費", 3, new BigDecimal("2000"));
 
             when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(2L);
+                    .thenReturn(Try.success(2L));
             when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(List.of(entry1, entry2));
+                    .thenReturn(Try.success(List.of(entry1, entry2)));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
@@ -94,9 +95,9 @@ class SearchJournalEntriesServiceTest {
             JournalEntry entry = createEntry(3, "交通費", 2, new BigDecimal("3000"));
 
             when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(1L);
+                    .thenReturn(Try.success(1L));
             when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(List.of(entry));
+                    .thenReturn(Try.success(List.of(entry)));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
@@ -122,9 +123,9 @@ class SearchJournalEntriesServiceTest {
             JournalEntry entry = createEntry(4, "売上計上", 1, new BigDecimal("5000"));
 
             when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(1L);
+                    .thenReturn(Try.success(1L));
             when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(List.of(entry));
+                    .thenReturn(Try.success(List.of(entry)));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
@@ -150,9 +151,9 @@ class SearchJournalEntriesServiceTest {
             JournalEntry entry = createEntry(5, "消耗品費", 4, new BigDecimal("3000"));
 
             when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(1L);
+                    .thenReturn(Try.success(1L));
             when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(List.of(entry));
+                    .thenReturn(Try.success(List.of(entry)));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
@@ -178,9 +179,9 @@ class SearchJournalEntriesServiceTest {
             JournalEntry entry = createEntry(6, "売上計上", 1, new BigDecimal("2000"));
 
             when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(1L);
+                    .thenReturn(Try.success(1L));
             when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(List.of(entry));
+                    .thenReturn(Try.success(List.of(entry)));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
@@ -211,7 +212,7 @@ class SearchJournalEntriesServiceTest {
             );
 
             when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(0L);
+                    .thenReturn(Try.success(0L));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 
@@ -243,9 +244,9 @@ class SearchJournalEntriesServiceTest {
             JournalEntry entry = createEntry(7, "売上計上", 1, new BigDecimal("1000"));
 
             when(journalEntryRepository.countBySearchConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(5L);
+                    .thenReturn(Try.success(5L));
             when(journalEntryRepository.searchByConditions(any(JournalEntrySearchCriteria.class)))
-                    .thenReturn(List.of(entry));
+                    .thenReturn(Try.success(List.of(entry)));
 
             GetJournalEntriesResult result = searchJournalEntriesService.execute(query);
 

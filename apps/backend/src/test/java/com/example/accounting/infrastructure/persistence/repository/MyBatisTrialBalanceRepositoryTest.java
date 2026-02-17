@@ -39,7 +39,8 @@ class MyBatisTrialBalanceRepositoryTest {
 
         when(trialBalanceMapper.findTrialBalance(date)).thenReturn(List.of(entity));
 
-        List<TrialBalanceEntity> result = repository.findTrialBalance(date);
+        List<TrialBalanceEntity> result = repository.findTrialBalance(date)
+                .getOrElse(List.of());
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getAccountCode()).isEqualTo("1000");
@@ -50,7 +51,8 @@ class MyBatisTrialBalanceRepositoryTest {
     void shouldDelegateToMapperWithNullDate() {
         when(trialBalanceMapper.findTrialBalance(null)).thenReturn(List.of());
 
-        List<TrialBalanceEntity> result = repository.findTrialBalance(null);
+        List<TrialBalanceEntity> result = repository.findTrialBalance(null)
+                .getOrElse(List.of());
 
         assertThat(result).isEmpty();
         verify(trialBalanceMapper).findTrialBalance(null);

@@ -34,11 +34,14 @@ class AccountRepositorySearchTest {
     @DisplayName("種別フィルタのみで検索できる")
     void shouldSearchByTypeOnly() {
         // Given
-        Account assetAccount = accountRepository.save(createTestAccount("9101", "検索資産", AccountType.ASSET));
-        accountRepository.save(createTestAccount("9102", "検索負債", AccountType.LIABILITY));
+        Account assetAccount = accountRepository.save(createTestAccount("9101", "検索資産", AccountType.ASSET))
+                .getOrElse((Account) null);
+        accountRepository.save(createTestAccount("9102", "検索負債", AccountType.LIABILITY))
+                .getOrElse((Account) null);
 
         // When
-        List<Account> accounts = accountRepository.search(AccountType.ASSET, null);
+        List<Account> accounts = accountRepository.search(AccountType.ASSET, null)
+                .getOrElse(List.of());
 
         // Then
         assertThat(accounts)
@@ -53,10 +56,12 @@ class AccountRepositorySearchTest {
     @DisplayName("キーワードのみで検索できる（コード前方一致）")
     void shouldSearchByKeywordOnlyForCodePrefix() {
         // Given
-        Account account = accountRepository.save(createTestAccount("9201", "検索コード", AccountType.ASSET));
+        Account account = accountRepository.save(createTestAccount("9201", "検索コード", AccountType.ASSET))
+                .getOrElse((Account) null);
 
         // When
-        List<Account> accounts = accountRepository.search(null, "920");
+        List<Account> accounts = accountRepository.search(null, "920")
+                .getOrElse(List.of());
 
         // Then
         assertThat(accounts)
@@ -68,10 +73,12 @@ class AccountRepositorySearchTest {
     @DisplayName("キーワードのみで検索できる（名前部分一致）")
     void shouldSearchByKeywordOnlyForNameContains() {
         // Given
-        Account account = accountRepository.save(createTestAccount("9301", "旅費交通費", AccountType.EXPENSE));
+        Account account = accountRepository.save(createTestAccount("9301", "旅費交通費", AccountType.EXPENSE))
+                .getOrElse((Account) null);
 
         // When
-        List<Account> accounts = accountRepository.search(null, "交通");
+        List<Account> accounts = accountRepository.search(null, "交通")
+                .getOrElse(List.of());
 
         // Then
         assertThat(accounts)
@@ -83,11 +90,14 @@ class AccountRepositorySearchTest {
     @DisplayName("種別とキーワードの複合検索ができる")
     void shouldSearchByTypeAndKeyword() {
         // Given
-        Account account = accountRepository.save(createTestAccount("9401", "消耗品費", AccountType.EXPENSE));
-        accountRepository.save(createTestAccount("9402", "消耗品費", AccountType.ASSET));
+        Account account = accountRepository.save(createTestAccount("9401", "消耗品費", AccountType.EXPENSE))
+                .getOrElse((Account) null);
+        accountRepository.save(createTestAccount("9402", "消耗品費", AccountType.ASSET))
+                .getOrElse((Account) null);
 
         // When
-        List<Account> accounts = accountRepository.search(AccountType.EXPENSE, "消耗");
+        List<Account> accounts = accountRepository.search(AccountType.EXPENSE, "消耗")
+                .getOrElse(List.of());
 
         // Then
         assertThat(accounts)
@@ -102,10 +112,12 @@ class AccountRepositorySearchTest {
     @DisplayName("フィルタなしで全件取得できる")
     void shouldSearchAllWhenNoFilters() {
         // Given
-        Account account = accountRepository.save(createTestAccount("9501", "全件取得", AccountType.EQUITY));
+        Account account = accountRepository.save(createTestAccount("9501", "全件取得", AccountType.EQUITY))
+                .getOrElse((Account) null);
 
         // When
-        List<Account> accounts = accountRepository.search(null, null);
+        List<Account> accounts = accountRepository.search(null, null)
+                .getOrElse(List.of());
 
         // Then
         assertThat(accounts)

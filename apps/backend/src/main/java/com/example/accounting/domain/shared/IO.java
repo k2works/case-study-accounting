@@ -5,6 +5,7 @@ import io.vavr.control.Try;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 /**
  * IO モナド - 副作用を持つ計算の記述を表す型
@@ -61,6 +62,7 @@ public final class IO<A> {
      * @param runnable 副作用
      * @return IO インスタンス
      */
+    @SuppressWarnings("PMD.AvoidReturningNull")
     public static IO<Void> effect(Runnable runnable) {
         return new IO<>(() -> {
             runnable.run();
@@ -147,12 +149,12 @@ public final class IO<A> {
      * @return リトライ付き IO
      */
     public IO<A> retry(int maxRetries) {
-        IO<A> result = this;
-        for (int i = 0; i < maxRetries; i++) {
-            IO<A> current = result;
-            result = result.orElse(() -> current);
-        }
-        return result;
+        return IntStream.range(0, maxRetries)
+                .boxed()
+                .reduce(this, (result, _) -> {
+                    IO<A> current = result;
+                    return result.orElse(() -> current);
+                }, (a, b) -> b);
     }
 
     /**

@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,13 +33,15 @@ public class GetDailyBalanceService implements GetDailyBalanceUseCase {
     @Override
     public GetDailyBalanceResult execute(GetDailyBalanceQuery query) {
         Account account = accountRepository.findById(AccountId.of(query.accountId()))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .orElseThrow(() -> new IllegalArgumentException("勘定科目が見つかりません"));
 
         BigDecimal rawOpeningBalance = calculateOpeningBalance(query.accountId(), query.dateFrom());
         BigDecimal openingBalance = normalizeBalance(account.getAccountType(), rawOpeningBalance);
 
         List<DailyBalanceEntry> rawEntries = journalEntryRepository.findDailyBalanceByAccountAndPeriod(
-                query.accountId(), query.dateFrom(), query.dateTo());
+                query.accountId(), query.dateFrom(), query.dateTo())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
         BalanceCalculation calculation = calculateBalances(account.getAccountType(), openingBalance, rawEntries);
 
@@ -59,7 +61,8 @@ public class GetDailyBalanceService implements GetDailyBalanceUseCase {
         if (dateFrom == null) {
             return BigDecimal.ZERO;
         }
-        BigDecimal balance = journalEntryRepository.calculateBalanceBeforeDate(accountId, dateFrom);
+        BigDecimal balance = journalEntryRepository.calculateBalanceBeforeDate(accountId, dateFrom)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         return balance == null ? BigDecimal.ZERO : balance;
     }
 
@@ -73,34 +76,31 @@ public class GetDailyBalanceService implements GetDailyBalanceUseCase {
     private BalanceCalculation calculateBalances(AccountType accountType,
                                                  BigDecimal openingBalance,
                                                  List<DailyBalanceEntry> rawEntries) {
-        BigDecimal debitTotal = BigDecimal.ZERO;
-        BigDecimal creditTotal = BigDecimal.ZERO;
-        BigDecimal running = openingBalance;
-        List<DailyBalanceEntry> entries = new ArrayList<>();
+        record Accumulator(List<DailyBalanceEntry> entries, BigDecimal debitTotal,
+                           BigDecimal creditTotal, BigDecimal running) {}
 
-        for (DailyBalanceEntry entry : rawEntries) {
-            BigDecimal debitAmount = defaultAmount(entry.debitTotal());
-            BigDecimal creditAmount = defaultAmount(entry.creditTotal());
-            debitTotal = debitTotal.add(debitAmount);
-            creditTotal = creditTotal.add(creditAmount);
+        Accumulator result = rawEntries.stream().reduce(
+                new Accumulator(List.of(), BigDecimal.ZERO, BigDecimal.ZERO, openingBalance),
+                (acc, entry) -> {
+                    BigDecimal debitAmount = defaultAmount(entry.debitTotal());
+                    BigDecimal creditAmount = defaultAmount(entry.creditTotal());
+                    BigDecimal delta = accountType.isDebitBalance()
+                            ? debitAmount.subtract(creditAmount)
+                            : creditAmount.subtract(debitAmount);
+                    BigDecimal newRunning = acc.running.add(delta);
 
-            BigDecimal delta = accountType.isDebitBalance()
-                    ? debitAmount.subtract(creditAmount)
-                    : creditAmount.subtract(debitAmount);
-            running = running.add(delta);
+                    var newEntry = new DailyBalanceEntry(
+                            entry.date(), debitAmount, creditAmount, newRunning, entry.transactionCount());
 
-            entries.add(new DailyBalanceEntry(
-                    entry.date(),
-                    debitAmount,
-                    creditAmount,
-                    running,
-                    entry.transactionCount()
-            ));
-        }
+                    return new Accumulator(
+                            Stream.concat(acc.entries.stream(), Stream.of(newEntry)).toList(),
+                            acc.debitTotal.add(debitAmount),
+                            acc.creditTotal.add(creditAmount),
+                            newRunning);
+                },
+                (a, b) -> b);
 
-        BigDecimal closingBalance = running;
-
-        return new BalanceCalculation(entries, debitTotal, creditTotal, closingBalance);
+        return new BalanceCalculation(result.entries(), result.debitTotal(), result.creditTotal(), result.running());
     }
 
     private BigDecimal defaultAmount(BigDecimal amount) {

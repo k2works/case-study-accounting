@@ -37,6 +37,7 @@ public class DeleteAccountService implements DeleteAccountUseCase {
 
     private IO<Either<String, Account>> findAccountIO(Integer accountId) {
         return IO.delay(() -> accountRepository.findById(AccountId.of(accountId))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .<Either<String, Account>>map(Either::right)
                 .orElseGet(() -> Either.left("勘定科目が見つかりません")));
     }
@@ -57,6 +58,7 @@ public class DeleteAccountService implements DeleteAccountUseCase {
     }
 
     private IO<Void> deleteAccountIO(AccountId accountId) {
-        return IO.effect(() -> accountRepository.deleteById(accountId));
+        return IO.effect(() -> accountRepository.deleteById(accountId)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 }

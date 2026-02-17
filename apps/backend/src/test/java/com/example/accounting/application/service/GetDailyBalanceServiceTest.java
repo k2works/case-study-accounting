@@ -9,6 +9,7 @@ import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,11 +61,11 @@ class GetDailyBalanceServiceTest {
                     AccountId.of(1), AccountCode.of("1101"), "現金", AccountType.ASSET);
 
             when(accountRepository.findById(AccountId.of(1)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(journalEntryRepository.calculateBalanceBeforeDate(1, dateFrom))
-                    .thenReturn(new BigDecimal("1000"));
+                    .thenReturn(Try.success(new BigDecimal("1000")));
             when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(1, dateFrom, dateTo))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new DailyBalanceEntry(
                                     LocalDate.of(2024, 1, 10),
                                     new BigDecimal("500"),
@@ -79,7 +80,7 @@ class GetDailyBalanceServiceTest {
                                     null,
                                     1L
                             )
-                    ));
+                    )));
 
             GetDailyBalanceResult result = service.execute(query);
 
@@ -106,11 +107,11 @@ class GetDailyBalanceServiceTest {
                     AccountId.of(2), AccountCode.of("2101"), "買掛金", AccountType.LIABILITY);
 
             when(accountRepository.findById(AccountId.of(2)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(journalEntryRepository.calculateBalanceBeforeDate(2, dateFrom))
-                    .thenReturn(new BigDecimal("-300"));
+                    .thenReturn(Try.success(new BigDecimal("-300")));
             when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(2, dateFrom, dateTo))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new DailyBalanceEntry(
                                     LocalDate.of(2024, 4, 15),
                                     new BigDecimal("100"),
@@ -118,7 +119,7 @@ class GetDailyBalanceServiceTest {
                                     null,
                                     1L
                             )
-                    ));
+                    )));
 
             GetDailyBalanceResult result = service.execute(query);
 
@@ -137,7 +138,7 @@ class GetDailyBalanceServiceTest {
             GetDailyBalanceQuery query = new GetDailyBalanceQuery(99, dateFrom, dateTo);
 
             when(accountRepository.findById(AccountId.of(99)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             assertThrows(IllegalArgumentException.class, () -> service.execute(query));
         }
@@ -152,9 +153,9 @@ class GetDailyBalanceServiceTest {
                     AccountId.of(3), AccountCode.of("1102"), "普通預金", AccountType.ASSET);
 
             when(accountRepository.findById(AccountId.of(3)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(3, null, dateTo))
-                    .thenReturn(List.of());
+                    .thenReturn(Try.success(List.of()));
 
             GetDailyBalanceResult result = service.execute(query);
 
@@ -176,11 +177,11 @@ class GetDailyBalanceServiceTest {
                     AccountId.of(4), AccountCode.of("1103"), "当座預金", AccountType.ASSET);
 
             when(accountRepository.findById(AccountId.of(4)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(journalEntryRepository.calculateBalanceBeforeDate(4, dateFrom))
-                    .thenReturn(null);
+                    .thenReturn(Try.success(null));
             when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(4, dateFrom, dateTo))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new DailyBalanceEntry(
                                     LocalDate.of(2024, 5, 10),
                                     null,
@@ -188,7 +189,7 @@ class GetDailyBalanceServiceTest {
                                     null,
                                     2L
                             )
-                    ));
+                    )));
 
             GetDailyBalanceResult result = service.execute(query);
 
@@ -213,11 +214,11 @@ class GetDailyBalanceServiceTest {
                     AccountId.of(5), AccountCode.of("2201"), "未払費用", AccountType.LIABILITY);
 
             when(accountRepository.findById(AccountId.of(5)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(journalEntryRepository.calculateBalanceBeforeDate(5, dateFrom))
-                    .thenReturn(new BigDecimal("-500"));
+                    .thenReturn(Try.success(new BigDecimal("-500")));
             when(journalEntryRepository.findDailyBalanceByAccountAndPeriod(5, dateFrom, dateTo))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new DailyBalanceEntry(
                                     LocalDate.of(2024, 6, 10),
                                     null,
@@ -225,7 +226,7 @@ class GetDailyBalanceServiceTest {
                                     null,
                                     1L
                             )
-                    ));
+                    )));
 
             GetDailyBalanceResult result = service.execute(query);
 

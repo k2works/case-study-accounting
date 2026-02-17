@@ -13,56 +13,62 @@ description: 分析フェーズ全体のワークフローをオーケストレ�
 
 分析フェーズは以下の工程で構成されます:
 
-1. **要件定義** (Skill: `analyzing-requirements`)
+1. **ビジネスアーキテクチャ分析** (Skill: `analyzing-business`)
+
+   - ビジネスモデルキャンバスの作成
+   - バリューストリームの設計
+   - ビジネスケイパビリティモデルの構築
+
+2. **要件定義** (Skill: `analyzing-requirements`)
 
    - システム価値の明確化
    - システム外部環境の分析
    - システム境界の定義
 
-2. **ユースケース作成** (Skill: `analyzing-usecases`)
+3. **ユースケース作成** (Skill: `analyzing-usecases`)
 
    - ビジネスユースケースの抽出
    - システムユースケースの定義
    - ユーザーストーリーの作成
 
-3. **アーキテクチャ設計** (Skill: `analyzing-architecture`)
+4. **アーキテクチャ設計** (Skill: `analyzing-architecture`)
 
    - バックエンドアーキテクチャ
    - フロントエンドアーキテクチャ
    - インフラストラクチャアーキテクチャ
 
-4. **データモデル設計** (Skill: `analyzing-data-model`)
+5. **データモデル設計** (Skill: `analyzing-data-model`)
 
    - ER 図の作成
    - テーブル定義
 
-5. **ドメインモデル設計** (Skill: `analyzing-domain-model`)
+6. **ドメインモデル設計** (Skill: `analyzing-domain-model`)
 
    - エンティティ定義
    - 値オブジェクト定義
    - 集約の設計
 
-6. **UI 設計** (Skill: `analyzing-ui-design`)
+7. **UI 設計** (Skill: `analyzing-ui-design`)
 
    - 画面遷移図
    - 画面イメージ
 
-7. **テスト戦略** (Skill: `analyzing-test-strategy`)
+8. **テスト戦略** (Skill: `analyzing-test-strategy`)
 
    - テストピラミッド設計
    - テスト種別の定義
 
-8. **非機能要件** (Skill: `analyzing-non-functional`)
+9. **非機能要件** (Skill: `analyzing-non-functional`)
 
    - 性能要件
    - セキュリティ要件
 
-9. **運用要件** (Skill: `analyzing-operation`)
+10. **運用要件** (Skill: `analyzing-operation`)
 
-   - 運用フロー
-   - 監視設計
+    - 運用フロー
+    - 監視設計
 
-10. **技術スタック** (Skill: `analyzing-tech-stack`)
+11. **技術スタック** (Skill: `analyzing-tech-stack`)
 
     - 技術選定
     - バージョン管理
@@ -91,6 +97,7 @@ cat README.md
 
 ### 関連スキル
 
+- `analyzing-business` : ビジネスアーキテクチャ分析支援
 - `analyzing-requirements` : 要件定義関連の作業支援
 - `analyzing-usecases` : ユースケース・ユーザーストーリー作成支援
 - `analyzing-architecture` : アーキテクチャ設計支援

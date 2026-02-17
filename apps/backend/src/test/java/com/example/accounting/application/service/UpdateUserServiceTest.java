@@ -9,6 +9,7 @@ import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,8 +61,8 @@ class UpdateUserServiceTest {
                     "MANAGER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -96,8 +97,8 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -123,8 +124,8 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -154,7 +155,7 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.empty());
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.empty()));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -177,7 +178,7 @@ class UpdateUserServiceTest {
                     "INVALID"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
@@ -189,8 +190,8 @@ class UpdateUserServiceTest {
         }
 
         @Test
-        @DisplayName("不正なパスワードの場合は更新に失敗する")
-        void shouldFailWhenPasswordIsInvalid() {
+        @DisplayName("短いパスワードでも fromRawPassword はバリデーションしないため更新される")
+        void shouldAcceptShortPasswordSinceValidationMovedToValidated() {
             // Given
             User existingUser = buildUser("user-1", "olduser", "old@example.com", "OldPass123!", "旧表示名", Role.USER);
             UpdateUserCommand command = new UpdateUserCommand(
@@ -200,15 +201,15 @@ class UpdateUserServiceTest {
                     "USER"
             );
 
-            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Optional.of(existingUser));
+            when(userRepository.findById(UserId.of("user-1"))).thenReturn(Try.success(Optional.of(existingUser)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             // When
             UpdateUserResult result = updateUserService.execute(command);
 
-            // Then
-            assertThat(result.success()).isFalse();
-            assertThat(result.errorMessage()).isEqualTo("パスワードは8文字以上で入力してください");
-            verify(userRepository, never()).save(any(User.class));
+            // Then - fromRawPassword no longer validates; validation is via Password.validated()
+            assertThat(result.success()).isTrue();
+            assertThat(result.id()).isEqualTo("user-1");
         }
     }
 

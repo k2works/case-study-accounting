@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * JWT 認証エントリーポイント
@@ -23,6 +21,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    record ErrorResponse(String timestamp, int status, String error, String message, String path) {}
+
     @Override
     public void commence(
             HttpServletRequest request,
@@ -33,13 +33,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        Map<String, Object> errorDetails = new LinkedHashMap<>();
-        errorDetails.put("timestamp", Instant.now().toString());
-        errorDetails.put("status", 401);
-        errorDetails.put("error", "Unauthorized");
-        errorDetails.put("message", "認証が必要です");
-        errorDetails.put("path", request.getRequestURI());
+        var errorResponse = new ErrorResponse(
+                Instant.now().toString(), 401, "Unauthorized", "認証が必要です", request.getRequestURI());
 
-        objectMapper.writeValue(response.getOutputStream(), errorDetails);
+        objectMapper.writeValue(response.getOutputStream(), errorResponse);
     }
 }

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Email")
 class EmailTest {
@@ -23,54 +22,6 @@ class EmailTest {
         }
 
         @Test
-        @DisplayName("null の場合は例外をスローする")
-        void shouldThrowExceptionForNull() {
-            assertThatThrownBy(() -> Email.of(null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスは必須です");
-        }
-
-        @Test
-        @DisplayName("空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmpty() {
-            assertThatThrownBy(() -> Email.of(""))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスは必須です");
-        }
-
-        @Test
-        @DisplayName("空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlank() {
-            assertThatThrownBy(() -> Email.of("   "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスは必須です");
-        }
-
-        @Test
-        @DisplayName("@ がない場合は例外をスローする")
-        void shouldThrowExceptionForMissingAt() {
-            assertThatThrownBy(() -> Email.of("testexample.com"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスの形式が不正です");
-        }
-
-        @Test
-        @DisplayName("ドメインがない場合は例外をスローする")
-        void shouldThrowExceptionForMissingDomain() {
-            assertThatThrownBy(() -> Email.of("test@"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスの形式が不正です");
-        }
-
-        @Test
-        @DisplayName("TLD が短すぎる場合は例外をスローする")
-        void shouldThrowExceptionForShortTld() {
-            assertThatThrownBy(() -> Email.of("test@example.c"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("メールアドレスの形式が不正です");
-        }
-
-        @Test
         @DisplayName("サブドメイン付きのメールアドレスで生成できる")
         void shouldCreateWithSubdomain() {
             Email email = Email.of("test@mail.example.com");
@@ -84,6 +35,54 @@ class EmailTest {
             Email email = Email.of("test+tag@example.com");
 
             assertThat(email.value()).isEqualTo("test+tag@example.com");
+        }
+    }
+
+    @Nested
+    @DisplayName("validated")
+    class Validated {
+
+        @Test
+        @DisplayName("有効なメールアドレスで Right を返す")
+        void shouldReturnRightForValidEmail() {
+            assertThat(Email.validated("test@example.com").isRight()).isTrue();
+            assertThat(Email.validated("test@example.com").get().value()).isEqualTo("test@example.com");
+        }
+
+        @Test
+        @DisplayName("null の場合はエラーメッセージを返す")
+        void shouldReturnLeftForNull() {
+            assertThat(Email.validated(null).getLeft()).isEqualTo("メールアドレスは必須です");
+        }
+
+        @Test
+        @DisplayName("空文字の場合はエラーメッセージを返す")
+        void shouldReturnLeftForEmpty() {
+            assertThat(Email.validated("").getLeft()).isEqualTo("メールアドレスは必須です");
+        }
+
+        @Test
+        @DisplayName("空白のみの場合はエラーメッセージを返す")
+        void shouldReturnLeftForBlank() {
+            assertThat(Email.validated("   ").getLeft()).isEqualTo("メールアドレスは必須です");
+        }
+
+        @Test
+        @DisplayName("@ がない場合はエラーメッセージを返す")
+        void shouldReturnLeftForMissingAt() {
+            assertThat(Email.validated("testexample.com").getLeft()).isEqualTo("メールアドレスの形式が不正です");
+        }
+
+        @Test
+        @DisplayName("ドメインがない場合はエラーメッセージを返す")
+        void shouldReturnLeftForMissingDomain() {
+            assertThat(Email.validated("test@").getLeft()).isEqualTo("メールアドレスの形式が不正です");
+        }
+
+        @Test
+        @DisplayName("TLD が短すぎる場合はエラーメッセージを返す")
+        void shouldReturnLeftForShortTld() {
+            assertThat(Email.validated("test@example.c").getLeft()).isEqualTo("メールアドレスの形式が不正です");
         }
     }
 

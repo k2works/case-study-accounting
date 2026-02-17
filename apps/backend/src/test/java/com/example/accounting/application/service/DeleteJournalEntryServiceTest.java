@@ -10,6 +10,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -58,7 +59,9 @@ class DeleteJournalEntryServiceTest {
             JournalEntry existingEntry = draftEntry(10);
 
             when(journalEntryRepository.findById(JournalEntryId.of(command.journalEntryId())))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
+            when(journalEntryRepository.deleteById(JournalEntryId.of(10)))
+                    .thenReturn(Try.success(null));
 
             DeleteJournalEntryResult result = deleteJournalEntryService.execute(command);
 
@@ -79,7 +82,7 @@ class DeleteJournalEntryServiceTest {
             DeleteJournalEntryCommand command = new DeleteJournalEntryCommand(99);
 
             when(journalEntryRepository.findById(JournalEntryId.of(command.journalEntryId())))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             DeleteJournalEntryResult result = deleteJournalEntryService.execute(command);
 
@@ -95,7 +98,7 @@ class DeleteJournalEntryServiceTest {
             JournalEntry existingEntry = approvedEntry(10);
 
             when(journalEntryRepository.findById(JournalEntryId.of(command.journalEntryId())))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
 
             DeleteJournalEntryResult result = deleteJournalEntryService.execute(command);
 

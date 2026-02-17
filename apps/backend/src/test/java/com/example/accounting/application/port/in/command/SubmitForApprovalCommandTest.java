@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("SubmitForApprovalCommand")
 class SubmitForApprovalCommandTest {
@@ -23,11 +22,10 @@ class SubmitForApprovalCommandTest {
         }
 
         @Test
-        @DisplayName("journalEntryId が null の場合は例外をスローする")
-        void shouldThrowWhenJournalEntryIdIsNull() {
-            assertThatThrownBy(() -> new SubmitForApprovalCommand(null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("仕訳IDは必須です");
+        @DisplayName("journalEntryId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenJournalEntryIdIsNull() {
+            assertThat(SubmitForApprovalCommand.of(null).getLeft())
+                    .isEqualTo("仕訳IDは必須です");
         }
     }
 }

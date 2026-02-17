@@ -1,5 +1,7 @@
 package com.example.accounting.domain.model.user;
 
+import io.vavr.control.Either;
+
 /**
  * ユーザー名を表す値オブジェクト
  *
@@ -15,11 +17,26 @@ public record Username(String value) {
      *
      * @param value ユーザー名
      * @return Username インスタンス
-     * @throws IllegalArgumentException ユーザー名が不正な場合
      */
     public static Username of(String value) {
-        validate(value);
         return new Username(value);
+    }
+
+    /**
+     * バリデーション付きファクトリメソッド
+     *
+     * @param value ユーザー名
+     * @return Either（左: エラーメッセージ、右: Username インスタンス）
+     */
+    public static Either<String, Username> validated(String value) {
+        if (value == null || value.isBlank()) {
+            return Either.left("ユーザー名は必須です");
+        }
+        if (value.length() < MIN_LENGTH || value.length() > MAX_LENGTH) {
+            return Either.left(
+                    String.format("ユーザー名は%d〜%d文字で入力してください", MIN_LENGTH, MAX_LENGTH));
+        }
+        return Either.right(new Username(value));
     }
 
     /**
@@ -30,16 +47,6 @@ public record Username(String value) {
      */
     public static Username reconstruct(String value) {
         return new Username(value);
-    }
-
-    private static void validate(String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("ユーザー名は必須です");
-        }
-        if (value.length() < MIN_LENGTH || value.length() > MAX_LENGTH) {
-            throw new IllegalArgumentException(
-                    String.format("ユーザー名は%d〜%d文字で入力してください", MIN_LENGTH, MAX_LENGTH));
-        }
     }
 
     @Override

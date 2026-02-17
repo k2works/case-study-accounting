@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("GetJournalEntriesQuery")
 class GetJournalEntriesQueryTest {
@@ -18,27 +17,21 @@ class GetJournalEntriesQueryTest {
     class Validation {
 
         @Test
-        @DisplayName("page が負の場合は例外をスローする")
-        void shouldThrowExceptionWhenPageIsNegative() {
-            assertThatThrownBy(() -> new GetJournalEntriesQuery(-1, 20, List.of(), null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("page must be >= 0");
+        @DisplayName("page が負の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenPageIsNegative() {
+            assertThat(GetJournalEntriesQuery.of(-1, 20, List.of(), null, null).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 0 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeIsZero() {
-            assertThatThrownBy(() -> new GetJournalEntriesQuery(0, 0, List.of(), null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be between 1 and 100");
+        @DisplayName("size が 0 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeIsZero() {
+            assertThat(GetJournalEntriesQuery.of(0, 0, List.of(), null, null).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 101 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeExceeds100() {
-            assertThatThrownBy(() -> new GetJournalEntriesQuery(0, 101, List.of(), null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be between 1 and 100");
+        @DisplayName("size が 101 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeExceeds100() {
+            assertThat(GetJournalEntriesQuery.of(0, 101, List.of(), null, null).isLeft()).isTrue();
         }
 
         @Test

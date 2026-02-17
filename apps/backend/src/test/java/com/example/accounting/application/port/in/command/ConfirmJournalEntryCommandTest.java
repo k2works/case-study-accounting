@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("ConfirmJournalEntryCommand")
 class ConfirmJournalEntryCommandTest {
@@ -24,27 +23,24 @@ class ConfirmJournalEntryCommandTest {
         }
 
         @Test
-        @DisplayName("journalEntryId が null の場合は例外をスローする")
-        void shouldThrowWhenJournalEntryIdIsNull() {
-            assertThatThrownBy(() -> new ConfirmJournalEntryCommand(null, "manager"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("仕訳IDは必須です");
+        @DisplayName("journalEntryId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenJournalEntryIdIsNull() {
+            assertThat(ConfirmJournalEntryCommand.of(null, "manager").getLeft())
+                    .isEqualTo("仕訳IDは必須です");
         }
 
         @Test
-        @DisplayName("confirmerId が null の場合は例外をスローする")
-        void shouldThrowWhenConfirmerIdIsNull() {
-            assertThatThrownBy(() -> new ConfirmJournalEntryCommand(1, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("確定者IDは必須です");
+        @DisplayName("confirmerId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenConfirmerIdIsNull() {
+            assertThat(ConfirmJournalEntryCommand.of(1, null).getLeft())
+                    .isEqualTo("確定者IDは必須です");
         }
 
         @Test
-        @DisplayName("confirmerId が空白の場合は例外をスローする")
-        void shouldThrowWhenConfirmerIdIsBlank() {
-            assertThatThrownBy(() -> new ConfirmJournalEntryCommand(1, "   "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("確定者IDは必須です");
+        @DisplayName("confirmerId が空白の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenConfirmerIdIsBlank() {
+            assertThat(ConfirmJournalEntryCommand.of(1, "   ").getLeft())
+                    .isEqualTo("確定者IDは必須です");
         }
     }
 }

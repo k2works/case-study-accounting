@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Password")
 class PasswordTest {
@@ -24,43 +23,48 @@ class PasswordTest {
         }
 
         @Test
-        @DisplayName("null の場合は例外をスローする")
-        void shouldThrowExceptionForNull() {
-            assertThatThrownBy(() -> Password.fromRawPassword(null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
-        }
-
-        @Test
-        @DisplayName("空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmpty() {
-            assertThatThrownBy(() -> Password.fromRawPassword(""))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
-        }
-
-        @Test
-        @DisplayName("空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlank() {
-            assertThatThrownBy(() -> Password.fromRawPassword("   "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
-        }
-
-        @Test
-        @DisplayName("8文字未満の場合は例外をスローする")
-        void shouldThrowExceptionForTooShort() {
-            assertThatThrownBy(() -> Password.fromRawPassword("pass123"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは8文字以上で入力してください");
-        }
-
-        @Test
         @DisplayName("8文字ちょうどで生成できる")
         void shouldCreateWithMinLength() {
             Password password = Password.fromRawPassword("pass1234");
 
             assertThat(password.value()).startsWith("$2a$");
+        }
+    }
+
+    @Nested
+    @DisplayName("validated")
+    class Validated {
+
+        @Test
+        @DisplayName("有効なパスワードで Right を返す")
+        void shouldReturnRightForValidPassword() {
+            assertThat(Password.validated("password123").isRight()).isTrue();
+            assertThat(Password.validated("password123").get().value()).startsWith("$2a$");
+        }
+
+        @Test
+        @DisplayName("null の場合はエラーメッセージを返す")
+        void shouldReturnLeftForNull() {
+            assertThat(Password.validated(null).getLeft()).isEqualTo("パスワードは必須です");
+        }
+
+        @Test
+        @DisplayName("空文字の場合はエラーメッセージを返す")
+        void shouldReturnLeftForEmpty() {
+            assertThat(Password.validated("").getLeft()).isEqualTo("パスワードは必須です");
+        }
+
+        @Test
+        @DisplayName("空白のみの場合はエラーメッセージを返す")
+        void shouldReturnLeftForBlank() {
+            assertThat(Password.validated("   ").getLeft()).isEqualTo("パスワードは必須です");
+        }
+
+        @Test
+        @DisplayName("8文字未満の場合はエラーメッセージを返す")
+        void shouldReturnLeftForTooShort() {
+            assertThat(Password.validated("pass123").getLeft())
+                    .isEqualTo("パスワードは8文字以上で入力してください");
         }
     }
 

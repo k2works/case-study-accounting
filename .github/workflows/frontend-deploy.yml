@@ -28,7 +28,7 @@ jobs:
       run: heroku container:login
 
     - name: Build Docker image
-      run: docker build -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web ./apps/frontend
+      run: docker build --platform linux/amd64 --provenance=false -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web ./apps/frontend
 
     - name: Push Docker image to Heroku
       run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web

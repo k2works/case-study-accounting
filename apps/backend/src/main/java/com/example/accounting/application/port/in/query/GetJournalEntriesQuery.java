@@ -1,5 +1,7 @@
 package com.example.accounting.application.port.in.query;
 
+import io.vavr.control.Either;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,16 +22,26 @@ public record GetJournalEntriesQuery(
         LocalDate dateTo
 ) {
     /**
-     * コンパクトコンストラクタ - バリデーションと防御的コピー
+     * コンパクトコンストラクタ - 防御的コピー
      */
     public GetJournalEntriesQuery {
+        statuses = statuses == null ? List.of() : List.copyOf(statuses);
+    }
+
+    public static Either<String, GetJournalEntriesQuery> of(
+            int page,
+            int size,
+            List<String> statuses,
+            LocalDate dateFrom,
+            LocalDate dateTo
+    ) {
         if (page < 0) {
-            throw new IllegalArgumentException("page must be >= 0");
+            return Either.left("ページ番号は 0 以上である必要があります");
         }
         if (size < 1 || size > 100) {
-            throw new IllegalArgumentException("size must be between 1 and 100");
+            return Either.left("ページサイズは 1 以上 100 以下である必要があります");
         }
-        statuses = statuses == null ? List.of() : List.copyOf(statuses);
+        return Either.right(new GetJournalEntriesQuery(page, size, statuses, dateFrom, dateTo));
     }
 
     public static GetJournalEntriesQuery defaultQuery() {

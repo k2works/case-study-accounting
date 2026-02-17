@@ -7,6 +7,7 @@ import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -61,8 +61,9 @@ class CreateAccountServiceTest {
                     AccountType.ASSET
             );
 
-            when(accountRepository.existsByCode(AccountCode.of(command.accountCode()))).thenReturn(false);
-            when(accountRepository.save(any(Account.class))).thenReturn(savedAccountWithId);
+            when(accountRepository.existsByCode(AccountCode.of(command.accountCode())))
+                    .thenReturn(Try.success(false));
+            when(accountRepository.save(any(Account.class))).thenReturn(Try.success(savedAccountWithId));
 
             CreateAccountResult result = createAccountService.execute(command);
 
@@ -96,7 +97,8 @@ class CreateAccountServiceTest {
                     "ASSET"
             );
 
-            when(accountRepository.existsByCode(AccountCode.of(command.accountCode()))).thenReturn(true);
+            when(accountRepository.existsByCode(AccountCode.of(command.accountCode())))
+                    .thenReturn(Try.success(true));
 
             CreateAccountResult result = createAccountService.execute(command);
 
@@ -106,11 +108,10 @@ class CreateAccountServiceTest {
         }
 
         @Test
-        @DisplayName("無効なコマンドの場合は例外をスローする")
-        void shouldThrowExceptionWhenCommandIsInvalid() {
-            assertThatThrownBy(() -> new CreateAccountCommand("12", "現金", "ASSET"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目コードは 4 桁の数字である必要があります");
+        @DisplayName("無効なコマンドの場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenCommandIsInvalid() {
+            assertThat(CreateAccountCommand.of("12", "現金", "ASSET").getLeft())
+                    .isEqualTo("勘定科目コードは 4 桁の数字である必要があります");
         }
     }
 }

@@ -49,7 +49,8 @@ class AccountRepositoryImplIntegrationTest {
             assertThat(account.getId()).isNull(); // 新規作成時は ID なし
 
             // When
-            Account savedAccount = accountRepository.save(account);
+            Account savedAccount = accountRepository.save(account)
+                    .getOrElse((Account) null);
 
             // Then
             assertThat(savedAccount).isNotNull();
@@ -64,11 +65,13 @@ class AccountRepositoryImplIntegrationTest {
         void shouldUpdateExistingAccount() {
             // Given
             Account account = createTestAccount("1002", "売掛金", AccountType.ASSET);
-            Account savedAccount = accountRepository.save(account);
+            Account savedAccount = accountRepository.save(account)
+                    .getOrElse((Account) null);
 
             // When（イミュータブルなので結果を受け取る）
             Account changedAccount = savedAccount.withAccountName("売掛金（更新後）");
-            Account updatedAccount = accountRepository.save(changedAccount);
+            Account updatedAccount = accountRepository.save(changedAccount)
+                    .getOrElse((Account) null);
 
             // Then
             assertThat(updatedAccount.getAccountName()).isEqualTo("売掛金（更新後）");
@@ -84,10 +87,12 @@ class AccountRepositoryImplIntegrationTest {
         void shouldFindExistingAccountById() {
             // Given
             Account account = createTestAccount("2001", "買掛金", AccountType.LIABILITY);
-            Account savedAccount = accountRepository.save(account);
+            Account savedAccount = accountRepository.save(account)
+                    .getOrElse((Account) null);
 
             // When（保存後の ID を使用）
-            Optional<Account> found = accountRepository.findById(savedAccount.getId());
+            Optional<Account> found = accountRepository.findById(savedAccount.getId())
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();
@@ -101,7 +106,8 @@ class AccountRepositoryImplIntegrationTest {
             AccountId nonExistentId = AccountId.of(999999);
 
             // When
-            Optional<Account> found = accountRepository.findById(nonExistentId);
+            Optional<Account> found = accountRepository.findById(nonExistentId)
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isEmpty();
@@ -117,10 +123,12 @@ class AccountRepositoryImplIntegrationTest {
         void shouldFindExistingAccountByCode() {
             // Given
             Account account = createTestAccount("2002", "仕入高", AccountType.EXPENSE);
-            accountRepository.save(account);
+            accountRepository.save(account)
+                    .getOrElse((Account) null);
 
             // When
-            Optional<Account> found = accountRepository.findByCode(AccountCode.of("2002"));
+            Optional<Account> found = accountRepository.findByCode(AccountCode.of("2002"))
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();
@@ -131,7 +139,8 @@ class AccountRepositoryImplIntegrationTest {
         @DisplayName("存在しないコードでは empty を返す")
         void shouldReturnEmptyForNonExistentCode() {
             // When
-            Optional<Account> found = accountRepository.findByCode(AccountCode.of("9999"));
+            Optional<Account> found = accountRepository.findByCode(AccountCode.of("9999"))
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isEmpty();
@@ -148,11 +157,14 @@ class AccountRepositoryImplIntegrationTest {
             // Given
             Account assetAccount = createTestAccount("3001", "現金預金", AccountType.ASSET);
             Account liabilityAccount = createTestAccount("3002", "未払金", AccountType.LIABILITY);
-            accountRepository.save(assetAccount);
-            accountRepository.save(liabilityAccount);
+            accountRepository.save(assetAccount)
+                    .getOrElse((Account) null);
+            accountRepository.save(liabilityAccount)
+                    .getOrElse((Account) null);
 
             // When
-            List<Account> accounts = accountRepository.findByType(AccountType.ASSET);
+            List<Account> accounts = accountRepository.findByType(AccountType.ASSET)
+                    .getOrElse(List.of());
 
             // Then
             assertThat(accounts).isNotEmpty();
@@ -173,11 +185,14 @@ class AccountRepositoryImplIntegrationTest {
             // Given
             Account account1 = createTestAccount("4001", "通信費", AccountType.EXPENSE);
             Account account2 = createTestAccount("4002", "売上高", AccountType.REVENUE);
-            accountRepository.save(account1);
-            accountRepository.save(account2);
+            accountRepository.save(account1)
+                    .getOrElse((Account) null);
+            accountRepository.save(account2)
+                    .getOrElse((Account) null);
 
             // When
-            List<Account> accounts = accountRepository.findAll();
+            List<Account> accounts = accountRepository.findAll()
+                    .getOrElse(List.of());
 
             // Then
             assertThat(accounts)
@@ -195,13 +210,16 @@ class AccountRepositoryImplIntegrationTest {
         void shouldDeleteExistingAccount() {
             // Given
             Account account = createTestAccount("5001", "地代家賃", AccountType.EXPENSE);
-            Account savedAccount = accountRepository.save(account);
+            Account savedAccount = accountRepository.save(account)
+                    .getOrElse((Account) null);
 
             // When（保存後の ID を使用）
-            accountRepository.deleteById(savedAccount.getId());
+            accountRepository.deleteById(savedAccount.getId())
+                    .getOrElse((Void) null);
 
             // Then
-            Optional<Account> found = accountRepository.findById(savedAccount.getId());
+            Optional<Account> found = accountRepository.findById(savedAccount.getId())
+                    .getOrElse(Optional.empty());
             assertThat(found).isEmpty();
         }
     }
@@ -215,10 +233,12 @@ class AccountRepositoryImplIntegrationTest {
         void shouldReturnTrueForExistingCode() {
             // Given
             Account account = createTestAccount("6001", "雑収入", AccountType.REVENUE);
-            accountRepository.save(account);
+            accountRepository.save(account)
+                    .getOrElse((Account) null);
 
             // When
-            boolean exists = accountRepository.existsByCode(AccountCode.of("6001"));
+            boolean exists = accountRepository.existsByCode(AccountCode.of("6001"))
+                    .getOrElse(false);
 
             // Then
             assertThat(exists).isTrue();
@@ -228,7 +248,8 @@ class AccountRepositoryImplIntegrationTest {
         @DisplayName("存在しないコードで false を返す")
         void shouldReturnFalseForNonExistentCode() {
             // When
-            boolean exists = accountRepository.existsByCode(AccountCode.of("6002"));
+            boolean exists = accountRepository.existsByCode(AccountCode.of("6002"))
+                    .getOrElse(false);
 
             // Then
             assertThat(exists).isFalse();
@@ -246,8 +267,10 @@ class AccountRepositoryImplIntegrationTest {
             Account account = createTestAccount("7001", "資本金", AccountType.EQUITY);
 
             // When
-            Account savedAccount = accountRepository.save(account);
-            Optional<Account> found = accountRepository.findById(savedAccount.getId());
+            Account savedAccount = accountRepository.save(account)
+                    .getOrElse((Account) null);
+            Optional<Account> found = accountRepository.findById(savedAccount.getId())
+                    .getOrElse(Optional.empty());
 
             // Then
             assertThat(found).isPresent();

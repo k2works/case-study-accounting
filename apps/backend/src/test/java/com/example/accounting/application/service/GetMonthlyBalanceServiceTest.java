@@ -10,6 +10,7 @@ import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
 import com.example.accounting.infrastructure.persistence.entity.MonthlyAccountBalanceEntity;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +47,7 @@ class GetMonthlyBalanceServiceTest {
 
     @Test
     void shouldReturnMonthlyBalanceWithEntries() {
-        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Optional.of(TEST_ACCOUNT));
+        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Try.success(Optional.of(TEST_ACCOUNT)));
 
         MonthlyAccountBalanceEntity jan = createEntity(1,
                 new BigDecimal("10000"), new BigDecimal("5000"),
@@ -56,7 +57,7 @@ class GetMonthlyBalanceServiceTest {
                 new BigDecimal("1000"), new BigDecimal("13000"));
 
         when(monthlyAccountBalanceRepository.findByAccountCodeAndFiscalPeriod(ACCOUNT_CODE, 2024))
-                .thenReturn(List.of(jan, feb));
+                .thenReturn(Try.success(List.of(jan, feb)));
 
         GetMonthlyBalanceResult result = service.execute(
                 new GetMonthlyBalanceQuery(ACCOUNT_CODE, 2024));
@@ -74,9 +75,9 @@ class GetMonthlyBalanceServiceTest {
 
     @Test
     void shouldReturnEmptyResultWhenNoData() {
-        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Optional.of(TEST_ACCOUNT));
+        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Try.success(Optional.of(TEST_ACCOUNT)));
         when(monthlyAccountBalanceRepository.findByAccountCodeAndFiscalPeriod(ACCOUNT_CODE, null))
-                .thenReturn(List.of());
+                .thenReturn(Try.success(List.of()));
 
         GetMonthlyBalanceResult result = service.execute(
                 new GetMonthlyBalanceQuery(ACCOUNT_CODE, null));
@@ -90,7 +91,7 @@ class GetMonthlyBalanceServiceTest {
 
     @Test
     void shouldThrowWhenAccountNotFound() {
-        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Optional.empty());
+        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Try.success(Optional.empty()));
 
         assertThatThrownBy(() -> service.execute(new GetMonthlyBalanceQuery(ACCOUNT_CODE, 2024)))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -99,12 +100,12 @@ class GetMonthlyBalanceServiceTest {
 
     @Test
     void shouldHandleNullAmountsWithDefaultZero() {
-        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Optional.of(TEST_ACCOUNT));
+        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Try.success(Optional.of(TEST_ACCOUNT)));
 
         MonthlyAccountBalanceEntity entityWithNulls = createEntity(1, null, null, null, null);
 
         when(monthlyAccountBalanceRepository.findByAccountCodeAndFiscalPeriod(ACCOUNT_CODE, 2024))
-                .thenReturn(List.of(entityWithNulls));
+                .thenReturn(Try.success(List.of(entityWithNulls)));
 
         GetMonthlyBalanceResult result = service.execute(
                 new GetMonthlyBalanceQuery(ACCOUNT_CODE, 2024));
@@ -119,9 +120,9 @@ class GetMonthlyBalanceServiceTest {
 
     @Test
     void shouldPassFiscalPeriodToRepository() {
-        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Optional.of(TEST_ACCOUNT));
+        when(accountRepository.findByCode(ACCOUNT_CODE)).thenReturn(Try.success(Optional.of(TEST_ACCOUNT)));
         when(monthlyAccountBalanceRepository.findByAccountCodeAndFiscalPeriod(ACCOUNT_CODE, 2025))
-                .thenReturn(List.of());
+                .thenReturn(Try.success(List.of()));
 
         GetMonthlyBalanceResult result = service.execute(
                 new GetMonthlyBalanceQuery(ACCOUNT_CODE, 2025));

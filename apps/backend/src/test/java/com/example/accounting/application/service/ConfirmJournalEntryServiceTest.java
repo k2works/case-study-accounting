@@ -10,6 +10,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -59,9 +60,9 @@ class ConfirmJournalEntryServiceTest {
             JournalEntry existingEntry = approvedEntry();
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
             when(journalEntryRepository.save(any(JournalEntry.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(0));
+                    .thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             ConfirmJournalEntryResult result = confirmJournalEntryService.execute(command);
 
@@ -93,7 +94,7 @@ class ConfirmJournalEntryServiceTest {
             ConfirmJournalEntryCommand command = new ConfirmJournalEntryCommand(99, "confirmer-1");
 
             when(journalEntryRepository.findById(JournalEntryId.of(99)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             ConfirmJournalEntryResult result = confirmJournalEntryService.execute(command);
 
@@ -109,7 +110,7 @@ class ConfirmJournalEntryServiceTest {
             JournalEntry existingEntry = pendingEntry();
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
 
             ConfirmJournalEntryResult result = confirmJournalEntryService.execute(command);
 

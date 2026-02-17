@@ -48,7 +48,8 @@ public class CreateAccountService implements CreateAccountUseCase {
     private IO<Either<String, CreateAccountCommand>> validateUniquenessIO(CreateAccountCommand command) {
         return IO.delay(() -> {
             AccountCode accountCode = AccountCode.of(command.accountCode());
-            if (accountRepository.existsByCode(accountCode)) {
+            if (accountRepository.existsByCode(accountCode)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))) {
                 return Either.left("勘定科目コードは既に使用されています");
             }
             return Either.right(command);
@@ -76,7 +77,8 @@ public class CreateAccountService implements CreateAccountUseCase {
     }
 
     private IO<Account> createAccountIO(Account account) {
-        return IO.delay(() -> accountRepository.save(account));
+        return IO.delay(() -> accountRepository.save(account)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 
     private CreateAccountResult createAccountResult(Account account) {

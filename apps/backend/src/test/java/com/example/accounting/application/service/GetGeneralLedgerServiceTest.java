@@ -9,6 +9,7 @@ import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountCode;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -57,13 +58,13 @@ class GetGeneralLedgerServiceTest {
                     AccountId.of(1), AccountCode.of("1101"), "現金", AccountType.ASSET);
 
             when(accountRepository.findById(AccountId.of(1)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(journalEntryRepository.calculateBalanceBeforeDate(1, dateFrom))
-                    .thenReturn(new BigDecimal("1000"));
+                    .thenReturn(Try.success(new BigDecimal("1000")));
             when(journalEntryRepository.countPostedLinesByAccountAndPeriod(1, dateFrom, dateTo))
-                    .thenReturn(2L);
+                    .thenReturn(Try.success(2L));
             when(journalEntryRepository.findPostedLinesByAccountAndPeriod(1, dateFrom, dateTo, 0, 20))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new GeneralLedgerEntry(
                                     10,
                                     LocalDate.of(2024, 1, 10),
@@ -80,7 +81,7 @@ class GetGeneralLedgerServiceTest {
                                     new BigDecimal("200"),
                                     null
                             )
-                    ));
+                    )));
 
             GetGeneralLedgerResult result = service.execute(query);
 
@@ -109,13 +110,13 @@ class GetGeneralLedgerServiceTest {
                     AccountId.of(2), AccountCode.of("2101"), "買掛金", AccountType.LIABILITY);
 
             when(accountRepository.findById(AccountId.of(2)))
-                    .thenReturn(Optional.of(account));
+                    .thenReturn(Try.success(Optional.of(account)));
             when(journalEntryRepository.calculateBalanceBeforeDate(2, dateFrom))
-                    .thenReturn(new BigDecimal("-300"));
+                    .thenReturn(Try.success(new BigDecimal("-300")));
             when(journalEntryRepository.countPostedLinesByAccountAndPeriod(2, dateFrom, dateTo))
-                    .thenReturn(1L);
+                    .thenReturn(Try.success(1L));
             when(journalEntryRepository.findPostedLinesByAccountAndPeriod(2, dateFrom, dateTo, 0, 20))
-                    .thenReturn(List.of(
+                    .thenReturn(Try.success(List.of(
                             new GeneralLedgerEntry(
                                     21,
                                     LocalDate.of(2024, 4, 15),
@@ -124,7 +125,7 @@ class GetGeneralLedgerServiceTest {
                                     new BigDecimal("400"),
                                     null
                             )
-                    ));
+                    )));
 
             GetGeneralLedgerResult result = service.execute(query);
 

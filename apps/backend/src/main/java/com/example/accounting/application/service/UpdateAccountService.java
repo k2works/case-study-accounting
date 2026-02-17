@@ -52,6 +52,7 @@ public class UpdateAccountService implements UpdateAccountUseCase {
 
     private IO<Either<String, Account>> findAccountIO(Integer accountId) {
         return IO.delay(() -> accountRepository.findById(AccountId.of(accountId))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .<Either<String, Account>>map(Either::right)
                 .orElseGet(() -> Either.left("勘定科目が見つかりません")));
     }
@@ -84,7 +85,8 @@ public class UpdateAccountService implements UpdateAccountUseCase {
     }
 
     private IO<Account> updateAccountIO(Account account) {
-        return IO.delay(() -> accountRepository.save(account));
+        return IO.delay(() -> accountRepository.save(account)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)));
     }
 
     private UpdateAccountResult updateAccountResult(Account account) {

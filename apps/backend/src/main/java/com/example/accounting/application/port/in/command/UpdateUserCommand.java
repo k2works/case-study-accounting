@@ -1,5 +1,7 @@
 package com.example.accounting.application.port.in.command;
 
+import io.vavr.control.Either;
+
 /**
  * ユーザー更新コマンド
  *
@@ -14,15 +16,22 @@ public record UpdateUserCommand(
         String password,
         String role
 ) {
-    public UpdateUserCommand {
+
+    public static Either<String, UpdateUserCommand> of(
+            String userId,
+            String displayName,
+            String password,
+            String role
+    ) {
         if (userId == null || userId.isBlank()) {
-            throw new IllegalArgumentException("ユーザーIDは必須です");
+            return Either.left("ユーザーIDは必須です");
         }
         if (displayName == null || displayName.isBlank()) {
-            throw new IllegalArgumentException("表示名は必須です");
+            return Either.left("表示名は必須です");
         }
         if (role == null || role.isBlank()) {
-            throw new IllegalArgumentException("ロールは必須です");
+            return Either.left("ロールは必須です");
         }
+        return Either.right(new UpdateUserCommand(userId, displayName, password, role));
     }
 }

@@ -3,6 +3,7 @@ package com.example.accounting.infrastructure.persistence.repository;
 import com.example.accounting.application.port.out.TrialBalanceRepository;
 import com.example.accounting.infrastructure.persistence.entity.TrialBalanceEntity;
 import com.example.accounting.infrastructure.persistence.mapper.TrialBalanceMapper;
+import io.vavr.control.Try;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,7 +17,7 @@ public class MyBatisTrialBalanceRepository implements TrialBalanceRepository {
     }
 
     @Override
-    public List<TrialBalanceEntity> findTrialBalance(LocalDate date) {
-        return trialBalanceMapper.findTrialBalance(date);
+    public Try<List<TrialBalanceEntity>> findTrialBalance(LocalDate date) {
+        return Try.of(() -> trialBalanceMapper.findTrialBalance(date));
     }
 }

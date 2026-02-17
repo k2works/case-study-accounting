@@ -70,7 +70,8 @@ public class AuthService implements AuthUseCase {
      */
     private IO<Either<String, User>> findUserIO(String username) {
         return IO.delay(() ->
-                Option.ofOptional(userRepository.findByUsername(username))
+                Option.ofOptional(userRepository.findByUsername(username)
+                        .getOrElseThrow(ex -> new RuntimeException("Data access error", ex)))
                         .toEither("ユーザー名またはパスワードが正しくありません")
         );
     }
@@ -104,7 +105,8 @@ public class AuthService implements AuthUseCase {
         }
         // パスワード検証失敗時の副作用
         User updatedUser = user.recordFailedLoginAttempt();
-        userRepository.save(updatedUser);
+        userRepository.save(updatedUser)
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         return Either.left("ユーザー名またはパスワードが正しくありません");
     }
 
@@ -124,7 +126,8 @@ public class AuthService implements AuthUseCase {
     private IO<User> processSuccessfulLoginIO(User user) {
         return IO.delay(() -> {
             User updatedUser = user.recordSuccessfulLogin();
-            userRepository.save(updatedUser);
+            userRepository.save(updatedUser)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
             return updatedUser;
         });
     }

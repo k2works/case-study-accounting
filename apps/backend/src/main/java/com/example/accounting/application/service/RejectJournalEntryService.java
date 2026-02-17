@@ -27,6 +27,7 @@ public class RejectJournalEntryService implements RejectJournalEntryUseCase {
         try {
             JournalEntry journalEntry = journalEntryRepository
                     .findById(new JournalEntryId(command.journalEntryId()))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                     .orElse(null);
 
             if (journalEntry == null) {
@@ -38,7 +39,8 @@ public class RejectJournalEntryService implements RejectJournalEntryUseCase {
                     LocalDateTime.now(),
                     command.rejectionReason()
             );
-            journalEntryRepository.save(updated);
+            journalEntryRepository.save(updated)
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
 
             return RejectJournalEntryResult.success(
                     updated.getId().value(),

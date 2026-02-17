@@ -5,6 +5,7 @@ import com.example.accounting.application.port.out.GetTrialBalanceResult;
 import com.example.accounting.application.port.out.GetTrialBalanceResult.CategorySubtotal;
 import com.example.accounting.application.port.out.TrialBalanceRepository;
 import com.example.accounting.infrastructure.persistence.entity.TrialBalanceEntity;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +39,7 @@ class GetTrialBalanceServiceTest {
         TrialBalanceEntity liability = createEntity("200", "買掛金", "B", "LIABILITY",
                 BigDecimal.ZERO, new BigDecimal("1000"), new BigDecimal("-1000"));
 
-        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(asset, liability));
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(Try.success(List.of(asset, liability)));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 
@@ -55,7 +56,7 @@ class GetTrialBalanceServiceTest {
         TrialBalanceEntity liability = createEntity("200", "買掛金", "B", "LIABILITY",
                 BigDecimal.ZERO, new BigDecimal("1000"), new BigDecimal("-1000"));
 
-        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(asset, liability));
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(Try.success(List.of(asset, liability)));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 
@@ -77,7 +78,7 @@ class GetTrialBalanceServiceTest {
                 new BigDecimal("2000"), BigDecimal.ZERO, new BigDecimal("2000"));
 
         when(trialBalanceRepository.findTrialBalance(null))
-                .thenReturn(List.of(cash, ar, ap, revenue, expense));
+                .thenReturn(Try.success(List.of(cash, ar, ap, revenue, expense)));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 
@@ -102,7 +103,7 @@ class GetTrialBalanceServiceTest {
     @Test
     void shouldExecuteQueryWithSpecifiedDate() {
         LocalDate date = LocalDate.of(2026, 1, 31);
-        when(trialBalanceRepository.findTrialBalance(date)).thenReturn(List.of());
+        when(trialBalanceRepository.findTrialBalance(date)).thenReturn(Try.success(List.of()));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(date));
 
@@ -113,7 +114,7 @@ class GetTrialBalanceServiceTest {
 
     @Test
     void shouldReturnEmptyResultWhenNoData() {
-        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of());
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(Try.success(List.of()));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 
@@ -128,7 +129,7 @@ class GetTrialBalanceServiceTest {
         TrialBalanceEntity unknownType = createEntity("999", "不明", "B", "UNKNOWN",
                 BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("500"));
 
-        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(unknownType));
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(Try.success(List.of(unknownType)));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 
@@ -152,7 +153,7 @@ class GetTrialBalanceServiceTest {
         entityWithNullBalance.setTotalCredit(BigDecimal.ZERO);
         entityWithNullBalance.setBalance(null);
 
-        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(entityWithNullBalance));
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(Try.success(List.of(entityWithNullBalance)));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 
@@ -169,7 +170,7 @@ class GetTrialBalanceServiceTest {
         TrialBalanceEntity expense = createEntity("500", "仕入", "P", "EXPENSE",
                 BigDecimal.ZERO, new BigDecimal("1000"), new BigDecimal("-200"));
 
-        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(expense));
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(Try.success(List.of(expense)));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 
@@ -185,7 +186,7 @@ class GetTrialBalanceServiceTest {
         TrialBalanceEntity liability = createEntity("200", "買掛金", "B", "LIABILITY",
                 BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 
-        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(List.of(liability));
+        when(trialBalanceRepository.findTrialBalance(null)).thenReturn(Try.success(List.of(liability)));
 
         GetTrialBalanceResult result = service.execute(new GetTrialBalanceQuery(null));
 

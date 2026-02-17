@@ -142,6 +142,7 @@ public class JournalEntryController {
             Principal principal
     ) {
         User user = userRepository.findByUsername(principal.getName())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .orElseThrow(() -> new BusinessException("ユーザーが存在しません"));
 
         List<CreateJournalEntryCommand.JournalEntryLineInput> lines = request.lines().stream()

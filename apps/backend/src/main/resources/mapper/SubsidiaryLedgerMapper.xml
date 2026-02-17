@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.accounting.infrastructure.persistence.mapper.SubsidiaryLedgerMapper">
+
+    <resultMap id="subsidiaryLedgerEntryResultMap"
+               type="com.example.accounting.infrastructure.persistence.entity.JournalEntryLineWithHeaderEntity">
+        <id property="journalEntryId" column="journal_entry_id"/>
+        <result property="journalDate" column="journal_date"/>
+        <result property="description" column="description"/>
+        <result property="debitAmount" column="debit_amount"/>
+        <result property="creditAmount" column="credit_amount"/>
+    </resultMap>
+
+    <select id="findPostedLinesByAccountAndSubAccountAndPeriod" resultMap="subsidiaryLedgerEntryResultMap">
+        SELECT
+            je.id AS journal_entry_id,
+            je.journal_date,
+            COALESCE(je.description, '') AS description,
+            CASE WHEN jedc.debit_credit_type = 'D' THEN jedc.amount ELSE 0 END AS debit_amount,
+            CASE WHEN jedc.debit_credit_type = 'C' THEN jedc.amount ELSE 0 END AS credit_amount
+        FROM journal_entries je
+        INNER JOIN journal_entry_debit_credit jedc ON je.id = jedc.journal_entry_id
+        <where>
+            je.status = 'CONFIRMED'
+            AND jedc.account_code = #{accountCode}
+            <if test="subAccountCode != null and subAccountCode != ''">
+                AND jedc.sub_account_code = #{subAccountCode}
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+        ORDER BY je.journal_date ASC, je.id ASC, jedc.line_number ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countPostedLinesByAccountAndSubAccountAndPeriod" resultType="long">
+        SELECT COUNT(*)
+        FROM journal_entries je
+        INNER JOIN journal_entry_debit_credit jedc ON je.id = jedc.journal_entry_id
+        <where>
+            je.status = 'CONFIRMED'
+            AND jedc.account_code = #{accountCode}
+            <if test="subAccountCode != null and subAccountCode != ''">
+                AND jedc.sub_account_code = #{subAccountCode}
+            </if>
+            <if test="dateFrom != null">
+                AND je.journal_date <![CDATA[>=]]> #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND je.journal_date <![CDATA[<=]]> #{dateTo}
+            </if>
+        </where>
+    </select>
+
+    <select id="calculateBalanceBeforeDateByAccountAndSubAccount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(
+            CASE WHEN jedc.debit_credit_type = 'D' THEN jedc.amount
+                 WHEN jedc.debit_credit_type = 'C' THEN -jedc.amount
+                 ELSE 0 END
+        ), 0)
+        FROM journal_entries je
+        INNER JOIN journal_entry_debit_credit jedc ON je.id = jedc.journal_entry_id
+        <where>
+            je.status = 'CONFIRMED'
+            AND jedc.account_code = #{accountCode}
+            <if test="subAccountCode != null and subAccountCode != ''">
+                AND jedc.sub_account_code = #{subAccountCode}
+            </if>
+            AND je.journal_date <![CDATA[<]]> #{date}
+        </where>
+    </select>
+
+</mapper>

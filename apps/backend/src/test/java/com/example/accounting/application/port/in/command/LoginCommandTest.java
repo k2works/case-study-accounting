@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("LoginCommand")
 class LoginCommandTest {
@@ -24,51 +23,45 @@ class LoginCommandTest {
         }
 
         @Test
-        @DisplayName("username が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullUsername() {
-            assertThatThrownBy(() -> new LoginCommand(null, "password123"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
+        @DisplayName("username が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullUsername() {
+            assertThat(LoginCommand.of(null, "password123").getLeft())
+                    .isEqualTo("ユーザー名は必須です");
         }
 
         @Test
-        @DisplayName("username が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyUsername() {
-            assertThatThrownBy(() -> new LoginCommand("", "password123"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
+        @DisplayName("username が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyUsername() {
+            assertThat(LoginCommand.of("", "password123").getLeft())
+                    .isEqualTo("ユーザー名は必須です");
         }
 
         @Test
-        @DisplayName("username が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankUsername() {
-            assertThatThrownBy(() -> new LoginCommand("   ", "password123"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("ユーザー名は必須です");
+        @DisplayName("username が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankUsername() {
+            assertThat(LoginCommand.of("   ", "password123").getLeft())
+                    .isEqualTo("ユーザー名は必須です");
         }
 
         @Test
-        @DisplayName("password が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullPassword() {
-            assertThatThrownBy(() -> new LoginCommand("testuser", null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
+        @DisplayName("password が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullPassword() {
+            assertThat(LoginCommand.of("testuser", null).getLeft())
+                    .isEqualTo("パスワードは必須です");
         }
 
         @Test
-        @DisplayName("password が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyPassword() {
-            assertThatThrownBy(() -> new LoginCommand("testuser", ""))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
+        @DisplayName("password が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyPassword() {
+            assertThat(LoginCommand.of("testuser", "").getLeft())
+                    .isEqualTo("パスワードは必須です");
         }
 
         @Test
-        @DisplayName("password が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankPassword() {
-            assertThatThrownBy(() -> new LoginCommand("testuser", "   "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("パスワードは必須です");
+        @DisplayName("password が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankPassword() {
+            assertThat(LoginCommand.of("testuser", "   ").getLeft())
+                    .isEqualTo("パスワードは必須です");
         }
     }
 }

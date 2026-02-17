@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("UpdateAccountCommand")
 class UpdateAccountCommandTest {
@@ -29,99 +28,83 @@ class UpdateAccountCommandTest {
         }
 
         @Test
-        @DisplayName("accountId が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullAccountId() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullAccountId() {
+            assertThat(UpdateAccountCommand.of(
                     null,
                     "Cash",
                     "ASSET"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目IDは必須です");
+            ).getLeft()).isEqualTo("勘定科目IDは必須です");
         }
 
         @Test
-        @DisplayName("accountName が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullAccountName() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountName が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullAccountName() {
+            assertThat(UpdateAccountCommand.of(
                     1,
                     null,
                     "ASSET"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目名は必須です");
+            ).getLeft()).isEqualTo("勘定科目名は必須です");
         }
 
         @Test
-        @DisplayName("accountName が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyAccountName() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountName が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyAccountName() {
+            assertThat(UpdateAccountCommand.of(
                     1,
                     "",
                     "ASSET"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目名は必須です");
+            ).getLeft()).isEqualTo("勘定科目名は必須です");
         }
 
         @Test
-        @DisplayName("accountName が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankAccountName() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountName が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankAccountName() {
+            assertThat(UpdateAccountCommand.of(
                     1,
                     "   ",
                     "ASSET"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目名は必須です");
+            ).getLeft()).isEqualTo("勘定科目名は必須です");
         }
 
         @Test
-        @DisplayName("accountType が null の場合は例外をスローする")
-        void shouldThrowExceptionForNullAccountType() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountType が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftForNullAccountType() {
+            assertThat(UpdateAccountCommand.of(
                     1,
                     "Cash",
                     null
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目種別は必須です");
+            ).getLeft()).isEqualTo("勘定科目種別は必須です");
         }
 
         @Test
-        @DisplayName("accountType が空文字の場合は例外をスローする")
-        void shouldThrowExceptionForEmptyAccountType() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountType が空文字の場合はバリデーションエラーになる")
+        void shouldReturnLeftForEmptyAccountType() {
+            assertThat(UpdateAccountCommand.of(
                     1,
                     "Cash",
                     ""
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目種別は必須です");
+            ).getLeft()).isEqualTo("勘定科目種別は必須です");
         }
 
         @Test
-        @DisplayName("accountType が空白のみの場合は例外をスローする")
-        void shouldThrowExceptionForBlankAccountType() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountType が空白のみの場合はバリデーションエラーになる")
+        void shouldReturnLeftForBlankAccountType() {
+            assertThat(UpdateAccountCommand.of(
                     1,
                     "Cash",
                     "   "
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("勘定科目種別は必須です");
+            ).getLeft()).isEqualTo("勘定科目種別は必須です");
         }
 
         @Test
-        @DisplayName("accountType が許可されていない値の場合は例外をスローする")
-        void shouldThrowExceptionForInvalidAccountType() {
-            assertThatThrownBy(() -> new UpdateAccountCommand(
+        @DisplayName("accountType が許可されていない値の場合はバリデーションエラーになる")
+        void shouldReturnLeftForInvalidAccountType() {
+            assertThat(UpdateAccountCommand.of(
                     1,
                     "Cash",
                     "INVALID"
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("無効な勘定科目種別コードです: INVALID");
+            ).getLeft()).isEqualTo("無効な勘定科目種別コードです: INVALID");
         }
     }
 }

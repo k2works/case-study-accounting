@@ -9,6 +9,7 @@ import com.example.accounting.domain.model.user.Role;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.Username;
 import com.example.accounting.infrastructure.security.JwtService;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -73,10 +74,10 @@ class AuthServiceTest {
             String password = "Password123!";
             User user = createTestUser(username, "test@example.com", password);
 
-            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+            when(userRepository.findByUsername(username)).thenReturn(Try.success(Optional.of(user)));
             when(jwtService.generateToken(anyString(), anyMap())).thenReturn("access_token");
             when(jwtService.generateRefreshToken(anyString())).thenReturn("refresh_token");
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             LoginCommand command = new LoginCommand(username, password);
 
@@ -108,7 +109,7 @@ class AuthServiceTest {
         @DisplayName("存在しないユーザー名でログインに失敗する")
         void shouldFailWithNonExistentUsername() {
             // Given
-            when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+            when(userRepository.findByUsername("nonexistent")).thenReturn(Try.success(Optional.empty()));
 
             LoginCommand command = new LoginCommand("nonexistent", "password");
 
@@ -130,8 +131,8 @@ class AuthServiceTest {
             String username = "testuser";
             User user = createTestUser(username, "test@example.com", "CorrectPassword123!");
 
-            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepository.findByUsername(username)).thenReturn(Try.success(Optional.of(user)));
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             LoginCommand command = new LoginCommand(username, "WrongPassword");
 
@@ -163,7 +164,7 @@ class AuthServiceTest {
                     .recordFailedLoginAttempt()
                     .recordFailedLoginAttempt();
 
-            when(userRepository.findByUsername(username)).thenReturn(Optional.of(lockedUser));
+            when(userRepository.findByUsername(username)).thenReturn(Try.success(Optional.of(lockedUser)));
 
             LoginCommand command = new LoginCommand(username, "Password123!");
 
@@ -186,7 +187,7 @@ class AuthServiceTest {
             // 無効化する（イミュータブルなので結果を受け取る）
             User deactivatedUser = user.deactivate();
 
-            when(userRepository.findByUsername(username)).thenReturn(Optional.of(deactivatedUser));
+            when(userRepository.findByUsername(username)).thenReturn(Try.success(Optional.of(deactivatedUser)));
 
             LoginCommand command = new LoginCommand(username, "Password123!");
 
@@ -213,12 +214,12 @@ class AuthServiceTest {
             User user = createTestUser(username, "test@example.com", "CorrectPassword123!");
 
             // 各呼び出しで更新されたユーザーを返すようにする（lenient を使用してネストスタブを許容）
-            lenient().when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+            lenient().when(userRepository.findByUsername(username)).thenReturn(Try.success(Optional.of(user)));
             when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
                 User savedUser = invocation.getArgument(0);
                 // 次回の findByUsername で更新されたユーザーを返す
-                lenient().when(userRepository.findByUsername(username)).thenReturn(Optional.of(savedUser));
-                return savedUser;
+                lenient().when(userRepository.findByUsername(username)).thenReturn(Try.success(Optional.of(savedUser)));
+                return Try.success(savedUser);
             });
 
             LoginCommand command = new LoginCommand(username, "WrongPassword");

@@ -12,7 +12,6 @@ import com.example.accounting.application.port.out.UpdateAccountResult;
 import com.example.accounting.domain.model.account.Account;
 import com.example.accounting.domain.model.account.AccountId;
 import com.example.accounting.domain.model.account.AccountType;
-import com.example.accounting.infrastructure.web.exception.BusinessException;
 import com.example.accounting.infrastructure.web.dto.AccountResponse;
 import com.example.accounting.infrastructure.web.dto.CreateAccountRequest;
 import com.example.accounting.infrastructure.web.dto.CreateAccountResponse;
@@ -26,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -127,8 +127,8 @@ public class AccountController {
     public ResponseEntity<List<AccountResponse>> findAll(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String keyword) {
-        AccountType accountType = parseAccountType(type);
-        String normalizedKeyword = normalizeKeyword(keyword);
+        Optional<AccountType> accountType = parseAccountType(type);
+        Optional<String> normalizedKeyword = normalizeKeyword(keyword);
 
         List<Account> accounts = fetchAccounts(accountType, normalizedKeyword);
 
@@ -138,26 +138,28 @@ public class AccountController {
         return ResponseEntity.ok(responses);
     }
 
-    private AccountType parseAccountType(String type) {
+    private Optional<AccountType> parseAccountType(String type) {
         if (type == null || type.isBlank()) {
-            return null;
+            return Optional.empty();
         }
         try {
-            return AccountType.fromCode(type);
+            return Optional.of(AccountType.fromCode(type));
         } catch (IllegalArgumentException ex) {
-            throw new BusinessException("Invalid Parameter", ex.getMessage(), ex);
+            return Optional.empty();
         }
     }
 
-    private String normalizeKeyword(String keyword) {
-        return (keyword != null && !keyword.isBlank()) ? keyword : null;
+    private Optional<String> normalizeKeyword(String keyword) {
+        return (keyword != null && !keyword.isBlank()) ? Optional.of(keyword) : Optional.empty();
     }
 
-    private List<Account> fetchAccounts(AccountType accountType, String keyword) {
-        if (accountType != null || keyword != null) {
-            return accountRepository.search(accountType, keyword);
+    private List<Account> fetchAccounts(Optional<AccountType> accountType, Optional<String> keyword) {
+        if (accountType.isPresent() || keyword.isPresent()) {
+            return accountRepository.search(accountType.orElse(null), keyword.orElse(null))
+                    .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
         }
-        return accountRepository.findAll();
+        return accountRepository.findAll()
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex));
     }
 
     /**
@@ -186,6 +188,7 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AccountResponse> findById(@PathVariable("id") Integer id) {
         return accountRepository.findById(AccountId.of(id))
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
                 .map(account -> ResponseEntity.ok(toResponse(account)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

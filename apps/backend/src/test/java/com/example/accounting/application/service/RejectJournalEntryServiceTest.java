@@ -10,6 +10,7 @@ import com.example.accounting.domain.model.journal.JournalEntryLine;
 import com.example.accounting.domain.model.journal.JournalEntryStatus;
 import com.example.accounting.domain.model.journal.Money;
 import com.example.accounting.domain.model.user.UserId;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -59,9 +60,9 @@ class RejectJournalEntryServiceTest {
             JournalEntry existingEntry = pendingEntry();
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
             when(journalEntryRepository.save(any(JournalEntry.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(0));
+                    .thenAnswer(invocation -> Try.success(invocation.getArgument(0)));
 
             RejectJournalEntryResult result = rejectJournalEntryService.execute(command);
 
@@ -95,7 +96,7 @@ class RejectJournalEntryServiceTest {
             RejectJournalEntryCommand command = new RejectJournalEntryCommand(99, "manager-1", "理由");
 
             when(journalEntryRepository.findById(JournalEntryId.of(99)))
-                    .thenReturn(Optional.empty());
+                    .thenReturn(Try.success(Optional.empty()));
 
             RejectJournalEntryResult result = rejectJournalEntryService.execute(command);
 
@@ -111,7 +112,7 @@ class RejectJournalEntryServiceTest {
             JournalEntry existingEntry = draftEntry();
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
 
             RejectJournalEntryResult result = rejectJournalEntryService.execute(command);
 
@@ -127,7 +128,7 @@ class RejectJournalEntryServiceTest {
             JournalEntry existingEntry = approvedEntry();
 
             when(journalEntryRepository.findById(JournalEntryId.of(10)))
-                    .thenReturn(Optional.of(existingEntry));
+                    .thenReturn(Try.success(Optional.of(existingEntry)));
 
             RejectJournalEntryResult result = rejectJournalEntryService.execute(command);
 
@@ -142,48 +143,38 @@ class RejectJournalEntryServiceTest {
     class CommandValidation {
 
         @Test
-        @DisplayName("仕訳IDがnullの場合は例外をスローする")
-        void shouldThrowWhenJournalEntryIdIsNull() {
-            org.assertj.core.api.Assertions.assertThatThrownBy(
-                    () -> new RejectJournalEntryCommand(null, "manager-1", "理由"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("仕訳IDは必須です");
+        @DisplayName("仕訳IDがnullの場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenJournalEntryIdIsNull() {
+            assertThat(RejectJournalEntryCommand.of(null, "manager-1", "理由").getLeft())
+                    .isEqualTo("仕訳IDは必須です");
         }
 
         @Test
-        @DisplayName("差し戻し者IDがnullの場合は例外をスローする")
-        void shouldThrowWhenRejectorIdIsNull() {
-            org.assertj.core.api.Assertions.assertThatThrownBy(
-                    () -> new RejectJournalEntryCommand(1, null, "理由"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("差し戻し者IDは必須です");
+        @DisplayName("差し戻し者IDがnullの場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenRejectorIdIsNull() {
+            assertThat(RejectJournalEntryCommand.of(1, null, "理由").getLeft())
+                    .isEqualTo("差し戻し者IDは必須です");
         }
 
         @Test
-        @DisplayName("差し戻し者IDが空白の場合は例外をスローする")
-        void shouldThrowWhenRejectorIdIsBlank() {
-            org.assertj.core.api.Assertions.assertThatThrownBy(
-                    () -> new RejectJournalEntryCommand(1, "  ", "理由"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("差し戻し者IDは必須です");
+        @DisplayName("差し戻し者IDが空白の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenRejectorIdIsBlank() {
+            assertThat(RejectJournalEntryCommand.of(1, "  ", "理由").getLeft())
+                    .isEqualTo("差し戻し者IDは必須です");
         }
 
         @Test
-        @DisplayName("差し戻し理由がnullの場合は例外をスローする")
-        void shouldThrowWhenReasonIsNull() {
-            org.assertj.core.api.Assertions.assertThatThrownBy(
-                    () -> new RejectJournalEntryCommand(1, "manager-1", null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("差し戻し理由は必須です");
+        @DisplayName("差し戻し理由がnullの場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenReasonIsNull() {
+            assertThat(RejectJournalEntryCommand.of(1, "manager-1", null).getLeft())
+                    .isEqualTo("差し戻し理由は必須です");
         }
 
         @Test
-        @DisplayName("差し戻し理由が空白の場合は例外をスローする")
-        void shouldThrowWhenReasonIsBlank() {
-            org.assertj.core.api.Assertions.assertThatThrownBy(
-                    () -> new RejectJournalEntryCommand(1, "manager-1", "  "))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("差し戻し理由は必須です");
+        @DisplayName("差し戻し理由が空白の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenReasonIsBlank() {
+            assertThat(RejectJournalEntryCommand.of(1, "manager-1", "  ").getLeft())
+                    .isEqualTo("差し戻し理由は必須です");
         }
     }
 

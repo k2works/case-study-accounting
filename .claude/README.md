@@ -26,11 +26,13 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 | :--- | :--- |
 | `orchestrating-analysis` | 分析フェーズ全体のワークフローをオーケストレーション。各 analyzing-* スキルの実行順序を案内。 |
 | `orchestrating-development` | 開発フェーズ全体の TDD ワークフローをオーケストレーション。Codex 分業体制を案内。 |
+| `orchestrating-project` | 計画・進捗管理フェーズ全体のワークフローをオーケストレーション。リリース計画、GitHub Project 同期、進捗追跡の実行順序を案内。 |
 
 #### 分析系
 
 | スキル | 説明 |
 | :--- | :--- |
+| `analyzing-business` | ビジネスアーキテクチャ分析を支援。ビジネスモデルキャンバス、バリューストリーム、ケイパビリティマップ等の作成。 |
 | `analyzing-requirements` | RDRA 2.0 に基づいた体系的な要件定義を作成。 |
 | `analyzing-usecases` | ユースケース・ユーザーストーリー作成を支援。 |
 | `analyzing-architecture` | アーキテクチャパターンの選択と設計ドキュメント作成。 |
@@ -115,6 +117,7 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 │   ├── ai-agent-guidelines/SKILL.md
 │   ├── git-commit/SKILL.md
 │   ├── creating-adr/SKILL.md
+│   ├── analyzing-business/SKILL.md
 │   ├── analyzing-requirements/SKILL.md
 │   ├── analyzing-usecases/SKILL.md
 │   ├── analyzing-architecture/SKILL.md
@@ -139,7 +142,8 @@ Claude Code をより効率的に使うための基本設定テンプレート�
 │   ├── syncing-github-project/SKILL.md
 │   ├── planning-releases/SKILL.md
 │   ├── orchestrating-analysis/SKILL.md
-│   └── orchestrating-development/SKILL.md
+│   ├── orchestrating-development/SKILL.md
+│   └── orchestrating-project/SKILL.md
 ├── SKILLS_TEMPLATE.md                  # スキル作成テンプレート
 ├── README.md
 ├── settings.json                       # Claude Code 設定

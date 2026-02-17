@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("GetGeneralLedgerQuery")
 class GetGeneralLedgerQueryTest {
@@ -17,35 +16,28 @@ class GetGeneralLedgerQueryTest {
     class Validation {
 
         @Test
-        @DisplayName("accountId が null の場合は例外をスローする")
-        void shouldThrowExceptionWhenAccountIdIsNull() {
-            assertThatThrownBy(() -> new GetGeneralLedgerQuery(null, null, null, 0, 20))
-                    .isInstanceOf(NullPointerException.class)
-                    .hasMessageContaining("accountId must not be null");
+        @DisplayName("accountId が null の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenAccountIdIsNull() {
+            assertThat(GetGeneralLedgerQuery.of(null, null, null, 0, 20).getLeft())
+                    .isEqualTo("勘定科目 ID は必須です");
         }
 
         @Test
-        @DisplayName("page が負の場合は例外をスローする")
-        void shouldThrowExceptionWhenPageIsNegative() {
-            assertThatThrownBy(() -> new GetGeneralLedgerQuery(1, null, null, -1, 20))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("page must be >= 0");
+        @DisplayName("page が負の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenPageIsNegative() {
+            assertThat(GetGeneralLedgerQuery.of(1, null, null, -1, 20).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 0 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeIsZero() {
-            assertThatThrownBy(() -> new GetGeneralLedgerQuery(1, null, null, 0, 0))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be 1-100");
+        @DisplayName("size が 0 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeIsZero() {
+            assertThat(GetGeneralLedgerQuery.of(1, null, null, 0, 0).isLeft()).isTrue();
         }
 
         @Test
-        @DisplayName("size が 101 の場合は例外をスローする")
-        void shouldThrowExceptionWhenSizeExceeds100() {
-            assertThatThrownBy(() -> new GetGeneralLedgerQuery(1, null, null, 0, 101))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("size must be 1-100");
+        @DisplayName("size が 101 の場合はバリデーションエラーになる")
+        void shouldReturnLeftWhenSizeExceeds100() {
+            assertThat(GetGeneralLedgerQuery.of(1, null, null, 0, 101).isLeft()).isTrue();
         }
 
         @Test

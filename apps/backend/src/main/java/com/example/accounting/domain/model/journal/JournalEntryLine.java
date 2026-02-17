@@ -1,6 +1,7 @@
 package com.example.accounting.domain.model.journal;
 
 import com.example.accounting.domain.model.account.AccountId;
+import io.vavr.control.Either;
 
 /**
  * 仕訳明細行を表す値オブジェクト
@@ -11,19 +12,6 @@ public record JournalEntryLine(
         Money debitAmount,
         Money creditAmount
 ) {
-
-    public JournalEntryLine {
-        if (lineNumber == null) {
-            throw new IllegalArgumentException("行番号は必須です");
-        }
-        if (accountId == null) {
-            throw new IllegalArgumentException("勘定科目 ID は必須です");
-        }
-        if ((debitAmount == null && creditAmount == null)
-                || (debitAmount != null && creditAmount != null)) {
-            throw new IllegalArgumentException("借方または貸方のいずれか一方のみ金額を設定してください");
-        }
-    }
 
     /**
      * 明細行を生成する
@@ -39,6 +27,32 @@ public record JournalEntryLine(
                                       Money debitAmount,
                                       Money creditAmount) {
         return new JournalEntryLine(lineNumber, accountId, debitAmount, creditAmount);
+    }
+
+    /**
+     * バリデーション付きファクトリメソッド
+     *
+     * @param lineNumber  行番号
+     * @param accountId   勘定科目 ID
+     * @param debitAmount 借方金額
+     * @param creditAmount 貸方金額
+     * @return Either（左: エラーメッセージ、右: JournalEntryLine インスタンス）
+     */
+    public static Either<String, JournalEntryLine> validated(Integer lineNumber,
+                                                              AccountId accountId,
+                                                              Money debitAmount,
+                                                              Money creditAmount) {
+        if (lineNumber == null) {
+            return Either.left("行番号は必須です");
+        }
+        if (accountId == null) {
+            return Either.left("勘定科目 ID は必須です");
+        }
+        if ((debitAmount == null && creditAmount == null)
+                || (debitAmount != null && creditAmount != null)) {
+            return Either.left("借方または貸方のいずれか一方のみ金額を設定してください");
+        }
+        return Either.right(new JournalEntryLine(lineNumber, accountId, debitAmount, creditAmount));
     }
 
     /**
