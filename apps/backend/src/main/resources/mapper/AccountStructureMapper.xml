@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.accounting.infrastructure.persistence.mapper.AccountStructureMapper">
+
+    <resultMap id="accountStructureResultMap"
+               type="com.example.accounting.infrastructure.persistence.entity.AccountStructureEntity">
+        <id property="accountCode" column="account_code"/>
+        <result property="accountPath" column="account_path"/>
+        <result property="hierarchyLevel" column="hierarchy_level"/>
+        <result property="parentAccountCode" column="parent_account_code"/>
+        <result property="displayOrder" column="display_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.example.accounting.infrastructure.persistence.entity.AccountStructureEntity">
+        INSERT INTO account_structures (
+            account_code, account_path, hierarchy_level, parent_account_code, display_order
+        ) VALUES (
+            #{accountCode}, #{accountPath}, #{hierarchyLevel}, #{parentAccountCode}, #{displayOrder}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.example.accounting.infrastructure.persistence.entity.AccountStructureEntity">
+        UPDATE account_structures
+        SET account_path = #{accountPath},
+            hierarchy_level = #{hierarchyLevel},
+            parent_account_code = #{parentAccountCode},
+            display_order = #{displayOrder},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE account_code = #{accountCode}
+    </update>
+
+    <select id="findByCode" resultMap="accountStructureResultMap">
+        SELECT account_code,
+               account_path,
+               hierarchy_level,
+               parent_account_code,
+               display_order,
+               created_at,
+               updated_at
+        FROM account_structures
+        WHERE account_code = #{accountCode}
+    </select>
+
+    <select id="findAll" resultMap="accountStructureResultMap">
+        SELECT account_code,
+               account_path,
+               hierarchy_level,
+               parent_account_code,
+               display_order,
+               created_at,
+               updated_at
+        FROM account_structures
+        ORDER BY account_path ASC, display_order ASC
+    </select>
+
+    <select id="findByParentCode" resultMap="accountStructureResultMap">
+        SELECT account_code,
+               account_path,
+               hierarchy_level,
+               parent_account_code,
+               display_order,
+               created_at,
+               updated_at
+        FROM account_structures
+        WHERE parent_account_code = #{parentAccountCode}
+        ORDER BY display_order ASC, account_code ASC
+    </select>
+
+    <delete id="deleteByCode">
+        DELETE FROM account_structures
+        WHERE account_code = #{accountCode}
+    </delete>
+
+    <select id="existsByCode" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM account_structures
+        WHERE account_code = #{accountCode}
+    </select>
+
+</mapper>
