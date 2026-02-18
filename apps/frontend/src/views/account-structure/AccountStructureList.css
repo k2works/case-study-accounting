@@ -1,0 +1,9 @@
+.account-structure-list__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.account-structure-list__notification {
+  margin-bottom: 16px;
+}

@@ -64,7 +64,14 @@ const MENU_ITEMS: MenuItem[] = [
     id: 'master',
     label: 'マスタ管理',
     icon: 'settings',
-    children: [{ id: 'master-accounts', label: '勘定科目', path: '/master/accounts' }],
+    children: [
+      { id: 'master-accounts', label: '勘定科目', path: '/master/accounts' },
+      {
+        id: 'master-account-structures',
+        label: '勘定科目体系',
+        path: '/master/account-structures',
+      },
+    ],
   },
   {
     id: 'system',

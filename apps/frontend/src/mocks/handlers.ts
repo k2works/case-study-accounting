@@ -1772,6 +1772,179 @@ export const profitAndLossHandlers = [
   }),
 ];
 
+// 勘定科目構成モックデータ
+interface AccountStructureMock {
+  accountCode: string;
+  accountName: string | null;
+  accountPath: string;
+  hierarchyLevel: number;
+  parentAccountCode: string | null;
+  displayOrder: number;
+}
+
+const mockAccountStructures: AccountStructureMock[] = [
+  {
+    accountCode: '1000',
+    accountName: '現金預金',
+    accountPath: '1000',
+    hierarchyLevel: 1,
+    parentAccountCode: null,
+    displayOrder: 1,
+  },
+  {
+    accountCode: '1001',
+    accountName: '現金',
+    accountPath: '1000~1001',
+    hierarchyLevel: 2,
+    parentAccountCode: '1000',
+    displayOrder: 1,
+  },
+];
+
+/**
+ * 勘定科目構成関連のハンドラー
+ */
+export const accountStructureHandlers = [
+  // 勘定科目構成一覧取得
+  http.get(/\/account-structures\/?$/, () => {
+    return HttpResponse.json<AccountStructureMock[]>(mockAccountStructures);
+  }),
+
+  // 勘定科目構成詳細取得
+  http.get(/\/account-structures\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/account-structures\/([^/]+)$/);
+    const code = match ? decodeURIComponent(match[1]) : '';
+
+    const structure = mockAccountStructures.find((s) => s.accountCode === code);
+    if (!structure) {
+      return HttpResponse.json({ errorMessage: '勘定科目構成が見つかりません' }, { status: 404 });
+    }
+
+    return HttpResponse.json<AccountStructureMock>(structure);
+  }),
+
+  // 勘定科目構成登録
+  http.post('*/account-structures', async ({ request }) => {
+    const body = (await request.json()) as {
+      accountCode: string;
+      parentAccountCode: string | null;
+      displayOrder: number;
+    };
+
+    // 重複チェック
+    if (mockAccountStructures.some((s) => s.accountCode === body.accountCode)) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: '勘定科目構成は既に登録されています',
+      });
+    }
+
+    // 勘定科目存在チェック
+    const account = mockAccounts.find((a) => a.accountCode === body.accountCode);
+    if (!account) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: '勘定科目が存在しません',
+      });
+    }
+
+    // パス計算
+    let accountPath = body.accountCode;
+    let hierarchyLevel = 1;
+    if (body.parentAccountCode) {
+      const parent = mockAccountStructures.find((s) => s.accountCode === body.parentAccountCode);
+      if (parent) {
+        accountPath = `${parent.accountPath}~${body.accountCode}`;
+        hierarchyLevel = parent.hierarchyLevel + 1;
+      }
+    }
+
+    const newStructure: AccountStructureMock = {
+      accountCode: body.accountCode,
+      accountName: account.accountName,
+      accountPath,
+      hierarchyLevel,
+      parentAccountCode: body.parentAccountCode,
+      displayOrder: body.displayOrder,
+    };
+    mockAccountStructures.push(newStructure);
+
+    return HttpResponse.json({
+      success: true,
+      accountCode: newStructure.accountCode,
+      accountPath: newStructure.accountPath,
+      hierarchyLevel: newStructure.hierarchyLevel,
+      parentAccountCode: newStructure.parentAccountCode,
+      displayOrder: newStructure.displayOrder,
+    });
+  }),
+
+  // 勘定科目構成更新
+  http.put(/\/account-structures\/([^/]+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/account-structures\/([^/]+)$/);
+    const code = match ? decodeURIComponent(match[1]) : '';
+    const body = (await request.json()) as {
+      parentAccountCode: string | null;
+      displayOrder: number;
+    };
+
+    const index = mockAccountStructures.findIndex((s) => s.accountCode === code);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '勘定科目構成が見つかりません' },
+        { status: 400 }
+      );
+    }
+
+    mockAccountStructures[index].parentAccountCode = body.parentAccountCode;
+    mockAccountStructures[index].displayOrder = body.displayOrder;
+
+    return HttpResponse.json({
+      success: true,
+      accountCode: code,
+      accountPath: mockAccountStructures[index].accountPath,
+      hierarchyLevel: mockAccountStructures[index].hierarchyLevel,
+      parentAccountCode: body.parentAccountCode,
+      displayOrder: body.displayOrder,
+      message: '勘定科目構成を更新しました',
+    });
+  }),
+
+  // 勘定科目構成削除
+  http.delete(/\/account-structures\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/account-structures\/([^/]+)$/);
+    const code = match ? decodeURIComponent(match[1]) : '';
+
+    const index = mockAccountStructures.findIndex((s) => s.accountCode === code);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '勘定科目構成が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    // 子構成チェック
+    const hasChildren = mockAccountStructures.some((s) => s.parentAccountCode === code);
+    if (hasChildren) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '子階層が存在するため削除できません' },
+        { status: 409 }
+      );
+    }
+
+    mockAccountStructures.splice(index, 1);
+
+    return HttpResponse.json({
+      success: true,
+      accountCode: code,
+      message: '勘定科目構成を削除しました',
+    });
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
@@ -1779,6 +1952,7 @@ export const handlers = [
   ...authHandlers,
   ...userHandlers,
   ...accountHandlers,
+  ...accountStructureHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
   ...subsidiaryLedgerHandlers,
