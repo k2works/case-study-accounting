@@ -20,13 +20,13 @@
 
 ## 選択したストーリー
 
-| ストーリーID | ストーリー名 | SP | 優先度 |
-|-------------|-------------|-----|--------|
-| US-MST-005 | 勘定科目構成登録 | 5 | 重要 |
-| US-MST-006 | 勘定科目構成編集 | 3 | 重要 |
-| US-MST-007 | 自動仕訳設定登録 | 3 | 重要 |
-| US-MST-008 | 自動仕訳設定編集 | 2 | 重要 |
-| **合計** | | **13** | |
+| ストーリーID | ストーリー名 | SP | 優先度 | 状態 |
+|-------------|-------------|-----|--------|------|
+| US-MST-005 | 勘定科目構成登録 | 5 | 重要 | ✅ 完了 |
+| US-MST-006 | 勘定科目構成編集 | 3 | 重要 | 🔄 進行中 |
+| US-MST-007 | 自動仕訳設定登録 | 3 | 重要 | 未着手 |
+| US-MST-008 | 自動仕訳設定編集 | 2 | 重要 | 未着手 |
+| **合計** | | **13** | | **5SP 完了** |
 
 **コミットメント**: 13SP（累積平均ベロシティ 14.9SP に対して適切。IT-8 ふりかえりのパターン再利用可能性評価を反映し、既存マスタ管理パターンの再利用で達成可能と判断）
 
@@ -59,10 +59,10 @@
 
 **受入条件**:
 
-- [ ] 親科目と子科目を選択して登録できる
-- [ ] 循環参照が発生しないようバリデーションされる
-- [ ] 表示順を設定できる
-- [ ] 登録成功時、確認メッセージが表示される
+- [x] 親科目と子科目を選択して登録できる
+- [x] 循環参照が発生しないようバリデーションされる
+- [x] 表示順を設定できる
+- [x] 登録成功時、確認メッセージが表示される
 
 ---
 
@@ -108,22 +108,22 @@
 
 ## タスク分解
 
-### US-MST-005: 勘定科目構成登録（5SP）
+### US-MST-005: 勘定科目構成登録（5SP）✅ 完了
 
 | タスクID | タスク名 | 理想時間 | 担当 | 状態 |
 |----------|---------|---------|------|------|
-| MST-005-01 | 勘定科目構成ユースケース設計 | 2h | Claude | [ ] |
-| MST-005-02 | AccountStructure ドメインモデル実装 | 3h | Codex | [ ] |
-| MST-005-03 | RegisterAccountStructureCommand / Service 実装 | 3h | Codex | [ ] |
-| MST-005-04 | AccountStructureRepository（Output Port）+ MyBatis mapper | 3h | Codex | [ ] |
-| MST-005-05 | 循環参照バリデーションロジック実装 | 3h | Codex | [ ] |
-| MST-005-06 | 勘定科目構成 API 実装（POST /api/account-structures） | 2h | Codex | [ ] |
-| MST-005-07 | 勘定科目構成一覧 API 実装（GET /api/account-structures） | 2h | Codex | [ ] |
-| MST-005-08 | 単体テスト作成 | 3h | Codex | [ ] |
-| MST-005-09 | 勘定科目構成登録画面 UI 実装 | 4h | Codex | [ ] |
-| MST-005-10 | ツリー表示コンポーネント実装 | 3h | Codex | [ ] |
-| MST-005-11 | フロントエンド API 連携 | 2h | Codex | [ ] |
-| MST-005-12 | 統合テスト（E2E テスト） | 2h | Claude | [ ] |
+| MST-005-01 | 勘定科目構成ユースケース設計 | 2h | Claude | [x] |
+| MST-005-02 | AccountStructure ドメインモデル実装 | 3h | Codex | [x] |
+| MST-005-03 | RegisterAccountStructureCommand / Service 実装 | 3h | Codex | [x] |
+| MST-005-04 | AccountStructureRepository（Output Port）+ MyBatis mapper | 3h | Codex | [x] |
+| MST-005-05 | 循環参照バリデーションロジック実装 | 3h | Codex | [x] |
+| MST-005-06 | 勘定科目構成 API 実装（POST /api/account-structures） | 2h | Codex | [x] |
+| MST-005-07 | 勘定科目構成一覧 API 実装（GET /api/account-structures） | 2h | Codex | [x] |
+| MST-005-08 | 単体テスト作成 | 3h | Codex | [x] |
+| MST-005-09 | 勘定科目構成登録画面 UI 実装 | 4h | Codex | [x] |
+| MST-005-10 | ツリー表示コンポーネント実装 | 3h | Codex | [x] |
+| MST-005-11 | フロントエンド API 連携 | 2h | Codex | [x] |
+| MST-005-12 | 統合テスト（E2E テスト） | 2h | Claude | [x] |
 | | **小計** | **32h** | | |
 
 #### 実装詳細
@@ -148,16 +148,16 @@
 
 ---
 
-### US-MST-006: 勘定科目構成編集（3SP）
+### US-MST-006: 勘定科目構成編集（3SP）🔄 進行中
 
 | タスクID | タスク名 | 理想時間 | 担当 | 状態 |
 |----------|---------|---------|------|------|
-| MST-006-01 | UpdateAccountStructureCommand / Service 実装 | 3h | Codex | [ ] |
-| MST-006-02 | 編集 API 実装（PUT /api/account-structures/{code}） | 2h | Codex | [ ] |
-| MST-006-03 | 削除 API 実装（DELETE /api/account-structures/{code}） | 2h | Codex | [ ] |
-| MST-006-04 | 単体テスト作成 | 2h | Codex | [ ] |
-| MST-006-05 | 勘定科目構成編集画面 UI 実装 | 3h | Codex | [ ] |
-| MST-006-06 | フロントエンド API 連携 | 2h | Codex | [ ] |
+| MST-006-01 | UpdateAccountStructureCommand / Service 実装 | 3h | Codex | [x] |
+| MST-006-02 | 編集 API 実装（PUT /api/account-structures/{code}） | 2h | Codex | [x] |
+| MST-006-03 | 削除 API 実装（DELETE /api/account-structures/{code}） | 2h | Codex | [x] |
+| MST-006-04 | 単体テスト作成 | 2h | Codex | [x] |
+| MST-006-05 | 勘定科目構成編集画面 UI 実装 | 3h | Codex | [x] |
+| MST-006-06 | フロントエンド API 連携 | 2h | Codex | [x] |
 | MST-006-07 | 統合テスト（E2E テスト） | 2h | Claude | [ ] |
 | | **小計** | **16h** | | |
 
@@ -308,10 +308,12 @@ gantt
 
 ### フロントエンドルーティング
 
-| パス | 画面 |
-|------|------|
-| /account-structures | 勘定科目構成管理 |
-| /auto-journal-patterns | 自動仕訳設定管理 |
+| パス | 画面 | 状態 |
+|------|------|------|
+| /master/account-structures | 勘定科目構成一覧 | ✅ 実装済み |
+| /master/account-structures/new | 勘定科目構成登録 | ✅ 実装済み |
+| /master/account-structures/:code/edit | 勘定科目構成編集 | ✅ 実装済み |
+| /master/auto-journal-patterns | 自動仕訳設定管理 | 未着手 |
 
 ### 既存パターンの再利用
 
@@ -350,8 +352,8 @@ gantt
 
 ### 機能要件
 
-- [ ] 勘定科目構成登録 ← **イテレーション 9 で実装**
-- [ ] 勘定科目構成編集 ← **イテレーション 9 で実装**
+- [x] 勘定科目構成登録 ← **イテレーション 9 で実装（2026-02-18 完了）**
+- [ ] 勘定科目構成編集 ← **イテレーション 9 で実装（進行中）**
 - [ ] 自動仕訳設定登録 ← **イテレーション 9 で実装**
 - [ ] 自動仕訳設定編集 ← **イテレーション 9 で実装**
 - [ ] 自動仕訳生成（イテレーション 10 予定）
@@ -394,6 +396,7 @@ gantt
 | 日付 | 更新内容 | 更新者 |
 |------|---------|--------|
 | 2026-02-18 | 初版作成 | Claude Opus 4.6 |
+| 2026-02-18 | US-MST-005 完了、US-MST-006 バックエンド・フロントエンド実装完了（E2E 残） | Claude Opus 4.6 |
 
 ---
 
