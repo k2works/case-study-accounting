@@ -52,6 +52,7 @@
 ### リリースノート
 
 - [リリースノート v1.0 MVP](./development/release_notes-v1.0.md) - リリース 1.0 MVP の変更内容
+- [リリースノート v2.0 機能拡張版](./development/release_notes-v2.0.md) - リリース 2.0 機能拡張版の変更内容
 
 ### イテレーション
 
@@ -73,6 +74,7 @@
 - [イテレーション 5 ふりかえり](./development/retrospective-5.md) - イテレーション5の KPT 分析
 - [イテレーション 6 ふりかえり](./development/retrospective-6.md) - イテレーション6の KPT 分析
 - [イテレーション 7 ふりかえり](./development/retrospective-7.md) - イテレーション7の KPT 分析
+- [イテレーション 8 ふりかえり](./development/retrospective-8.md) - イテレーション8の KPT 分析・リリース 2.0 総括
 
 ## 運用
 
