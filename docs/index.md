@@ -64,6 +64,7 @@
 - [イテレーション計画 6](./development/iteration_plan-6.md) - イテレーション6の詳細計画
 - [イテレーション計画 7](./development/iteration_plan-7.md) - イテレーション7の詳細計画
 - [イテレーション計画 8](./development/iteration_plan-8.md) - イテレーション8の詳細計画
+- [イテレーション計画 9](./development/iteration_plan-9.md) - イテレーション9の詳細計画
 
 ### ふりかえり
 
