@@ -14,6 +14,7 @@ interface TableProps<T> {
   readonly data: T[];
   readonly keyField: keyof T;
   readonly onRowClick?: (row: T, index: number) => void;
+  readonly getRowTestId?: (row: T, index: number) => string | undefined;
   readonly isLoading?: boolean;
   readonly emptyMessage?: string;
   readonly selectable?: boolean;
@@ -28,6 +29,7 @@ interface TableBodyContentProps<T> {
   selectable: boolean;
   selectedKeys: Set<string | number>;
   onRowClick?: (row: T, index: number) => void;
+  getRowTestId?: (row: T, index: number) => string | undefined;
   onSelectRow: (key: string | number) => void;
   isLoading: boolean;
   emptyMessage: string;
@@ -40,6 +42,7 @@ const TableBodyContent = <T extends Record<string, unknown>>({
   selectable,
   selectedKeys,
   onRowClick,
+  getRowTestId,
   onSelectRow,
   isLoading,
   emptyMessage,
@@ -74,7 +77,12 @@ const TableBodyContent = <T extends Record<string, unknown>>({
         const rowClass = buildRowClassName(!!onRowClick, isSelected);
 
         return (
-          <tr key={rowKey} className={rowClass} onClick={() => onRowClick?.(row, rowIndex)}>
+          <tr
+            key={rowKey}
+            className={rowClass}
+            onClick={() => onRowClick?.(row, rowIndex)}
+            data-testid={getRowTestId?.(row, rowIndex)}
+          >
             {selectable && (
               <td className="table__td table__td--checkbox">
                 <input
@@ -167,6 +175,7 @@ export function Table<T extends Record<string, unknown>>({
   data,
   keyField,
   onRowClick,
+  getRowTestId,
   isLoading = false,
   emptyMessage = 'データがありません',
   selectable = false,
@@ -214,6 +223,7 @@ export function Table<T extends Record<string, unknown>>({
             selectable={selectable}
             selectedKeys={selectedKeys}
             onRowClick={onRowClick}
+            getRowTestId={getRowTestId}
             onSelectRow={handleSelectRow}
             isLoading={isLoading}
             emptyMessage={emptyMessage}

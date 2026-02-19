@@ -71,6 +71,11 @@ const MENU_ITEMS: MenuItem[] = [
         label: '勘定科目体系',
         path: '/master/account-structures',
       },
+      {
+        id: 'master-auto-journal-patterns',
+        label: '自動仕訳パターン',
+        path: '/master/auto-journal-patterns',
+      },
     ],
   },
   {

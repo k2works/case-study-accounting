@@ -1,0 +1,30 @@
+.auto-journal-pattern-list__notification {
+  margin-bottom: 16px;
+}
+
+.auto-journal-pattern-list__actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auto-journal-pattern-list__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: var(--font-size-small);
+  font-weight: 500;
+}
+
+.auto-journal-pattern-list__status.is-active {
+  color: #2e7d32;
+  background: #e8f5e9;
+}
+
+.auto-journal-pattern-list__status.is-inactive {
+  color: #c62828;
+  background: #ffebee;
+}
