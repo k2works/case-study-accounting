@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   getAutoJournalPattern,
   getAutoJournalPatternsErrorMessage,
   type AutoJournalPattern,
 } from '../api/getAutoJournalPatterns';
-import { MainLayout, Loading, ErrorMessage } from '../views/common';
+import { Loading, ErrorMessage } from '../views/common';
 import { EditAutoJournalPatternForm } from '../views/auto-journal-pattern/EditAutoJournalPatternForm';
+import { ManagerPage } from './ManagerPage';
 
 interface AutoJournalPatternState {
   pattern: AutoJournalPattern | null;
@@ -54,23 +54,23 @@ const useAutoJournalPatternFetch = (patternId: number, isInvalidId: boolean) => 
   return { state, fetchPattern };
 };
 
-const EditAutoJournalPatternContent: React.FC<{
-  state: AutoJournalPatternState;
-  fetchPattern: () => Promise<void>;
-  navigate: ReturnType<typeof useNavigate>;
-}> = ({ state, fetchPattern, navigate }) => {
-  const breadcrumbs = useMemo(
-    () => [
-      { label: 'ホーム' },
-      { label: 'マスタ管理' },
-      { label: '自動仕訳パターン一覧', path: '/master/auto-journal-patterns' },
-      { label: '自動仕訳パターン編集' },
-    ],
-    []
-  );
+const breadcrumbs = [
+  { label: 'ホーム' },
+  { label: 'マスタ管理' },
+  { label: '自動仕訳パターン一覧', path: '/master/auto-journal-patterns' },
+  { label: '自動仕訳パターン編集' },
+];
+
+const EditAutoJournalPatternPage: React.FC = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const patternId = Number(id);
+  const isInvalidId = Number.isNaN(patternId);
+  const { state, fetchPattern } = useAutoJournalPatternFetch(patternId, isInvalidId);
 
   return (
-    <MainLayout breadcrumbs={breadcrumbs}>
+    <ManagerPage breadcrumbs={breadcrumbs}>
       <div data-testid="edit-auto-journal-pattern-page">
         <h1>自動仕訳パターン編集</h1>
         {state.isLoading && <Loading message="自動仕訳パターンを読み込み中..." />}
@@ -87,33 +87,7 @@ const EditAutoJournalPatternContent: React.FC<{
           />
         )}
       </div>
-    </MainLayout>
-  );
-};
-
-const EditAutoJournalPatternPage: React.FC = () => {
-  const { isAuthenticated, isLoading, hasRole } = useAuth();
-  const { id } = useParams();
-  const navigate = useNavigate();
-
-  const patternId = Number(id);
-  const isInvalidId = Number.isNaN(patternId);
-  const { state, fetchPattern } = useAutoJournalPatternFetch(patternId, isInvalidId);
-
-  if (isLoading) {
-    return <Loading message="認証情報を確認中..." fullScreen />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole('ADMIN') && !hasRole('MANAGER')) {
-    return <Navigate to="/" replace />;
-  }
-
-  return (
-    <EditAutoJournalPatternContent state={state} fetchPattern={fetchPattern} navigate={navigate} />
+    </ManagerPage>
   );
 };
 

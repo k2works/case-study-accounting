@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
   getAutoJournalPatterns,
   getAutoJournalPatternsErrorMessage,
   type AutoJournalPattern,
 } from '../api/getAutoJournalPatterns';
-import { MainLayout, Loading, ErrorMessage, SuccessNotification, Button } from '../views/common';
+import { Loading, ErrorMessage, SuccessNotification, Button } from '../views/common';
 import { AutoJournalPatternList } from '../views/auto-journal-pattern/AutoJournalPatternList';
+import { ManagerPage } from './ManagerPage';
 
 interface AutoJournalPatternListLocationState {
   successMessage?: string;
@@ -49,56 +50,14 @@ const useAutoJournalPatternListFetch = () => {
   return { state, fetchPatterns };
 };
 
-interface AutoJournalPatternListContentProps {
-  state: AutoJournalPatternListState;
-  successMessage: string | null;
-  isManager: boolean;
-  onDismissSuccess: () => void;
-  onRetry: () => Promise<void>;
-  onCreate: () => void;
-  onEdit: (pattern: AutoJournalPattern) => void;
-}
-
-const AutoJournalPatternListContent: React.FC<AutoJournalPatternListContentProps> = ({
-  state,
-  successMessage,
-  isManager,
-  onDismissSuccess,
-  onRetry,
-  onCreate,
-  onEdit,
-}) => {
-  return (
-    <div data-testid="auto-journal-pattern-list-page">
-      <h1>自動仕訳パターン一覧</h1>
-      {isManager && (
-        <div style={{ marginBottom: '16px' }}>
-          <Button onClick={onCreate}>新規登録</Button>
-        </div>
-      )}
-      {successMessage && (
-        <div style={{ marginBottom: '16px' }}>
-          <SuccessNotification message={successMessage} onDismiss={onDismissSuccess} />
-        </div>
-      )}
-      {state.isLoading && state.patterns.length === 0 && (
-        <Loading message="自動仕訳パターンを読み込み中..." />
-      )}
-      {state.errorMessage ? (
-        <ErrorMessage message={state.errorMessage} onRetry={onRetry} />
-      ) : (
-        <AutoJournalPatternList
-          patterns={state.patterns}
-          onEdit={onEdit}
-          onDelete={() => void onRetry()}
-        />
-      )}
-    </div>
-  );
-};
+const breadcrumbs = [
+  { label: 'ホーム' },
+  { label: 'マスタ管理' },
+  { label: '自動仕訳パターン一覧' },
+];
 
 const AutoJournalPatternListPage: React.FC = () => {
-  const { isAuthenticated, isLoading, hasRole } = useAuth();
+  const { hasRole } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { state, fetchPatterns } = useAutoJournalPatternListFetch();
@@ -107,35 +66,39 @@ const AutoJournalPatternListPage: React.FC = () => {
     return locationState?.successMessage ?? null;
   });
 
-  const breadcrumbs = useMemo(
-    () => [{ label: 'ホーム' }, { label: 'マスタ管理' }, { label: '自動仕訳パターン一覧' }],
-    []
-  );
-
-  if (isLoading) {
-    return <Loading message="認証情報を確認中..." fullScreen />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole('ADMIN') && !hasRole('MANAGER')) {
-    return <Navigate to="/" replace />;
-  }
-
   return (
-    <MainLayout breadcrumbs={breadcrumbs}>
-      <AutoJournalPatternListContent
-        state={state}
-        successMessage={successMessage}
-        isManager={hasRole('MANAGER')}
-        onDismissSuccess={() => setSuccessMessage(null)}
-        onRetry={fetchPatterns}
-        onCreate={() => navigate('/master/auto-journal-patterns/new')}
-        onEdit={(pattern) => navigate(`/master/auto-journal-patterns/${pattern.patternId}/edit`)}
-      />
-    </MainLayout>
+    <ManagerPage breadcrumbs={breadcrumbs}>
+      <div data-testid="auto-journal-pattern-list-page">
+        <h1>自動仕訳パターン一覧</h1>
+        {hasRole('MANAGER') && (
+          <div style={{ marginBottom: '16px' }}>
+            <Button onClick={() => navigate('/master/auto-journal-patterns/new')}>新規登録</Button>
+          </div>
+        )}
+        {successMessage && (
+          <div style={{ marginBottom: '16px' }}>
+            <SuccessNotification
+              message={successMessage}
+              onDismiss={() => setSuccessMessage(null)}
+            />
+          </div>
+        )}
+        {state.isLoading && state.patterns.length === 0 && (
+          <Loading message="自動仕訳パターンを読み込み中..." />
+        )}
+        {state.errorMessage ? (
+          <ErrorMessage message={state.errorMessage} onRetry={fetchPatterns} />
+        ) : (
+          <AutoJournalPatternList
+            patterns={state.patterns}
+            onEdit={(pattern) =>
+              navigate(`/master/auto-journal-patterns/${pattern.patternId}/edit`)
+            }
+            onDelete={() => void fetchPatterns()}
+          />
+        )}
+      </div>
+    </ManagerPage>
   );
 };
 

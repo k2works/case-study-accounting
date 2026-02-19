@@ -6,21 +6,18 @@ import {
   type CreatePatternItemRequest,
 } from '../../api/createAutoJournalPattern';
 import { SuccessNotification } from '../common/SuccessNotification';
+import {
+  type FormErrors,
+  createInitialErrors,
+  inputClassName,
+  safeText,
+  hasFormErrors,
+  validateItemErrors,
+  PatternItemRow,
+} from './PatternFormCommon';
 import './CreateAutoJournalPatternForm.css';
 
-interface ItemError {
-  debitCreditType?: string;
-  accountCode?: string;
-  amountFormula?: string;
-}
-
-interface FormErrors {
-  patternCode?: string;
-  patternName?: string;
-  sourceTableName?: string;
-  items?: string;
-  itemErrors: ItemError[];
-}
+const CSS_PREFIX = 'create-auto-journal-pattern-form';
 
 const createEmptyItem = (lineNumber: number): CreatePatternItemRequest => ({
   lineNumber,
@@ -38,10 +35,6 @@ const createInitialFormData = (): CreateAutoJournalPatternRequest => ({
   items: [createEmptyItem(1)],
 });
 
-const createInitialErrors = (count: number): FormErrors => ({
-  itemErrors: Array.from({ length: count }, () => ({})),
-});
-
 const normalizeItems = (items: CreatePatternItemRequest[]): CreatePatternItemRequest[] => {
   return items.length > 0 ? items : [createEmptyItem(1)];
 };
@@ -55,26 +48,8 @@ const validateFormData = (formData: CreateAutoJournalPatternRequest): FormErrors
     errors.sourceTableName = 'ソーステーブル名を入力してください';
   if (formData.items.length === 0) errors.items = '明細行を 1 件以上入力してください';
 
-  formData.items.forEach((item, index) => {
-    if (!item.debitCreditType)
-      errors.itemErrors[index].debitCreditType = '借方/貸方を選択してください';
-    if (!item.accountCode.trim())
-      errors.itemErrors[index].accountCode = '勘定科目コードを入力してください';
-    if (!item.amountFormula.trim())
-      errors.itemErrors[index].amountFormula = '金額計算式を入力してください';
-  });
-
+  validateItemErrors(formData.items, errors);
   return errors;
-};
-
-const hasErrors = (errors: FormErrors): boolean => {
-  return (
-    Boolean(errors.patternCode) ||
-    Boolean(errors.patternName) ||
-    Boolean(errors.sourceTableName) ||
-    Boolean(errors.items) ||
-    errors.itemErrors.some((itemError) => Object.values(itemError).some(Boolean))
-  );
 };
 
 const getSanitizedPayload = (
@@ -93,161 +68,6 @@ const getSanitizedPayload = (
   })),
 });
 
-const inputClassName = (base: string, hasError: boolean): string =>
-  hasError ? `${base} is-error` : base;
-const safeText = (value?: string): string => value ?? '';
-
-interface ItemRowProps {
-  index: number;
-  item: CreatePatternItemRequest;
-  error: ItemError;
-  isSubmitting: boolean;
-  removeDisabled: boolean;
-  onItemChange: (
-    index: number,
-    field: keyof CreatePatternItemRequest,
-    value: string | number
-  ) => void;
-  onRemove: (index: number) => void;
-}
-
-const ItemRow: React.FC<ItemRowProps> = ({
-  index,
-  item,
-  error,
-  isSubmitting,
-  removeDisabled,
-  onItemChange,
-  onRemove,
-}) => {
-  return (
-    <div className="create-auto-journal-pattern-form__item-row" data-testid={`item-row-${index}`}>
-      <div className="create-auto-journal-pattern-form__item-grid">
-        <div className="create-auto-journal-pattern-form__field">
-          <label className="create-auto-journal-pattern-form__label">行番号</label>
-          <input
-            type="number"
-            className="create-auto-journal-pattern-form__input"
-            value={item.lineNumber}
-            disabled
-          />
-        </div>
-
-        <div className="create-auto-journal-pattern-form__field">
-          <label className="create-auto-journal-pattern-form__label">
-            借方/貸方 <span className="create-auto-journal-pattern-form__required">*</span>
-          </label>
-          <select
-            className={inputClassName(
-              'create-auto-journal-pattern-form__input',
-              Boolean(error.debitCreditType)
-            )}
-            value={item.debitCreditType}
-            onChange={(event) => onItemChange(index, 'debitCreditType', event.target.value)}
-            disabled={isSubmitting}
-          >
-            <option value="">選択してください</option>
-            <option value="DEBIT">借方 (D)</option>
-            <option value="CREDIT">貸方 (C)</option>
-          </select>
-          <span className="create-auto-journal-pattern-form__field-error">
-            {error.debitCreditType || ''}
-          </span>
-        </div>
-
-        <div className="create-auto-journal-pattern-form__field">
-          <label className="create-auto-journal-pattern-form__label">
-            勘定科目コード <span className="create-auto-journal-pattern-form__required">*</span>
-          </label>
-          <input
-            type="text"
-            className={inputClassName(
-              'create-auto-journal-pattern-form__input',
-              Boolean(error.accountCode)
-            )}
-            value={item.accountCode}
-            onChange={(event) => onItemChange(index, 'accountCode', event.target.value)}
-            disabled={isSubmitting}
-          />
-          <span className="create-auto-journal-pattern-form__field-error">
-            {error.accountCode || ''}
-          </span>
-        </div>
-
-        <div className="create-auto-journal-pattern-form__field">
-          <label className="create-auto-journal-pattern-form__label">
-            金額計算式 <span className="create-auto-journal-pattern-form__required">*</span>
-          </label>
-          <input
-            type="text"
-            className={inputClassName(
-              'create-auto-journal-pattern-form__input',
-              Boolean(error.amountFormula)
-            )}
-            value={item.amountFormula}
-            onChange={(event) => onItemChange(index, 'amountFormula', event.target.value)}
-            disabled={isSubmitting}
-          />
-          <span className="create-auto-journal-pattern-form__field-error">
-            {error.amountFormula || ''}
-          </span>
-        </div>
-
-        <div className="create-auto-journal-pattern-form__field">
-          <label className="create-auto-journal-pattern-form__label">説明テンプレート</label>
-          <input
-            type="text"
-            className="create-auto-journal-pattern-form__input"
-            value={safeText(item.descriptionTemplate)}
-            onChange={(event) => onItemChange(index, 'descriptionTemplate', event.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-      </div>
-      <button
-        type="button"
-        className="create-auto-journal-pattern-form__remove-item"
-        onClick={() => onRemove(index)}
-        disabled={removeDisabled}
-      >
-        削除
-      </button>
-    </div>
-  );
-};
-
-interface NotificationsProps {
-  submitError: string | null;
-  successMessage: string | null;
-  onDismissSuccess: () => void;
-}
-
-const Notifications: React.FC<NotificationsProps> = ({
-  submitError,
-  successMessage,
-  onDismissSuccess,
-}) => {
-  return (
-    <>
-      {submitError ? (
-        <div
-          className="create-auto-journal-pattern-form__error"
-          role="alert"
-          data-testid="create-auto-journal-pattern-error"
-        >
-          <span className="create-auto-journal-pattern-form__error-text">{submitError}</span>
-        </div>
-      ) : null}
-
-      {successMessage ? (
-        <div className="create-auto-journal-pattern-form__success">
-          <SuccessNotification message={successMessage} onDismiss={onDismissSuccess} />
-        </div>
-      ) : null}
-    </>
-  );
-};
-
 export const CreateAutoJournalPatternForm: React.FC = () => {
   const [formData, setFormData] = useState<CreateAutoJournalPatternRequest>(createInitialFormData);
   const [errors, setErrors] = useState<FormErrors>(createInitialErrors(1));
@@ -262,24 +82,15 @@ export const CreateAutoJournalPatternForm: React.FC = () => {
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
-  const handleItemChange = (
-    index: number,
-    field: keyof CreatePatternItemRequest,
-    value: string | number
-  ) => {
+  const handleItemChange = (index: number, field: string, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
-      items: prev.items.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, [field]: value } : item
-      ),
+      items: prev.items.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
     }));
-
     setErrors((prev) => ({
       ...prev,
       items: undefined,
-      itemErrors: prev.itemErrors.map((itemError, itemIndex) =>
-        itemIndex === index ? { ...itemError, [field]: undefined } : itemError
-      ),
+      itemErrors: prev.itemErrors.map((e, i) => (i === index ? { ...e, [field]: undefined } : e)),
     }));
   };
 
@@ -294,15 +105,12 @@ export const CreateAutoJournalPatternForm: React.FC = () => {
   const handleRemoveItem = (index: number) => {
     setFormData((prev) => {
       const nextItems = normalizeItems(
-        prev.items
-          .filter((_, itemIndex) => itemIndex !== index)
-          .map((item, itemIndex) => ({ ...item, lineNumber: itemIndex + 1 }))
+        prev.items.filter((_, i) => i !== index).map((item, i) => ({ ...item, lineNumber: i + 1 }))
       );
       return { ...prev, items: nextItems };
     });
-
     setErrors((prev) => {
-      const nextErrors = prev.itemErrors.filter((_, itemIndex) => itemIndex !== index);
+      const nextErrors = prev.itemErrors.filter((_, i) => i !== index);
       return { ...prev, itemErrors: nextErrors.length > 0 ? nextErrors : [{}] };
     });
   };
@@ -314,10 +122,9 @@ export const CreateAutoJournalPatternForm: React.FC = () => {
 
     const validationErrors = validateFormData(formData);
     setErrors(validationErrors);
-    if (hasErrors(validationErrors)) return;
+    if (hasFormErrors(validationErrors)) return;
 
     setIsSubmitting(true);
-
     try {
       const response = await createAutoJournalPattern(getSanitizedPayload(formData));
       if (!response.success) {
@@ -335,91 +142,85 @@ export const CreateAutoJournalPatternForm: React.FC = () => {
 
   return (
     <form
-      className="create-auto-journal-pattern-form"
+      className={CSS_PREFIX}
       onSubmit={handleSubmit}
       data-testid="create-auto-journal-pattern-form"
       noValidate
     >
-      <Notifications
-        submitError={submitError}
-        successMessage={successMessage}
-        onDismissSuccess={() => setSuccessMessage(null)}
-      />
+      {submitError && (
+        <div
+          className={`${CSS_PREFIX}__error`}
+          role="alert"
+          data-testid="create-auto-journal-pattern-error"
+        >
+          <span className={`${CSS_PREFIX}__error-text`}>{submitError}</span>
+        </div>
+      )}
+      {successMessage && (
+        <div className={`${CSS_PREFIX}__success`}>
+          <SuccessNotification message={successMessage} onDismiss={() => setSuccessMessage(null)} />
+        </div>
+      )}
 
-      <div className="create-auto-journal-pattern-form__field">
-        <label htmlFor="patternCode" className="create-auto-journal-pattern-form__label">
-          パターンコード <span className="create-auto-journal-pattern-form__required">*</span>
+      <div className={`${CSS_PREFIX}__field`}>
+        <label htmlFor="patternCode" className={`${CSS_PREFIX}__label`}>
+          パターンコード <span className={`${CSS_PREFIX}__required`}>*</span>
         </label>
         <input
           id="patternCode"
           name="patternCode"
           type="text"
-          className={inputClassName(
-            'create-auto-journal-pattern-form__input',
-            Boolean(errors.patternCode)
-          )}
+          className={inputClassName(`${CSS_PREFIX}__input`, Boolean(errors.patternCode))}
           value={formData.patternCode}
           onChange={handleFieldChange}
           disabled={isSubmitting}
           data-testid="pattern-code-input"
         />
-        <span className="create-auto-journal-pattern-form__field-error">
-          {errors.patternCode || ''}
-        </span>
+        <span className={`${CSS_PREFIX}__field-error`}>{errors.patternCode || ''}</span>
       </div>
 
-      <div className="create-auto-journal-pattern-form__field">
-        <label htmlFor="patternName" className="create-auto-journal-pattern-form__label">
-          パターン名 <span className="create-auto-journal-pattern-form__required">*</span>
+      <div className={`${CSS_PREFIX}__field`}>
+        <label htmlFor="patternName" className={`${CSS_PREFIX}__label`}>
+          パターン名 <span className={`${CSS_PREFIX}__required`}>*</span>
         </label>
         <input
           id="patternName"
           name="patternName"
           type="text"
-          className={inputClassName(
-            'create-auto-journal-pattern-form__input',
-            Boolean(errors.patternName)
-          )}
+          className={inputClassName(`${CSS_PREFIX}__input`, Boolean(errors.patternName))}
           value={formData.patternName}
           onChange={handleFieldChange}
           disabled={isSubmitting}
           data-testid="pattern-name-input"
         />
-        <span className="create-auto-journal-pattern-form__field-error">
-          {errors.patternName || ''}
-        </span>
+        <span className={`${CSS_PREFIX}__field-error`}>{errors.patternName || ''}</span>
       </div>
 
-      <div className="create-auto-journal-pattern-form__field">
-        <label htmlFor="sourceTableName" className="create-auto-journal-pattern-form__label">
-          ソーステーブル名 <span className="create-auto-journal-pattern-form__required">*</span>
+      <div className={`${CSS_PREFIX}__field`}>
+        <label htmlFor="sourceTableName" className={`${CSS_PREFIX}__label`}>
+          ソーステーブル名 <span className={`${CSS_PREFIX}__required`}>*</span>
         </label>
         <input
           id="sourceTableName"
           name="sourceTableName"
           type="text"
-          className={inputClassName(
-            'create-auto-journal-pattern-form__input',
-            Boolean(errors.sourceTableName)
-          )}
+          className={inputClassName(`${CSS_PREFIX}__input`, Boolean(errors.sourceTableName))}
           value={formData.sourceTableName}
           onChange={handleFieldChange}
           disabled={isSubmitting}
           data-testid="source-table-input"
         />
-        <span className="create-auto-journal-pattern-form__field-error">
-          {errors.sourceTableName || ''}
-        </span>
+        <span className={`${CSS_PREFIX}__field-error`}>{errors.sourceTableName || ''}</span>
       </div>
 
-      <div className="create-auto-journal-pattern-form__field">
-        <label htmlFor="description" className="create-auto-journal-pattern-form__label">
+      <div className={`${CSS_PREFIX}__field`}>
+        <label htmlFor="description" className={`${CSS_PREFIX}__label`}>
           説明
         </label>
         <textarea
           id="description"
           name="description"
-          className="create-auto-journal-pattern-form__textarea"
+          className={`${CSS_PREFIX}__textarea`}
           value={safeText(formData.description)}
           onChange={handleFieldChange}
           disabled={isSubmitting}
@@ -428,11 +229,11 @@ export const CreateAutoJournalPatternForm: React.FC = () => {
         />
       </div>
 
-      <div className="create-auto-journal-pattern-form__items-header">
-        <h2 className="create-auto-journal-pattern-form__items-title">仕訳明細</h2>
+      <div className={`${CSS_PREFIX}__items-header`}>
+        <h2 className={`${CSS_PREFIX}__items-title`}>仕訳明細</h2>
         <button
           type="button"
-          className="create-auto-journal-pattern-form__add-item"
+          className={`${CSS_PREFIX}__add-item`}
           onClick={handleAddItem}
           disabled={isSubmitting}
           data-testid="add-item-button"
@@ -441,19 +242,18 @@ export const CreateAutoJournalPatternForm: React.FC = () => {
         </button>
       </div>
 
-      <span className="create-auto-journal-pattern-form__field-error">
-        {safeText(errors.items)}
-      </span>
+      <span className={`${CSS_PREFIX}__field-error`}>{safeText(errors.items)}</span>
 
-      <div className="create-auto-journal-pattern-form__items">
+      <div className={`${CSS_PREFIX}__items`}>
         {formData.items.map((item, index) => (
-          <ItemRow
+          <PatternItemRow
             key={`create-pattern-item-${index}`}
             index={index}
             item={item}
             error={errors.itemErrors[index] ?? {}}
             isSubmitting={isSubmitting}
             removeDisabled={isSubmitting || formData.items.length <= 1}
+            cssPrefix={CSS_PREFIX}
             onItemChange={handleItemChange}
             onRemove={handleRemoveItem}
           />
@@ -462,7 +262,7 @@ export const CreateAutoJournalPatternForm: React.FC = () => {
 
       <button
         type="submit"
-        className="create-auto-journal-pattern-form__submit"
+        className={`${CSS_PREFIX}__submit`}
         disabled={isSubmitting}
         data-testid="create-pattern-submit"
       >
