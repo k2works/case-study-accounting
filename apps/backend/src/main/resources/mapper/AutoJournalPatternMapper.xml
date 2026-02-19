@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.accounting.infrastructure.persistence.mapper.AutoJournalPatternMapper">
+
+    <resultMap id="autoJournalPatternResultMap" type="com.example.accounting.infrastructure.persistence.entity.AutoJournalPatternEntity">
+        <id property="id" column="id"/>
+        <result property="patternCode" column="pattern_code"/>
+        <result property="patternName" column="pattern_name"/>
+        <result property="sourceTableName" column="source_table_name"/>
+        <result property="description" column="description"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <collection property="items"
+                    ofType="com.example.accounting.infrastructure.persistence.entity.AutoJournalPatternItemEntity"
+                    notNullColumn="item_id">
+            <id property="id" column="item_id"/>
+            <result property="patternId" column="item_pattern_id"/>
+            <result property="lineNumber" column="line_number"/>
+            <result property="debitCreditType" column="debit_credit_type"/>
+            <result property="accountCode" column="account_code"/>
+            <result property="amountFormula" column="amount_formula"/>
+            <result property="descriptionTemplate" column="description_template"/>
+        </collection>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.example.accounting.infrastructure.persistence.entity.AutoJournalPatternEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO auto_journal_patterns (
+            pattern_code, pattern_name, source_table_name, description, is_active
+        ) VALUES (
+            #{patternCode}, #{patternName}, #{sourceTableName}, #{description}, #{isActive}
+        )
+    </insert>
+
+    <insert id="insertItems" parameterType="java.util.List">
+        INSERT INTO auto_journal_pattern_items (
+            pattern_id, line_number, debit_credit_type, account_code, amount_formula, description_template
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.patternId}, #{item.lineNumber}, #{item.debitCreditType}, #{item.accountCode},
+            #{item.amountFormula}, #{item.descriptionTemplate})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.example.accounting.infrastructure.persistence.entity.AutoJournalPatternEntity">
+        UPDATE auto_journal_patterns SET
+            pattern_name = #{patternName},
+            source_table_name = #{sourceTableName},
+            description = #{description},
+            is_active = #{isActive},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteItems">
+        DELETE FROM auto_journal_pattern_items WHERE pattern_id = #{patternId}
+    </delete>
+
+    <select id="findById" resultMap="autoJournalPatternResultMap">
+        SELECT
+            p.id,
+            p.pattern_code,
+            p.pattern_name,
+            p.source_table_name,
+            p.description,
+            p.is_active,
+            p.created_at,
+            p.updated_at,
+            i.id AS item_id,
+            i.pattern_id AS item_pattern_id,
+            i.line_number,
+            i.debit_credit_type,
+            i.account_code,
+            i.amount_formula,
+            i.description_template
+        FROM auto_journal_patterns p
+        LEFT JOIN auto_journal_pattern_items i ON p.id = i.pattern_id
+        WHERE p.id = #{id}
+        ORDER BY i.line_number ASC
+    </select>
+
+    <select id="findAll" resultMap="autoJournalPatternResultMap">
+        SELECT
+            p.id,
+            p.pattern_code,
+            p.pattern_name,
+            p.source_table_name,
+            p.description,
+            p.is_active,
+            p.created_at,
+            p.updated_at,
+            i.id AS item_id,
+            i.pattern_id AS item_pattern_id,
+            i.line_number,
+            i.debit_credit_type,
+            i.account_code,
+            i.amount_formula,
+            i.description_template
+        FROM auto_journal_patterns p
+        LEFT JOIN auto_journal_pattern_items i ON p.id = i.pattern_id
+        ORDER BY p.id ASC, i.line_number ASC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM auto_journal_patterns WHERE id = #{id}
+    </delete>
+
+    <select id="existsByCode" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM auto_journal_patterns WHERE pattern_code = #{patternCode}
+    </select>
+
+</mapper>
