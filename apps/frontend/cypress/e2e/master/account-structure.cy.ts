@@ -2,12 +2,18 @@
  * 勘定科目構成管理 E2E テスト
  *
  * US-MST-005: 勘定科目構成登録
+ * US-MST-006: 勘定科目構成編集
  *
- * 受入条件:
+ * 受入条件（US-MST-005）:
  * - 親科目と子科目を選択して登録できる
  * - 循環参照が発生しないようバリデーションされる
  * - 表示順を設定できる
  * - 登録成功時、確認メッセージが表示される
+ *
+ * 受入条件（US-MST-006）:
+ * - 親科目、子科目、表示順を編集できる
+ * - 循環参照が発生しないようバリデーションされる
+ * - 編集成功時、確認メッセージが表示される
  */
 describe('US-MST-005: 勘定科目構成登録', () => {
   beforeEach(() => {
@@ -141,6 +147,107 @@ describe('US-MST-005: 勘定科目構成登録', () => {
 
       // Then: テーブルにデータが残っている
       cy.get('table tbody tr').should('have.length.at.least', 1);
+    });
+  });
+
+  describe('編集（US-MST-006）', () => {
+    beforeEach(() => {
+      cy.login('admin', 'Password123!');
+      cy.get('[data-testid="dashboard"]').should('be.visible');
+      cy.visit('/master/account-structures');
+      cy.get('[data-testid="account-structure-list-page"]', { timeout: 15000 }).should(
+        'be.visible'
+      );
+      cy.get('table tbody tr').should('have.length.at.least', 1);
+    });
+
+    it('一覧の編集ボタンから編集ページに遷移できる', () => {
+      // When: 編集ボタンをクリック
+      cy.get('table tbody tr').first().contains('button', '編集').click();
+
+      // Then: 編集ページが表示される
+      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
+        'be.visible'
+      );
+      cy.contains('h1', '勘定科目体系 編集').should('be.visible');
+      cy.url().should('include', '/edit');
+    });
+
+    it('編集フォームが表示される', () => {
+      // Given: 編集ページに遷移
+      cy.get('table tbody tr').first().contains('button', '編集').click();
+      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
+        'be.visible'
+      );
+
+      // Then: フォームフィールドが表示される
+      cy.get('#accountCode').should('be.visible');
+      cy.get('#parentAccountCode').should('be.visible');
+      cy.get('#displayOrder').should('be.visible');
+      cy.contains('button', '更新').should('be.visible');
+      cy.contains('button', '戻る').should('be.visible');
+    });
+
+    it('勘定科目コードは変更できない', () => {
+      // Given: 編集ページに遷移
+      cy.get('table tbody tr').first().contains('button', '編集').click();
+      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
+        'be.visible'
+      );
+
+      // Then: 勘定科目コードは disabled かつ値が入っている
+      cy.get('#accountCode').should('be.disabled');
+      cy.get('#accountCode').invoke('val').should('not.be.empty');
+    });
+
+    it('親科目コードを編集して更新できる', () => {
+      // Given: 編集ページに遷移
+      cy.get('table tbody tr').first().contains('button', '編集').click();
+      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
+        'be.visible'
+      );
+
+      // When: 親科目コードを変更して更新
+      cy.get('#parentAccountCode').clear();
+      cy.contains('button', '更新').click();
+
+      // Then: 一覧ページに遷移し、成功メッセージが表示される
+      cy.url({ timeout: 10000 }).should('include', '/master/account-structures');
+      cy.url().should('not.include', '/edit');
+      cy.contains('勘定科目構成を更新しました', { timeout: 10000 }).should('be.visible');
+    });
+
+    it('表示順を編集して更新できる', () => {
+      // Given: 編集ページに遷移
+      cy.get('table tbody tr').first().contains('button', '編集').click();
+      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
+        'be.visible'
+      );
+
+      // When: 表示順を変更して更新
+      cy.get('#displayOrder').clear().type('99');
+      cy.contains('button', '更新').click();
+
+      // Then: 一覧ページに遷移し、成功メッセージが表示される
+      cy.url({ timeout: 10000 }).should('include', '/master/account-structures');
+      cy.url().should('not.include', '/edit');
+      cy.contains('勘定科目構成を更新しました', { timeout: 10000 }).should('be.visible');
+    });
+
+    it('戻るボタンで一覧ページに戻れる', () => {
+      // Given: 編集ページに遷移
+      cy.get('table tbody tr').first().contains('button', '編集').click();
+      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
+        'be.visible'
+      );
+
+      // When: 戻るボタンをクリック
+      cy.contains('button', '戻る').click();
+
+      // Then: 一覧ページに遷移する
+      cy.url().should('include', '/master/account-structures');
+      cy.url().should('not.include', '/edit');
+      cy.get('[data-testid="account-structure-list-page"]').should('be.visible');
     });
   });
 
