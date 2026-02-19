@@ -6,6 +6,7 @@
  */
 import {
   loginAndVisitMasterList,
+  navigateToFirstRowEdit,
   describeMasterAccessControl,
   describeMasterDeleteTests,
 } from '../../support/masterTestHelper';
@@ -117,19 +118,13 @@ describe('US-MST-005: 勘定科目構成登録', () => {
     });
 
     it('一覧の編集ボタンから編集ページに遷移できる', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-account-structure-page');
       cy.contains('h1', '勘定科目体系 編集').should('be.visible');
       cy.url().should('include', '/edit');
     });
 
     it('編集フォームが表示される', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-account-structure-page');
       cy.get('#accountCode').should('be.visible');
       cy.get('#parentAccountCode').should('be.visible');
       cy.get('#displayOrder').should('be.visible');
@@ -138,19 +133,13 @@ describe('US-MST-005: 勘定科目構成登録', () => {
     });
 
     it('勘定科目コードは変更できない', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-account-structure-page');
       cy.get('#accountCode').should('be.disabled');
       cy.get('#accountCode').invoke('val').should('not.be.empty');
     });
 
     it('親科目コードを編集して更新できる', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-account-structure-page');
       cy.get('#parentAccountCode').clear();
       cy.contains('button', '更新').click();
       cy.url({ timeout: 10000 }).should('include', '/master/account-structures');
@@ -159,10 +148,7 @@ describe('US-MST-005: 勘定科目構成登録', () => {
     });
 
     it('表示順を編集して更新できる', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-account-structure-page');
       cy.get('#displayOrder').clear().type('99');
       cy.contains('button', '更新').click();
       cy.url({ timeout: 10000 }).should('include', '/master/account-structures');
@@ -171,10 +157,7 @@ describe('US-MST-005: 勘定科目構成登録', () => {
     });
 
     it('戻るボタンで一覧ページに戻れる', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-account-structure-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-account-structure-page');
       cy.contains('button', '戻る').click();
       cy.url().should('include', '/master/account-structures');
       cy.url().should('not.include', '/edit');

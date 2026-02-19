@@ -17,10 +17,34 @@ interface MasterPageConfig {
  * 管理者としてログインし、指定のマスタ一覧ページに遷移する。
  */
 export const loginAndVisitMasterList = (config: MasterPageConfig): void => {
-  cy.login('admin', 'Password123!');
-  cy.get('[data-testid="dashboard"]').should('be.visible');
+  loginAsAdmin();
   cy.visit(config.path);
   cy.get(`[data-testid="${config.listTestId}"]`, { timeout: 15000 }).should('be.visible');
+};
+
+/**
+ * 管理者としてログインし、ダッシュボード表示を確認する。
+ */
+export const loginAsAdmin = (): void => {
+  cy.login('admin', 'Password123!');
+  cy.get('[data-testid="dashboard"]').should('be.visible');
+};
+
+/**
+ * 管理者としてログインし、指定パスに遷移する。
+ */
+export const loginAndVisitPage = (path: string, pageTestId: string): void => {
+  loginAsAdmin();
+  cy.visit(path);
+  cy.get(`[data-testid="${pageTestId}"]`, { timeout: 15000 }).should('be.visible');
+};
+
+/**
+ * 一覧の先頭行「編集」ボタンをクリックし、編集ページの表示を待つ。
+ */
+export const navigateToFirstRowEdit = (editPageTestId: string): void => {
+  cy.get('table tbody tr').first().contains('button', '編集').click();
+  cy.get(`[data-testid="${editPageTestId}"]`, { timeout: 10000 }).should('be.visible');
 };
 
 /**

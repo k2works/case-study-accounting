@@ -6,6 +6,8 @@
  */
 import {
   loginAndVisitMasterList,
+  loginAndVisitPage,
+  navigateToFirstRowEdit,
   describeMasterAccessControl,
   describeMasterDeleteTests,
 } from '../../support/masterTestHelper';
@@ -37,12 +39,7 @@ describe('US-MST-007/008: 自動仕訳パターン管理', () => {
 
   describe('新規登録（US-MST-007）', () => {
     beforeEach(() => {
-      cy.login('admin', 'Password123!');
-      cy.get('[data-testid="dashboard"]').should('be.visible');
-      cy.visit('/master/auto-journal-patterns/new');
-      cy.get('[data-testid="create-auto-journal-pattern-page"]', { timeout: 15000 }).should(
-        'be.visible'
-      );
+      loginAndVisitPage('/master/auto-journal-patterns/new', 'create-auto-journal-pattern-page');
     });
 
     it('新規登録フォームが表示される', () => {
@@ -114,27 +111,18 @@ describe('US-MST-007/008: 自動仕訳パターン管理', () => {
     });
 
     it('一覧の編集ボタンから編集ページに遷移できる', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-auto-journal-pattern-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-auto-journal-pattern-page');
       cy.contains('h1', '自動仕訳パターン編集').should('be.visible');
     });
 
     it('パターンコードは変更できない', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-auto-journal-pattern-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-auto-journal-pattern-page');
       cy.get('[data-testid="pattern-code-input"]').should('be.disabled');
       cy.get('[data-testid="pattern-code-input"]').invoke('val').should('not.be.empty');
     });
 
     it('既存パターンを編集できる', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-auto-journal-pattern-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-auto-journal-pattern-page');
       cy.get('[data-testid="pattern-name-input"]').clear().type('更新済みパターン');
       cy.get('[data-testid="edit-pattern-submit"]').click();
       cy.url({ timeout: 10000 }).should('include', '/master/auto-journal-patterns');
@@ -143,10 +131,7 @@ describe('US-MST-007/008: 自動仕訳パターン管理', () => {
     });
 
     it('明細行を追加して更新できる', () => {
-      cy.get('table tbody tr').first().contains('button', '編集').click();
-      cy.get('[data-testid="edit-auto-journal-pattern-page"]', { timeout: 10000 }).should(
-        'be.visible'
-      );
+      navigateToFirstRowEdit('edit-auto-journal-pattern-page');
       cy.get('[data-testid="add-item-button"]').click();
       cy.get('[data-testid^="item-row-"]').last().within(() => {
         cy.get('select').select('C');
