@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -1988,6 +1988,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release_notes-v2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v2.0 機能拡張版
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2275,6 +2303,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iteration_plan-9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iteration_plan-10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション10
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2521,6 +2605,62 @@
     
   
     イテレーション7
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../retrospective-8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション8
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../retrospective-9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    イテレーション9
   
 
     
@@ -7226,15 +7366,19 @@
     IT5 ユーザー管理・承認 (3d) :done, a5, 2026-02-07, 3d
     IT6 差戻・確定・残高 (4d)   :done, a6, 2026-02-10, 4d
     IT7 貸借対照表・補助元帳 (3d) :done, a7, 2026-02-14, 3d
-    IT8 損益計算書              :active, a8, 2026-02-17, 14d
-    リリース2.0 機能拡張版      :milestone, ma2, after a8, 0d</code></pre>
+    IT8 損益計算書 (1d)          :done, a8, 2026-02-17, 1d
+    リリース2.0 機能拡張版      :milestone, ma2, 2026-02-17, 0d
+
+    section リリース3.0 完成版
+    IT9 マスタ拡張 (2d)          :done, a9, 2026-02-18, 2d
+    IT10 自動仕訳・財務分析       :active, a10, 2026-02-20, 14d</code></pre>
 <h3 id="_15">バーンダウンチャート<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>xychart-beta
     title "リリースバーンダウン（計画 vs 実績）"
     x-axis ["開始", "IT1", "IT2", "IT3", "IT4", "IT5", "IT6", "IT7", "IT8", "IT9", "IT10", "IT11", "IT12"]
     y-axis "残 SP" 0 --&gt; 160
-    line "計画" [155, 140, 126, 108, 98, 81, 62, 49, 41, 28, 16, 3, 0]
-    line "実績" [155, 137, 121, 103, 93, 76, 57, 44]</code></pre>
+    line "計画" [155, 140, 126, 108, 98, 81, 62, 49, 41, 28, 18, 5, 0]
+    line "実績" [155, 137, 121, 103, 93, 76, 57, 44, 36, 23]</code></pre>
 <h2 id="_16">ベロシティ見積もり<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
 <h3 id="_17">初期見積もり<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
 <p>新規チームのため、代表的なストーリーのタスク分解による見積もりを実施。</p>
@@ -7366,22 +7510,22 @@
 <tr>
 <td>8</td>
 <td>8</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>🔵 進行中（損益計算書表示、リリース 2.0 最終）</td>
+<td>8</td>
+<td>119</td>
+<td>36</td>
+<td>✅ 完了（損益計算書表示完了、リリース 2.0 機能拡張版達成）</td>
 </tr>
 <tr>
 <td>9</td>
 <td>13</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td></td>
+<td>13</td>
+<td>132</td>
+<td>23</td>
+<td>✅ 完了（勘定科目構成登録・編集、自動仕訳パターン CRUD）</td>
 </tr>
 <tr>
 <td>10</td>
-<td>12</td>
+<td>10</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>
@@ -7415,6 +7559,7 @@
 <th>ストーリー名</th>
 <th>SP</th>
 <th>バッファ対象</th>
+<th>状態</th>
 </tr>
 </thead>
 <tbody>
@@ -7423,52 +7568,60 @@
 <td>勘定科目構成登録</td>
 <td>5</td>
 <td>○</td>
+<td>✅ IT-9 消化</td>
 </tr>
 <tr>
 <td>US-MST-006</td>
 <td>勘定科目構成編集</td>
 <td>3</td>
 <td>○</td>
+<td>✅ IT-9 消化</td>
 </tr>
 <tr>
 <td>US-MST-007</td>
 <td>自動仕訳設定登録</td>
 <td>3</td>
 <td>○</td>
+<td>✅ IT-9 消化</td>
 </tr>
 <tr>
 <td>US-MST-008</td>
 <td>自動仕訳設定編集</td>
 <td>2</td>
 <td>○</td>
+<td>✅ IT-9 消化</td>
 </tr>
 <tr>
 <td>US-JNL-006</td>
 <td>自動仕訳生成</td>
 <td>5</td>
 <td>○</td>
+<td></td>
 </tr>
 <tr>
 <td>US-FS-003</td>
 <td>財務分析表示</td>
 <td>5</td>
 <td>○</td>
+<td></td>
 </tr>
 <tr>
 <td>US-SYS-002</td>
 <td>データダウンロード</td>
 <td>5</td>
 <td>○</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>合計</strong></td>
 <td></td>
 <td><strong>28</strong></td>
 <td></td>
+<td><strong>13SP 消化済み</strong></td>
 </tr>
 </tbody>
 </table>
-<p><strong>フィーチャバッファ比率</strong>: 28 / 155 = 18%（US-LDG-002 は IT-7 で実装済み）</p>
+<p><strong>フィーチャバッファ比率</strong>: 28 / 155 = 18%（US-LDG-002 は IT-7、US-MST-005〜008 は IT-9 で実装済み。残バッファ 15SP）</p>
 <h3 id="_21">スケジュールバッファ<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
 <p>イテレーション12をスケジュールバッファとして確保。</p>
 <ul>
@@ -7503,7 +7656,7 @@
 <td>財務諸表計算の複雑性</td>
 <td>高</td>
 <td>段階的な実装とレビュー</td>
-<td>✅ 貸借対照表完了（IT-7）、損益計算書は IT-8</td>
+<td>✅ 解決済み（貸借対照表 IT-7、損益計算書 IT-8 完了）</td>
 </tr>
 <tr>
 <td>パフォーマンス</td>
@@ -7555,7 +7708,7 @@
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 仕訳承認ワークフローが機能する（承認申請・承認・差し戻し・確定 完了 2026-02-10）</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 貸借対照表を出力できる（イテレーション 7 完了 2026-02-14）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 損益計算書を出力できる（イテレーション 8 計画済み）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 損益計算書を出力できる（イテレーション 8 完了 2026-02-17）</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 残高試算表で貸借一致を確認できる（残高試算表表示完了 2026-02-13）</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 補助元帳を照会できる（補助元帳照会完了 2026-02-14）</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 月次残高を照会できる（月次残高照会完了 2026-02-10）</li>
@@ -7563,6 +7716,8 @@
 </ul>
 <h3 id="30">リリース3.0<a class="headerlink" href="#30" title="Permanent link">&para;</a></h3>
 <ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 勘定科目構成を管理できる（勘定科目構成登録・編集完了 2026-02-19）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 自動仕訳パターンを管理できる（自動仕訳パターン CRUD 完了 2026-02-19）</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 自動仕訳が機能する</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 財務分析指標を確認できる</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 監査ログを照会できる</li>
@@ -7703,6 +7858,24 @@
 <td>2026-02-17</td>
 <td>3.0</td>
 <td>イテレーション7ふりかえり・イテレーション8計画作成（8SP、US-FS-002 損益計算書表示）。GitHub Issue #31, #27 クローズ、Project 同期。リリース 2.0 最終イテレーション開始</td>
+<td>Claude Opus 4.6</td>
+</tr>
+<tr>
+<td>2026-02-17</td>
+<td>3.1</td>
+<td><strong>イテレーション8完了・リリース 2.0 達成</strong>（8SP/8SP 達成率100%）。US-FS-002 損益計算書表示完了。GitHub Issue #32 クローズ、Project Board 同期（#32-35 追加）、Milestone「リリース 1.0 MVP」クローズ。バーンダウン更新（残 36SP）</td>
+<td>Claude Opus 4.6</td>
+</tr>
+<tr>
+<td>2026-02-19</td>
+<td>3.2</td>
+<td>イテレーション9進捗（US-MST-006 勘定科目構成編集完了、8SP/13SP）。GitHub Issue #13 クローズ、Project Board 同期</td>
+<td>Claude Opus 4.6</td>
+</tr>
+<tr>
+<td>2026-02-19</td>
+<td>3.3</td>
+<td><strong>イテレーション9全完了</strong>（13SP/13SP 達成率100%）。US-MST-007/008 自動仕訳パターン CRUD 完了。GitHub Issue #14, #15 クローズ、Project Board 同期。バーンダウン更新（残 23SP）</td>
 <td>Claude Opus 4.6</td>
 </tr>
 </tbody>
