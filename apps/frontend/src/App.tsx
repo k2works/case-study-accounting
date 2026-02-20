@@ -7,6 +7,12 @@ import UserListPage from './pages/UserListPage';
 import AccountListPage from './pages/AccountListPage';
 import CreateAccountPage from './pages/CreateAccountPage';
 import EditAccountPage from './pages/EditAccountPage';
+import AccountStructureListPage from './pages/AccountStructureListPage';
+import CreateAccountStructurePage from './pages/CreateAccountStructurePage';
+import EditAccountStructurePage from './pages/EditAccountStructurePage';
+import AutoJournalPatternListPage from './pages/AutoJournalPatternListPage';
+import CreateAutoJournalPatternPage from './pages/CreateAutoJournalPatternPage';
+import EditAutoJournalPatternPage from './pages/EditAutoJournalPatternPage';
 import JournalEntryListPage from './pages/JournalEntryListPage';
 import CreateJournalEntryPage from './pages/CreateJournalEntryPage';
 import EditJournalEntryPage from './pages/EditJournalEntryPage';
@@ -136,6 +142,54 @@ export const App = () => {
         element={
           <ManagerRoute>
             <EditAccountPage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/account-structures"
+        element={
+          <ManagerRoute>
+            <AccountStructureListPage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/account-structures/new"
+        element={
+          <ManagerRoute>
+            <CreateAccountStructurePage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/account-structures/:code/edit"
+        element={
+          <ManagerRoute>
+            <EditAccountStructurePage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/auto-journal-patterns"
+        element={
+          <ManagerRoute>
+            <AutoJournalPatternListPage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/auto-journal-patterns/new"
+        element={
+          <ManagerRoute>
+            <CreateAutoJournalPatternPage />
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path="/master/auto-journal-patterns/:id/edit"
+        element={
+          <ManagerRoute>
+            <EditAutoJournalPatternPage />
           </ManagerRoute>
         }
       />

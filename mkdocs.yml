@@ -89,6 +89,7 @@ nav:
       - リリース計画: development/release_plan.md
       - リリースノート:
           - v1.0 MVP: development/release_notes-v1.0.md
+          - v2.0 機能拡張版: development/release_notes-v2.0.md
       - イテレーション計画:
           - イテレーション1: development/iteration_plan-1.md
           - イテレーション2: development/iteration_plan-2.md
@@ -98,6 +99,8 @@ nav:
           - イテレーション6: development/iteration_plan-6.md
           - イテレーション7: development/iteration_plan-7.md
           - イテレーション8: development/iteration_plan-8.md
+          - イテレーション9: development/iteration_plan-9.md
+          - イテレーション10: development/iteration_plan-10.md
       - ふりかえり:
           - イテレーション1: development/retrospective-1.md
           - イテレーション2: development/retrospective-2.md
@@ -106,6 +109,8 @@ nav:
           - イテレーション5: development/retrospective-5.md
           - イテレーション6: development/retrospective-6.md
           - イテレーション7: development/retrospective-7.md
+          - イテレーション8: development/retrospective-8.md
+          - イテレーション9: development/retrospective-9.md
   - 運用:
       - 開発環境解説: operation/dev_env.md
       - 開発コンテナ構築手順書: operation/dev_container.md

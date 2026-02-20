@@ -1772,6 +1772,401 @@ export const profitAndLossHandlers = [
   }),
 ];
 
+// 勘定科目構成モックデータ
+interface AccountStructureMock {
+  accountCode: string;
+  accountName: string | null;
+  accountPath: string;
+  hierarchyLevel: number;
+  parentAccountCode: string | null;
+  displayOrder: number;
+}
+
+const mockAccountStructures: AccountStructureMock[] = [
+  {
+    accountCode: '1000',
+    accountName: '現金預金',
+    accountPath: '1000',
+    hierarchyLevel: 1,
+    parentAccountCode: null,
+    displayOrder: 1,
+  },
+  {
+    accountCode: '1001',
+    accountName: '現金',
+    accountPath: '1000~1001',
+    hierarchyLevel: 2,
+    parentAccountCode: '1000',
+    displayOrder: 1,
+  },
+];
+
+/**
+ * 勘定科目構成関連のハンドラー
+ */
+export const accountStructureHandlers = [
+  // 勘定科目構成一覧取得
+  http.get(/\/account-structures\/?$/, () => {
+    return HttpResponse.json<AccountStructureMock[]>(mockAccountStructures);
+  }),
+
+  // 勘定科目構成詳細取得
+  http.get(/\/account-structures\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/account-structures\/([^/]+)$/);
+    const code = match ? decodeURIComponent(match[1]) : '';
+
+    const structure = mockAccountStructures.find((s) => s.accountCode === code);
+    if (!structure) {
+      return HttpResponse.json({ errorMessage: '勘定科目構成が見つかりません' }, { status: 404 });
+    }
+
+    return HttpResponse.json<AccountStructureMock>(structure);
+  }),
+
+  // 勘定科目構成登録
+  http.post('*/account-structures', async ({ request }) => {
+    const body = (await request.json()) as {
+      accountCode: string;
+      parentAccountCode: string | null;
+      displayOrder: number;
+    };
+
+    // 重複チェック
+    if (mockAccountStructures.some((s) => s.accountCode === body.accountCode)) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: '勘定科目構成は既に登録されています',
+      });
+    }
+
+    // 勘定科目存在チェック
+    const account = mockAccounts.find((a) => a.accountCode === body.accountCode);
+    if (!account) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: '勘定科目が存在しません',
+      });
+    }
+
+    // パス計算
+    let accountPath = body.accountCode;
+    let hierarchyLevel = 1;
+    if (body.parentAccountCode) {
+      const parent = mockAccountStructures.find((s) => s.accountCode === body.parentAccountCode);
+      if (parent) {
+        accountPath = `${parent.accountPath}~${body.accountCode}`;
+        hierarchyLevel = parent.hierarchyLevel + 1;
+      }
+    }
+
+    const newStructure: AccountStructureMock = {
+      accountCode: body.accountCode,
+      accountName: account.accountName,
+      accountPath,
+      hierarchyLevel,
+      parentAccountCode: body.parentAccountCode,
+      displayOrder: body.displayOrder,
+    };
+    mockAccountStructures.push(newStructure);
+
+    return HttpResponse.json({
+      success: true,
+      accountCode: newStructure.accountCode,
+      accountPath: newStructure.accountPath,
+      hierarchyLevel: newStructure.hierarchyLevel,
+      parentAccountCode: newStructure.parentAccountCode,
+      displayOrder: newStructure.displayOrder,
+    });
+  }),
+
+  // 勘定科目構成更新
+  http.put(/\/account-structures\/([^/]+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/account-structures\/([^/]+)$/);
+    const code = match ? decodeURIComponent(match[1]) : '';
+    const body = (await request.json()) as {
+      parentAccountCode: string | null;
+      displayOrder: number;
+    };
+
+    const index = mockAccountStructures.findIndex((s) => s.accountCode === code);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '勘定科目構成が見つかりません' },
+        { status: 400 }
+      );
+    }
+
+    mockAccountStructures[index].parentAccountCode = body.parentAccountCode;
+    mockAccountStructures[index].displayOrder = body.displayOrder;
+
+    return HttpResponse.json({
+      success: true,
+      accountCode: code,
+      accountPath: mockAccountStructures[index].accountPath,
+      hierarchyLevel: mockAccountStructures[index].hierarchyLevel,
+      parentAccountCode: body.parentAccountCode,
+      displayOrder: body.displayOrder,
+      message: '勘定科目構成を更新しました',
+    });
+  }),
+
+  // 勘定科目構成削除
+  http.delete(/\/account-structures\/([^/]+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/account-structures\/([^/]+)$/);
+    const code = match ? decodeURIComponent(match[1]) : '';
+
+    const index = mockAccountStructures.findIndex((s) => s.accountCode === code);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '勘定科目構成が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    // 子構成チェック
+    const hasChildren = mockAccountStructures.some((s) => s.parentAccountCode === code);
+    if (hasChildren) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '子階層が存在するため削除できません' },
+        { status: 409 }
+      );
+    }
+
+    mockAccountStructures.splice(index, 1);
+
+    return HttpResponse.json({
+      success: true,
+      accountCode: code,
+      message: '勘定科目構成を削除しました',
+    });
+  }),
+];
+
+// 自動仕訳パターンモックデータ
+interface MockPatternItem {
+  lineNumber: number;
+  debitCreditType: string;
+  accountCode: string;
+  amountFormula: string;
+  descriptionTemplate?: string;
+}
+
+interface MockAutoJournalPattern {
+  patternId: number;
+  patternCode: string;
+  patternName: string;
+  sourceTableName: string;
+  description?: string;
+  isActive: boolean;
+  items: MockPatternItem[];
+}
+
+const mockAutoJournalPatterns: MockAutoJournalPattern[] = [
+  {
+    patternId: 1,
+    patternCode: 'PAT001',
+    patternName: '売上仕訳パターン',
+    sourceTableName: 'sales',
+    description: '売上データから自動仕訳を生成',
+    isActive: true,
+    items: [
+      {
+        lineNumber: 1,
+        debitCreditType: 'D',
+        accountCode: '1100',
+        amountFormula: 'amount',
+        descriptionTemplate: '売掛金',
+      },
+      {
+        lineNumber: 2,
+        debitCreditType: 'C',
+        accountCode: '4100',
+        amountFormula: 'amount',
+        descriptionTemplate: '売上高',
+      },
+    ],
+  },
+  {
+    patternId: 2,
+    patternCode: 'PAT002',
+    patternName: '仕入仕訳パターン',
+    sourceTableName: 'purchases',
+    description: '仕入データから自動仕訳を生成',
+    isActive: true,
+    items: [
+      {
+        lineNumber: 1,
+        debitCreditType: 'D',
+        accountCode: '5100',
+        amountFormula: 'amount',
+        descriptionTemplate: '仕入高',
+      },
+      {
+        lineNumber: 2,
+        debitCreditType: 'C',
+        accountCode: '2100',
+        amountFormula: 'amount',
+        descriptionTemplate: '買掛金',
+      },
+    ],
+  },
+];
+
+const existingPatternCodes = new Set(mockAutoJournalPatterns.map((p) => p.patternCode));
+let nextPatternId = mockAutoJournalPatterns.length + 1;
+
+/**
+ * 自動仕訳パターン関連のハンドラー
+ */
+export const autoJournalPatternHandlers = [
+  // 詳細取得（一覧より先にマッチさせる）
+  http.get(/\/auto-journal-patterns\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/auto-journal-patterns\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const pattern = mockAutoJournalPatterns.find((p) => p.patternId === id);
+    if (!pattern) {
+      return HttpResponse.json(
+        { errorMessage: '自動仕訳パターンが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json(pattern);
+  }),
+
+  // 更新
+  http.put(/\/auto-journal-patterns\/(\d+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/auto-journal-patterns\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+    const body = (await request.json()) as {
+      patternName: string;
+      sourceTableName: string;
+      description?: string;
+      isActive: boolean;
+      items: Array<{
+        lineNumber: number;
+        debitCreditType: string;
+        accountCode: string;
+        amountFormula: string;
+        descriptionTemplate?: string;
+      }>;
+    };
+
+    const index = mockAutoJournalPatterns.findIndex((p) => p.patternId === id);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '自動仕訳パターンが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    mockAutoJournalPatterns[index].patternName = body.patternName;
+    mockAutoJournalPatterns[index].sourceTableName = body.sourceTableName;
+    mockAutoJournalPatterns[index].description = body.description || '';
+    if (body.items) {
+      mockAutoJournalPatterns[index].items = body.items.map((item) => ({
+        lineNumber: item.lineNumber,
+        debitCreditType: item.debitCreditType,
+        accountCode: item.accountCode,
+        amountFormula: item.amountFormula,
+        descriptionTemplate: item.descriptionTemplate || '',
+      }));
+    }
+
+    return HttpResponse.json({
+      success: true,
+      patternId: id,
+      message: '自動仕訳パターンを更新しました',
+    });
+  }),
+
+  // 削除
+  http.delete(/\/auto-journal-patterns\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/auto-journal-patterns\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const index = mockAutoJournalPatterns.findIndex((p) => p.patternId === id);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '自動仕訳パターンが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    mockAutoJournalPatterns.splice(index, 1);
+
+    return HttpResponse.json({
+      success: true,
+      patternId: id,
+      message: '削除しました',
+    });
+  }),
+
+  // 登録
+  http.post('*/auto-journal-patterns', async ({ request }) => {
+    const body = (await request.json()) as {
+      patternCode: string;
+      patternName: string;
+      sourceTableName: string;
+      description?: string;
+      items: Array<{
+        lineNumber: number;
+        debitCreditType: string;
+        accountCode: string;
+        amountFormula: string;
+        descriptionTemplate?: string;
+      }>;
+    };
+
+    if (existingPatternCodes.has(body.patternCode)) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: 'パターンコードは既に使用されています',
+      });
+    }
+
+    const patternId = nextPatternId++;
+    const items: MockPatternItem[] = (body.items || []).map((item) => ({
+      lineNumber: item.lineNumber,
+      debitCreditType: item.debitCreditType,
+      accountCode: item.accountCode,
+      amountFormula: item.amountFormula,
+      descriptionTemplate: item.descriptionTemplate || '',
+    }));
+
+    const newPattern: MockAutoJournalPattern = {
+      patternId,
+      patternCode: body.patternCode,
+      patternName: body.patternName,
+      sourceTableName: body.sourceTableName,
+      description: body.description || '',
+      isActive: true,
+      items,
+    };
+    mockAutoJournalPatterns.push(newPattern);
+    existingPatternCodes.add(body.patternCode);
+
+    return HttpResponse.json({
+      success: true,
+      patternId,
+      patternCode: body.patternCode,
+      patternName: body.patternName,
+    });
+  }),
+
+  // 一覧取得（最後に配置）
+  http.get(/\/auto-journal-patterns\/?$/, () => {
+    return HttpResponse.json(mockAutoJournalPatterns);
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
@@ -1779,6 +2174,8 @@ export const handlers = [
   ...authHandlers,
   ...userHandlers,
   ...accountHandlers,
+  ...accountStructureHandlers,
+  ...autoJournalPatternHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
   ...subsidiaryLedgerHandlers,
