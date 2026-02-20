@@ -51,6 +51,7 @@
   "type": "module",
   "dependencies": {
     "@k2works/claude-code-booster": "^1.6.0",
+    "dotenv": "^17.3.1",
     "gulp": "^5.0.0"
   },
   "devDependencies": {
