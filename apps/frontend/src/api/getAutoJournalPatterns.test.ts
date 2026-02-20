@@ -51,7 +51,7 @@ describe('getAutoJournalPattern', () => {
       sourceTableName: 'sales',
       isActive: true,
       items: [
-        { lineNumber: 1, debitCreditType: 'DEBIT', accountCode: '1100', amountFormula: 'amount' },
+        { lineNumber: 1, debitCreditType: 'D', accountCode: '1100', amountFormula: 'amount' },
       ],
     };
     mockGet.mockResolvedValue({ data: mockData });

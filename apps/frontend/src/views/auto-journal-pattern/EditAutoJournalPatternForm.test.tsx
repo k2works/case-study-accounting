@@ -23,7 +23,7 @@ const mockPattern: AutoJournalPattern = {
   items: [
     {
       lineNumber: 1,
-      debitCreditType: 'DEBIT',
+      debitCreditType: 'D',
       accountCode: '1100',
       amountFormula: 'amount',
       descriptionTemplate: 'desc',

@@ -24,7 +24,7 @@ describe('createAutoJournalPattern', () => {
       sourceTableName: 'sales',
       description: 'テスト',
       items: [
-        { lineNumber: 1, debitCreditType: 'DEBIT', accountCode: '1100', amountFormula: 'amount' },
+        { lineNumber: 1, debitCreditType: 'D', accountCode: '1100', amountFormula: 'amount' },
       ],
     };
     mockPost.mockResolvedValue({

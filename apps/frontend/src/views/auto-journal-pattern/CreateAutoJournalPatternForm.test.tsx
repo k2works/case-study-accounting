@@ -57,7 +57,7 @@ describe('CreateAutoJournalPatternForm', () => {
     await fillRequiredFields(user);
     // 明細行のフィールドを埋める
     const selects = screen.getAllByRole('combobox');
-    await user.selectOptions(selects[0], 'DEBIT');
+    await user.selectOptions(selects[0], 'D');
     const itemInputs = screen.getByTestId('item-row-0').querySelectorAll('input[type="text"]');
     await user.type(itemInputs[0], '1100');
     await user.type(itemInputs[1], 'amount');
@@ -76,7 +76,7 @@ describe('CreateAutoJournalPatternForm', () => {
 
     await fillRequiredFields(user);
     const selects = screen.getAllByRole('combobox');
-    await user.selectOptions(selects[0], 'DEBIT');
+    await user.selectOptions(selects[0], 'D');
     const itemInputs = screen.getByTestId('item-row-0').querySelectorAll('input[type="text"]');
     await user.type(itemInputs[0], '1100');
     await user.type(itemInputs[1], 'amount');
@@ -95,7 +95,7 @@ describe('CreateAutoJournalPatternForm', () => {
 
     await fillRequiredFields(user);
     const selects = screen.getAllByRole('combobox');
-    await user.selectOptions(selects[0], 'DEBIT');
+    await user.selectOptions(selects[0], 'D');
     const itemInputs = screen.getByTestId('item-row-0').querySelectorAll('input[type="text"]');
     await user.type(itemInputs[0], '1100');
     await user.type(itemInputs[1], 'amount');

@@ -77,7 +77,7 @@ describe('validateItemErrors', () => {
   });
 
   it('入力済みの項目にはエラーを設定しない', () => {
-    const items = [{ debitCreditType: 'DEBIT', accountCode: '1100', amountFormula: 'amount' }];
+    const items = [{ debitCreditType: 'D', accountCode: '1100', amountFormula: 'amount' }];
     const errors = createInitialErrors(1);
     validateItemErrors(items, errors);
 
@@ -115,7 +115,7 @@ describe('sanitizePatternItems', () => {
     const items = [
       {
         lineNumber: 99,
-        debitCreditType: 'DEBIT',
+        debitCreditType: 'D',
         accountCode: ' 1100 ',
         amountFormula: ' amount ',
         descriptionTemplate: ' desc ',
@@ -133,7 +133,7 @@ describe('sanitizePatternItems', () => {
     const items = [
       {
         lineNumber: 1,
-        debitCreditType: 'CREDIT',
+        debitCreditType: 'C',
         accountCode: '4100',
         amountFormula: 'amount',
         descriptionTemplate: '  ',
@@ -165,7 +165,7 @@ describe('validateCommonFields', () => {
       items: [
         {
           lineNumber: 1,
-          debitCreditType: 'DEBIT',
+          debitCreditType: 'D',
           accountCode: '1100',
           amountFormula: 'amount',
         },
@@ -240,7 +240,7 @@ describe('PatternItemRow', () => {
   it('明細行のフィールドを表示する', () => {
     const item = {
       lineNumber: 1,
-      debitCreditType: 'DEBIT',
+      debitCreditType: 'D',
       accountCode: '1100',
       amountFormula: 'amount',
       descriptionTemplate: 'テスト',
