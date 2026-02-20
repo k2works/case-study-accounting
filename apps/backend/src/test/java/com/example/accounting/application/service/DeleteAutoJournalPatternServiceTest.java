@@ -46,7 +46,7 @@ class DeleteAutoJournalPatternServiceTest {
         when(autoJournalPatternRepository.findById(AutoJournalPatternId.of(1L)))
                 .thenReturn(Try.success(Optional.of(existing)));
         when(autoJournalPatternRepository.deleteById(AutoJournalPatternId.of(1L)))
-                .thenReturn(Try.run(() -> {}));
+                .thenReturn(Try.run(() -> { }));
 
         DeleteAutoJournalPatternResult result = service.execute(command);
 
