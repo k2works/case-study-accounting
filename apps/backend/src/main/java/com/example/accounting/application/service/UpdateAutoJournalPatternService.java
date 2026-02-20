@@ -46,9 +46,7 @@ public class UpdateAutoJournalPatternService implements UpdateAutoJournalPattern
     private Either<String, AutoJournalPattern> updatePatternFromCommand(UpdateAutoJournalPatternCommand command,
                                                                          AutoJournalPattern pattern) {
         try {
-            List<AutoJournalPatternItem> items = command.items() == null
-                    ? List.of()
-                    : command.items().stream()
+            List<AutoJournalPatternItem> items = command.items().stream()
                     .map(this::toPatternItem)
                     .toList();
 

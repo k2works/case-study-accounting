@@ -51,16 +51,14 @@ public class CreateAutoJournalPatternService implements CreateAutoJournalPattern
                     command.description()
             );
 
-            if (command.items() != null) {
-                for (CreateAutoJournalPatternCommand.PatternItemCommand item : command.items()) {
-                    pattern = pattern.addItem(AutoJournalPatternItem.create(
-                            item.lineNumber(),
-                            item.debitCreditType(),
-                            item.accountCode(),
-                            item.amountFormula(),
-                            item.descriptionTemplate()
-                    ));
-                }
+            for (CreateAutoJournalPatternCommand.PatternItemCommand item : command.items()) {
+                pattern = pattern.addItem(AutoJournalPatternItem.create(
+                        item.lineNumber(),
+                        item.debitCreditType(),
+                        item.accountCode(),
+                        item.amountFormula(),
+                        item.descriptionTemplate()
+                ));
             }
             return Either.right(pattern);
         } catch (IllegalArgumentException e) {
