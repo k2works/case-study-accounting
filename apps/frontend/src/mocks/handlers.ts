@@ -1945,6 +1945,228 @@ export const accountStructureHandlers = [
   }),
 ];
 
+// 自動仕訳パターンモックデータ
+interface MockPatternItem {
+  lineNumber: number;
+  debitCreditType: string;
+  accountCode: string;
+  amountFormula: string;
+  descriptionTemplate?: string;
+}
+
+interface MockAutoJournalPattern {
+  patternId: number;
+  patternCode: string;
+  patternName: string;
+  sourceTableName: string;
+  description?: string;
+  isActive: boolean;
+  items: MockPatternItem[];
+}
+
+const mockAutoJournalPatterns: MockAutoJournalPattern[] = [
+  {
+    patternId: 1,
+    patternCode: 'PAT001',
+    patternName: '売上仕訳パターン',
+    sourceTableName: 'sales',
+    description: '売上データから自動仕訳を生成',
+    isActive: true,
+    items: [
+      {
+        lineNumber: 1,
+        debitCreditType: 'D',
+        accountCode: '1100',
+        amountFormula: 'amount',
+        descriptionTemplate: '売掛金',
+      },
+      {
+        lineNumber: 2,
+        debitCreditType: 'C',
+        accountCode: '4100',
+        amountFormula: 'amount',
+        descriptionTemplate: '売上高',
+      },
+    ],
+  },
+  {
+    patternId: 2,
+    patternCode: 'PAT002',
+    patternName: '仕入仕訳パターン',
+    sourceTableName: 'purchases',
+    description: '仕入データから自動仕訳を生成',
+    isActive: true,
+    items: [
+      {
+        lineNumber: 1,
+        debitCreditType: 'D',
+        accountCode: '5100',
+        amountFormula: 'amount',
+        descriptionTemplate: '仕入高',
+      },
+      {
+        lineNumber: 2,
+        debitCreditType: 'C',
+        accountCode: '2100',
+        amountFormula: 'amount',
+        descriptionTemplate: '買掛金',
+      },
+    ],
+  },
+];
+
+const existingPatternCodes = new Set(mockAutoJournalPatterns.map((p) => p.patternCode));
+let nextPatternId = mockAutoJournalPatterns.length + 1;
+
+/**
+ * 自動仕訳パターン関連のハンドラー
+ */
+export const autoJournalPatternHandlers = [
+  // 詳細取得（一覧より先にマッチさせる）
+  http.get(/\/auto-journal-patterns\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/auto-journal-patterns\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const pattern = mockAutoJournalPatterns.find((p) => p.patternId === id);
+    if (!pattern) {
+      return HttpResponse.json(
+        { errorMessage: '自動仕訳パターンが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json(pattern);
+  }),
+
+  // 更新
+  http.put(/\/auto-journal-patterns\/(\d+)$/, async ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/auto-journal-patterns\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+    const body = (await request.json()) as {
+      patternName: string;
+      sourceTableName: string;
+      description?: string;
+      isActive: boolean;
+      items: Array<{
+        lineNumber: number;
+        debitCreditType: string;
+        accountCode: string;
+        amountFormula: string;
+        descriptionTemplate?: string;
+      }>;
+    };
+
+    const index = mockAutoJournalPatterns.findIndex((p) => p.patternId === id);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '自動仕訳パターンが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    mockAutoJournalPatterns[index].patternName = body.patternName;
+    mockAutoJournalPatterns[index].sourceTableName = body.sourceTableName;
+    mockAutoJournalPatterns[index].description = body.description || '';
+    if (body.items) {
+      mockAutoJournalPatterns[index].items = body.items.map((item) => ({
+        lineNumber: item.lineNumber,
+        debitCreditType: item.debitCreditType,
+        accountCode: item.accountCode,
+        amountFormula: item.amountFormula,
+        descriptionTemplate: item.descriptionTemplate || '',
+      }));
+    }
+
+    return HttpResponse.json({
+      success: true,
+      patternId: id,
+      message: '自動仕訳パターンを更新しました',
+    });
+  }),
+
+  // 削除
+  http.delete(/\/auto-journal-patterns\/(\d+)$/, ({ request }) => {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/auto-journal-patterns\/(\d+)$/);
+    const id = match ? parseInt(match[1], 10) : 0;
+
+    const index = mockAutoJournalPatterns.findIndex((p) => p.patternId === id);
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, errorMessage: '自動仕訳パターンが見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    mockAutoJournalPatterns.splice(index, 1);
+
+    return HttpResponse.json({
+      success: true,
+      patternId: id,
+      message: '削除しました',
+    });
+  }),
+
+  // 登録
+  http.post('*/auto-journal-patterns', async ({ request }) => {
+    const body = (await request.json()) as {
+      patternCode: string;
+      patternName: string;
+      sourceTableName: string;
+      description?: string;
+      items: Array<{
+        lineNumber: number;
+        debitCreditType: string;
+        accountCode: string;
+        amountFormula: string;
+        descriptionTemplate?: string;
+      }>;
+    };
+
+    if (existingPatternCodes.has(body.patternCode)) {
+      return HttpResponse.json({
+        success: false,
+        errorMessage: 'パターンコードは既に使用されています',
+      });
+    }
+
+    const patternId = nextPatternId++;
+    const items: MockPatternItem[] = (body.items || []).map((item) => ({
+      lineNumber: item.lineNumber,
+      debitCreditType: item.debitCreditType,
+      accountCode: item.accountCode,
+      amountFormula: item.amountFormula,
+      descriptionTemplate: item.descriptionTemplate || '',
+    }));
+
+    const newPattern: MockAutoJournalPattern = {
+      patternId,
+      patternCode: body.patternCode,
+      patternName: body.patternName,
+      sourceTableName: body.sourceTableName,
+      description: body.description || '',
+      isActive: true,
+      items,
+    };
+    mockAutoJournalPatterns.push(newPattern);
+    existingPatternCodes.add(body.patternCode);
+
+    return HttpResponse.json({
+      success: true,
+      patternId,
+      patternCode: body.patternCode,
+      patternName: body.patternName,
+    });
+  }),
+
+  // 一覧取得（最後に配置）
+  http.get(/\/auto-journal-patterns\/?$/, () => {
+    return HttpResponse.json(mockAutoJournalPatterns);
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
@@ -1953,6 +2175,7 @@ export const handlers = [
   ...userHandlers,
   ...accountHandlers,
   ...accountStructureHandlers,
+  ...autoJournalPatternHandlers,
   ...journalEntryHandlers,
   ...generalLedgerHandlers,
   ...subsidiaryLedgerHandlers,

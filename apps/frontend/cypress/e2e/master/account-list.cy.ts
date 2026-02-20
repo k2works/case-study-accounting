@@ -96,11 +96,12 @@ describe('US-MST-004: 勘定科目一覧表示', () => {
       // Given: 勘定科目一覧が表示されている
 
       // When: 費用でフィルタリング（5001: 仕入高 がテストデータに存在）
+      cy.intercept('GET', '**/accounts*type=EXPENSE*').as('getExpenseAccounts');
       cy.get('#account-filter-type').select('EXPENSE');
       cy.contains('button', '検索').click();
 
       // Then: 検索が実行され、費用の勘定科目が表示される
-      cy.get('table tbody', { timeout: 10000 }).should('exist');
+      cy.wait('@getExpenseAccounts');
       // 最初の行が EXPENSE であることを確認
       cy.get('table tbody tr').first().find('td').eq(2).should('contain', 'EXPENSE');
     });

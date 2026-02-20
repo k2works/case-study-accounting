@@ -65,7 +65,7 @@ describe('US-MST-007/008: 自動仕訳パターン管理', () => {
         cy.get('select').select('D');
         cy.get('input[placeholder*="勘定科目"]').clear().type('1100');
         cy.get('input[placeholder*="計算式"]').clear().type('amount');
-        cy.get('input[placeholder*="摘要"]').clear().type('売上 {id}');
+        cy.get('input[placeholder*="摘要"]').clear().type('売上 {id}', { parseSpecialCharSequences: false });
       });
 
       cy.get('[data-testid="add-item-button"]').click();
@@ -73,7 +73,7 @@ describe('US-MST-007/008: 自動仕訳パターン管理', () => {
         cy.get('select').select('C');
         cy.get('input[placeholder*="勘定科目"]').clear().type('4100');
         cy.get('input[placeholder*="計算式"]').clear().type('amount');
-        cy.get('input[placeholder*="摘要"]').clear().type('売上 {id}');
+        cy.get('input[placeholder*="摘要"]').clear().type('売上 {id}', { parseSpecialCharSequences: false });
       });
 
       cy.get('[data-testid="create-pattern-submit"]').click();
@@ -81,7 +81,7 @@ describe('US-MST-007/008: 自動仕訳パターン管理', () => {
     });
 
     it('重複コードで登録するとエラーが表示される', () => {
-      cy.get('[data-testid="pattern-code-input"]').clear().type('TEST001');
+      cy.get('[data-testid="pattern-code-input"]').clear().type('PAT001');
       cy.get('[data-testid="pattern-name-input"]').clear().type('重複テスト');
       cy.get('[data-testid="source-table-input"]').clear().type('sales');
 
