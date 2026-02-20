@@ -93,6 +93,10 @@ export const describeMasterDeleteTests = (
   });
 
   it('削除確認ダイアログでキャンセルした場合、削除されない', () => {
+    // 削除ボタンが表示されるまで待ち、テーブルが完全にロードされたことを確認
+    cy.get('table tbody tr').first().contains('button', '削除').should('be.visible');
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(500);
     cy.get('table tbody tr').then(($rows) => {
       const rowCount = $rows.length;
       cy.on('window:confirm', () => false);
