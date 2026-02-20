@@ -419,8 +419,8 @@ export const PatternItemRow: React.FC<ItemRowProps> = ({
             disabled={isSubmitting}
           >
             <option value="">選択してください</option>
-            <option value="DEBIT">借方 (D)</option>
-            <option value="CREDIT">貸方 (C)</option>
+            <option value="D">借方 (D)</option>
+            <option value="C">貸方 (C)</option>
           </select>
           <span className={`${cssPrefix}__field-error`}>{error.debitCreditType || ''}</span>
         </div>
@@ -435,6 +435,7 @@ export const PatternItemRow: React.FC<ItemRowProps> = ({
             value={item.accountCode}
             onChange={(event) => onItemChange(index, 'accountCode', event.target.value)}
             disabled={isSubmitting}
+            placeholder="勘定科目コード"
           />
           <span className={`${cssPrefix}__field-error`}>{error.accountCode || ''}</span>
         </div>
@@ -449,6 +450,7 @@ export const PatternItemRow: React.FC<ItemRowProps> = ({
             value={item.amountFormula}
             onChange={(event) => onItemChange(index, 'amountFormula', event.target.value)}
             disabled={isSubmitting}
+            placeholder="計算式"
           />
           <span className={`${cssPrefix}__field-error`}>{error.amountFormula || ''}</span>
         </div>
@@ -461,6 +463,7 @@ export const PatternItemRow: React.FC<ItemRowProps> = ({
             value={safeText(item.descriptionTemplate)}
             onChange={(event) => onItemChange(index, 'descriptionTemplate', event.target.value)}
             disabled={isSubmitting}
+            placeholder="摘要テンプレート"
           />
         </div>
       </div>
