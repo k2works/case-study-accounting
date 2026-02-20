@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -104,14 +105,18 @@ class AutoJournalPatternEntityTest {
 
         @Test
         @DisplayName("items が null のエンティティからドメインモデルを再構築できる")
-        void shouldConvertToDomainWithNullItems() {
+        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
+        void shouldConvertToDomainWithNullItems() throws Exception {
             AutoJournalPatternEntity entity = new AutoJournalPatternEntity();
             entity.setId(1L);
             entity.setPatternCode("AP001");
             entity.setPatternName("売上計上");
             entity.setSourceTableName("sales");
             entity.setIsActive(true);
-            entity.setItems(null);
+            // setItems(null) は ArrayList に変換するため、リフレクションで直接 null を設定
+            Field itemsField = AutoJournalPatternEntity.class.getDeclaredField("items");
+            itemsField.setAccessible(true);
+            itemsField.set(entity, null);
 
             AutoJournalPattern pattern = entity.toDomain();
 

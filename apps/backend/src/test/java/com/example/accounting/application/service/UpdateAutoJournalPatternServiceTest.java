@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -108,6 +109,21 @@ class UpdateAutoJournalPatternServiceTest {
         UpdateAutoJournalPatternResult result = service.execute(command);
 
         assertThat(result.success()).isTrue();
+    }
+
+    @Test
+    @DisplayName("データアクセスエラー時は RuntimeException をスローする")
+    void executeWithDataAccessErrorShouldThrowRuntimeException() {
+        UpdateAutoJournalPatternCommand command = new UpdateAutoJournalPatternCommand(
+                1L, "売上計上", "sales", null, true, List.of()
+        );
+
+        when(autoJournalPatternRepository.findById(AutoJournalPatternId.of(1L)))
+                .thenReturn(Try.failure(new RuntimeException("DB error")));
+
+        assertThatThrownBy(() -> service.execute(command))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Data access error");
     }
 
     @Test
