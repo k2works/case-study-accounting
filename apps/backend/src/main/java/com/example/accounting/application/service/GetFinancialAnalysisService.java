@@ -205,21 +205,20 @@ public class GetFinancialAnalysisService implements GetFinancialAnalysisUseCase 
             String name, String unit, BigDecimal value, BigDecimal previousValue,
             boolean hasComparative, String formula, BigDecimal industryAverage) {
 
-        BigDecimal prev = hasComparative ? previousValue : null;
-        BigDecimal diff = null;
-        BigDecimal changeRate = null;
-
-        if (hasComparative && previousValue != null) {
-            diff = value.subtract(previousValue);
-            if (previousValue.compareTo(BigDecimal.ZERO) != 0) {
-                changeRate = diff
-                        .multiply(BigDecimal.valueOf(100))
-                        .divide(previousValue.abs(), 2, RoundingMode.HALF_UP);
-            } else {
-                changeRate = BigDecimal.ZERO;
-            }
+        if (!hasComparative || previousValue == null) {
+            return new FinancialIndicator(name, unit, value, null, null, null, formula, industryAverage);
         }
 
-        return new FinancialIndicator(name, unit, value, prev, diff, changeRate, formula, industryAverage);
+        BigDecimal diff = value.subtract(previousValue);
+        BigDecimal changeRate = computeChangeRate(diff, previousValue);
+        return new FinancialIndicator(name, unit, value, previousValue, diff, changeRate, formula, industryAverage);
+    }
+
+    private BigDecimal computeChangeRate(BigDecimal diff, BigDecimal previousValue) {
+        if (previousValue.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return diff.multiply(BigDecimal.valueOf(100))
+                .divide(previousValue.abs(), 2, RoundingMode.HALF_UP);
     }
 }
