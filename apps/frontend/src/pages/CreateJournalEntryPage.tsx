@@ -220,7 +220,11 @@ const JournalEntryContent: React.FC = () => {
         <h1>仕訳入力</h1>
         {canGenerateAutoJournal && (
           <div style={{ marginBottom: '16px' }}>
-            <Button type="button" onClick={() => setIsAutoJournalDialogOpen(true)}>
+            <Button
+              type="button"
+              data-testid="auto-journal-button"
+              onClick={() => setIsAutoJournalDialogOpen(true)}
+            >
               自動仕訳
             </Button>
           </div>
