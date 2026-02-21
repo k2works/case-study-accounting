@@ -78,6 +78,7 @@
 - [イテレーション 7 ふりかえり](./development/retrospective-7.md) - イテレーション7の KPT 分析
 - [イテレーション 8 ふりかえり](./development/retrospective-8.md) - イテレーション8の KPT 分析・リリース 2.0 総括
 - [イテレーション 9 ふりかえり](./development/retrospective-9.md) - イテレーション9の KPT 分析・マスタ拡張完了
+- [イテレーション 10 ふりかえり](./development/retrospective-10.md) - イテレーション10の KPT 分析・自動仕訳生成/財務分析完了
 
 ## 運用
 

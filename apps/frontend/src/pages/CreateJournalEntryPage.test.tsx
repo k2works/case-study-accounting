@@ -42,6 +42,14 @@ vi.mock('../views/common', () => ({
   ErrorMessage: ({ message }: { message: string }) => (
     <div data-testid="error-message">{message}</div>
   ),
+  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button {...props}>{children}</button>
+  ),
+}));
+
+vi.mock('../views/journal/AutoJournalGenerateDialog', () => ({
+  AutoJournalGenerateDialog: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="auto-journal-dialog">dialog open</div> : null,
 }));
 
 const mockRequest: CreateJournalEntryRequest = {
@@ -57,11 +65,14 @@ vi.mock('../views/journal/JournalEntryForm', () => ({
   JournalEntryForm: ({
     onSubmit,
     onCancel,
+    error,
   }: {
     onSubmit: (data: CreateJournalEntryRequest) => void;
     onCancel: () => void;
+    error?: string;
   }) => (
     <div data-testid="journal-entry-form">
+      {error && <div data-testid="journal-entry-form-error">{error}</div>}
       <button onClick={() => onSubmit(mockRequest)}>submit</button>
       <button onClick={onCancel}>cancel</button>
     </div>
@@ -163,5 +174,106 @@ describe('CreateJournalEntryPage', () => {
         '仕訳登録が完了しました'
       );
     });
+  });
+
+  it('ADMIN ユーザーは 自動仕訳 ボタンを表示しダイアログを開ける', async () => {
+    mockUseAuth.mockReturnValue(
+      createMockAuthContext({
+        user: { username: 'admin', role: 'ADMIN' },
+        isAuthenticated: true,
+        isLoading: false,
+        hasRole: vi.fn((role) => role === 'ADMIN'),
+      })
+    );
+
+    render(<CreateJournalEntryPage />);
+
+    const user = setupUser();
+    expect(screen.getByTestId('auto-journal-button')).toBeInTheDocument();
+    await user.click(screen.getByTestId('auto-journal-button'));
+
+    expect(screen.getByTestId('auto-journal-dialog')).toBeInTheDocument();
+  });
+
+  it('USER ロールは 自動仕訳 ボタンを表示しない', async () => {
+    mockUseAuth.mockReturnValue(
+      createMockAuthContext({
+        user: { username: 'user', role: 'USER' },
+        isAuthenticated: true,
+        isLoading: false,
+        hasRole: vi.fn((role) => role === 'USER'),
+      })
+    );
+
+    render(<CreateJournalEntryPage />);
+
+    expect(screen.queryByTestId('auto-journal-button')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockGetAccounts).toHaveBeenCalled();
+    });
+  });
+
+  it('勘定科目取得エラー時に ErrorMessage を表示', async () => {
+    mockGetAccounts.mockRejectedValue(new Error('勘定科目 API エラー'));
+    mockUseAuth.mockReturnValue(
+      createMockAuthContext({
+        user: { username: 'user', role: 'USER' },
+        isAuthenticated: true,
+        isLoading: false,
+        hasRole: vi.fn((role) => role === 'USER'),
+      })
+    );
+
+    render(<CreateJournalEntryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-message')).toHaveTextContent('勘定科目 API エラー');
+    });
+  });
+
+  it('仕訳送信エラー時にフォームへエラーを表示', async () => {
+    mockCreateJournalEntry.mockResolvedValue({
+      success: false,
+      errorMessage: '仕訳の登録に失敗しました',
+    });
+    mockUseAuth.mockReturnValue(
+      createMockAuthContext({
+        user: { username: 'user', role: 'USER' },
+        isAuthenticated: true,
+        isLoading: false,
+        hasRole: vi.fn((role) => role === 'USER'),
+      })
+    );
+
+    render(<CreateJournalEntryPage />);
+
+    const user = setupUser();
+    await user.click(screen.getByText('submit'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('journal-entry-form-error')).toHaveTextContent(
+        '仕訳の登録に失敗しました'
+      );
+    });
+  });
+
+  it('キャンセルボタン押下で前画面へ戻る', async () => {
+    const navigate = vi.fn();
+    mockUseNavigate.mockReturnValue(navigate);
+    mockUseAuth.mockReturnValue(
+      createMockAuthContext({
+        user: { username: 'user', role: 'USER' },
+        isAuthenticated: true,
+        isLoading: false,
+        hasRole: vi.fn((role) => role === 'USER'),
+      })
+    );
+
+    render(<CreateJournalEntryPage />);
+
+    const user = setupUser();
+    await user.click(screen.getByText('cancel'));
+
+    expect(navigate).toHaveBeenCalledWith(-1);
   });
 });
