@@ -9,7 +9,8 @@ import {
   createJournalEntryErrorMessage,
   type CreateJournalEntryRequest,
 } from '../api/createJournalEntry';
-import { MainLayout, Loading, SuccessNotification, ErrorMessage } from '../views/common';
+import { MainLayout, Loading, SuccessNotification, ErrorMessage, Button } from '../views/common';
+import { AutoJournalGenerateDialog } from '../views/journal/AutoJournalGenerateDialog';
 import { JournalEntryForm } from '../views/journal/JournalEntryForm';
 
 interface JournalEntryState {
@@ -189,8 +190,11 @@ const JournalEntryFormSection: React.FC<{
  * 仕訳入力ページ - メインコンテンツ
  */
 const JournalEntryContent: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { state, fetchAccounts } = useAccountsFetch();
+  const [isAutoJournalDialogOpen, setIsAutoJournalDialogOpen] = useState(false);
+  const canGenerateAutoJournal = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   const handleSuccessRedirect = useCallback(() => {
     setTimeout(() => {
@@ -201,10 +205,26 @@ const JournalEntryContent: React.FC = () => {
   const { isSubmitting, submitError, successMessage, handleSubmit, dismissSuccess } =
     useJournalEntrySubmit(handleSuccessRedirect);
 
+  const handleAutoJournalSuccess = useCallback(
+    (journalEntryId: number) => {
+      navigate('/', {
+        state: { successMessage: `自動仕訳を生成しました（仕訳 ID: ${journalEntryId}）` },
+      });
+    },
+    [navigate]
+  );
+
   return (
     <MainLayout breadcrumbs={BREADCRUMBS}>
       <div data-testid="create-journal-entry-page">
         <h1>仕訳入力</h1>
+        {canGenerateAutoJournal && (
+          <div style={{ marginBottom: '16px' }}>
+            <Button type="button" onClick={() => setIsAutoJournalDialogOpen(true)}>
+              自動仕訳
+            </Button>
+          </div>
+        )}
         <JournalEntryFormSection
           state={state}
           isSubmitting={isSubmitting}
@@ -214,6 +234,11 @@ const JournalEntryContent: React.FC = () => {
           onCancel={() => navigate(-1)}
           onRetry={fetchAccounts}
           onDismissSuccess={dismissSuccess}
+        />
+        <AutoJournalGenerateDialog
+          isOpen={isAutoJournalDialogOpen}
+          onClose={() => setIsAutoJournalDialogOpen(false)}
+          onSuccess={handleAutoJournalSuccess}
         />
       </div>
     </MainLayout>

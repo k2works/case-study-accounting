@@ -850,6 +850,16 @@ export const journalEntryHandlers = [
     });
   }),
 
+  http.post('*/api/journal-entries/generate', () => {
+    return HttpResponse.json({
+      success: true,
+      journalEntryId: 999,
+      journalDate: '2026-01-31',
+      description: '自動仕訳テスト',
+      status: 'DRAFT',
+    });
+  }),
+
   // 仕訳更新
   http.put(/\/journal-entries\/(\d+)$/, async ({ request }) => {
     const url = new URL(request.url);
