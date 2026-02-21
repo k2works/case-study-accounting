@@ -22,7 +22,7 @@
 
 | ストーリーID | ストーリー名 | SP | 優先度 | 状態 |
 |-------------|-------------|-----|--------|------|
-| US-JNL-006 | 自動仕訳生成 | 5 | 重要 | |
+| US-JNL-006 | 自動仕訳生成 | 5 | 重要 | 完了 |
 | US-FS-003 | 財務分析表示 | 5 | 重要 | |
 | **合計** | | **10** | | |
 
@@ -56,10 +56,10 @@
 
 **受入条件**:
 
-- [ ] 自動仕訳設定を選択して仕訳を生成できる
-- [ ] 生成された仕訳は編集可能
-- [ ] 金額は手動で変更できる
-- [ ] 生成成功時、確認メッセージが表示される
+- [x] 自動仕訳設定を選択して仕訳を生成できる
+- [x] 生成された仕訳は編集可能
+- [x] 金額は手動で変更できる
+- [x] 生成成功時、確認メッセージが表示される
 
 ---
 
@@ -84,17 +84,17 @@
 
 | タスクID | タスク名 | 理想時間 | 担当 | 状態 |
 |----------|---------|---------|------|------|
-| JNL-006-01 | 自動仕訳生成ユースケース設計 | 2h | Claude | [ ] |
-| JNL-006-02 | GenerateAutoJournalCommand / Result（Input Port）実装 | 2h | Codex | [ ] |
-| JNL-006-03 | GenerateAutoJournalUseCase インターフェース定義 | 1h | Codex | [ ] |
-| JNL-006-04 | GenerateAutoJournalService 実装（パターン取得→仕訳生成→保存） | 4h | Codex | [ ] |
-| JNL-006-05 | amountFormula 評価ロジック実装 | 3h | Codex | [ ] |
-| JNL-006-06 | AutoJournalLog ドメインモデル・Repository 実装 | 3h | Codex | [ ] |
-| JNL-006-07 | 自動仕訳生成 API 実装（POST /api/journal-entries/generate） | 2h | Codex | [ ] |
-| JNL-006-08 | 単体テスト作成 | 4h | Codex | [ ] |
-| JNL-006-09 | フロントエンド API クライアント実装 | 2h | Codex | [ ] |
-| JNL-006-10 | 自動仕訳生成 UI 実装（パターン選択→金額入力→生成） | 4h | Codex | [ ] |
-| JNL-006-11 | 統合テスト（E2E テスト） | 2h | Claude | [ ] |
+| JNL-006-01 | 自動仕訳生成ユースケース設計 | 2h | Claude | [x] |
+| JNL-006-02 | GenerateAutoJournalCommand / Result（Input Port）実装 | 2h | Codex | [x] |
+| JNL-006-03 | GenerateAutoJournalUseCase インターフェース定義 | 1h | Codex | [x] |
+| JNL-006-04 | GenerateAutoJournalService 実装（パターン取得→仕訳生成→保存） | 4h | Codex | [x] |
+| JNL-006-05 | amountFormula 評価ロジック実装 | 3h | Codex | [x] |
+| JNL-006-06 | AutoJournalLog ドメインモデル・Repository 実装 | 3h | Codex | [x] |
+| JNL-006-07 | 自動仕訳生成 API 実装（POST /api/journal-entries/generate） | 2h | Codex | [x] |
+| JNL-006-08 | 単体テスト作成 | 4h | Codex | [x] |
+| JNL-006-09 | フロントエンド API クライアント実装 | 2h | Codex | [x] |
+| JNL-006-10 | 自動仕訳生成 UI 実装（パターン選択→金額入力→生成） | 4h | Codex | [x] |
+| JNL-006-11 | 統合テスト（E2E テスト） | 2h | Claude | [x] |
 | | **小計** | **29h** | | |
 
 #### 実装詳細
@@ -353,6 +353,7 @@ gantt
 | 日付 | 更新内容 | 更新者 |
 |------|---------|--------|
 | 2026-02-20 | 初版作成 | Claude Opus 4.6 |
+| 2026-02-21 | US-JNL-006 完了 | Claude Opus 4.6 |
 
 ---
 
