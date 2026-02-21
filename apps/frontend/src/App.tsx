@@ -23,6 +23,7 @@ import MonthlyBalancePage from './pages/MonthlyBalancePage';
 import TrialBalancePage from './pages/TrialBalancePage';
 import BalanceSheetPage from './pages/BalanceSheetPage';
 import ProfitAndLossPage from './pages/ProfitAndLossPage';
+import FinancialAnalysisPage from './pages/FinancialAnalysisPage';
 import UserEditPage from './pages/UserEditPage';
 import { Loading } from './views/common';
 
@@ -271,6 +272,14 @@ export const App = () => {
           <PrivateRoute>
             <ProfitAndLossPage />
           </PrivateRoute>
+        }
+      />
+      <Route
+        path="/financial-statements/analysis"
+        element={
+          <ManagerRoute>
+            <FinancialAnalysisPage />
+          </ManagerRoute>
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -2199,6 +2199,161 @@ export const autoJournalPatternHandlers = [
 ];
 
 /**
+ * 財務分析関連のハンドラー
+ */
+interface FaIndicator {
+  name: string;
+  unit: string;
+  value: number;
+  previousValue: number | null;
+  difference: number | null;
+  changeRate: number | null;
+  formula: string;
+  industryAverage: number;
+}
+
+interface FaCategory {
+  categoryName: string;
+  categoryDisplayName: string;
+  indicators: FaIndicator[];
+}
+
+const buildFaIndicator = (
+  name: string,
+  unit: string,
+  value: number,
+  prevValue: number | null,
+  formula: string,
+  industryAverage: number
+): FaIndicator => {
+  const diff = prevValue != null ? value - prevValue : null;
+  const changeRate =
+    diff != null && prevValue != null && prevValue !== 0
+      ? Math.round((diff / Math.abs(prevValue)) * 10000) / 100
+      : diff != null
+        ? 0
+        : null;
+  return {
+    name,
+    unit,
+    value,
+    previousValue: prevValue,
+    difference: diff,
+    changeRate,
+    formula,
+    industryAverage,
+  };
+};
+
+const faRatio = (
+  numerator: number | null,
+  denominator: number | null,
+  scale: number
+): number | null => {
+  if (numerator == null || denominator == null) return null;
+  return Math.round((numerator / denominator) * scale) / 100;
+};
+
+const buildFaCategories = (hasComparative: boolean): FaCategory[] => {
+  const netIncome = 40000;
+  const totalEquity = 50000;
+  const totalAssets = 80000;
+  const totalRevenue = 100000;
+  const totalLiab = 30000;
+
+  const prev = hasComparative
+    ? {
+        netIncome: 27000,
+        totalEquity: 42000,
+        totalAssets: 65000,
+        totalRevenue: 80000,
+        totalLiab: 23000,
+      }
+    : {
+        netIncome: null,
+        totalEquity: null,
+        totalAssets: null,
+        totalRevenue: null,
+        totalLiab: null,
+      };
+
+  const roe = faRatio(netIncome, totalEquity, 10000)!;
+  const roa = faRatio(netIncome, totalAssets, 10000)!;
+  const npm = faRatio(netIncome, totalRevenue, 10000)!;
+  const cr = faRatio(totalAssets, totalLiab, 10000)!;
+  const er = faRatio(totalEquity, totalAssets, 10000)!;
+  const dr = faRatio(totalLiab, totalEquity, 10000)!;
+  const at = faRatio(totalRevenue, totalAssets, 100)!;
+
+  const prevRoe = faRatio(prev.netIncome, prev.totalEquity, 10000);
+  const prevRoa = faRatio(prev.netIncome, prev.totalAssets, 10000);
+  const prevNpm = faRatio(prev.netIncome, prev.totalRevenue, 10000);
+  const prevCr = faRatio(prev.totalAssets, prev.totalLiab, 10000);
+  const prevEr = faRatio(prev.totalEquity, prev.totalAssets, 10000);
+  const prevDr = faRatio(prev.totalLiab, prev.totalEquity, 10000);
+  const prevAt = faRatio(prev.totalRevenue, prev.totalAssets, 100);
+
+  return [
+    {
+      categoryName: 'PROFITABILITY',
+      categoryDisplayName: '収益性',
+      indicators: [
+        buildFaIndicator(
+          'ROE（自己資本利益率）',
+          '%',
+          roe,
+          prevRoe,
+          '当期純利益 ÷ 自己資本 × 100',
+          8.0
+        ),
+        buildFaIndicator(
+          'ROA（総資産利益率）',
+          '%',
+          roa,
+          prevRoa,
+          '当期純利益 ÷ 総資産 × 100',
+          3.0
+        ),
+        buildFaIndicator('売上高利益率', '%', npm, prevNpm, '当期純利益 ÷ 売上高 × 100', 5.0),
+      ],
+    },
+    {
+      categoryName: 'SAFETY',
+      categoryDisplayName: '安全性',
+      indicators: [
+        buildFaIndicator('流動比率', '%', cr, prevCr, '流動資産 ÷ 流動負債 × 100', 200.0),
+        buildFaIndicator('自己資本比率', '%', er, prevEr, '自己資本 ÷ 総資産 × 100', 40.0),
+        buildFaIndicator('負債比率', '%', dr, prevDr, '負債 ÷ 自己資本 × 100', 150.0),
+      ],
+    },
+    {
+      categoryName: 'EFFICIENCY',
+      categoryDisplayName: '効率性',
+      indicators: [buildFaIndicator('総資産回転率', '回', at, prevAt, '売上高 ÷ 総資産', 1.0)],
+    },
+  ];
+};
+
+export const financialAnalysisHandlers = [
+  http.get('*/financial-analysis', ({ request }) => {
+    const url = new URL(request.url);
+    const dateFrom = url.searchParams.get('dateFrom');
+    const dateTo = url.searchParams.get('dateTo');
+    const comparativeDateFrom = url.searchParams.get('comparativeDateFrom');
+    const comparativeDateTo = url.searchParams.get('comparativeDateTo');
+    const hasComparative = !!(comparativeDateFrom || comparativeDateTo);
+
+    return HttpResponse.json({
+      dateFrom,
+      dateTo,
+      comparativeDateFrom,
+      comparativeDateTo,
+      categories: buildFaCategories(hasComparative),
+    });
+  }),
+];
+
+/**
  * すべてのハンドラー
  */
 export const handlers = [
@@ -2215,4 +2370,5 @@ export const handlers = [
   ...monthlyBalanceHandlers,
   ...balanceSheetHandlers,
   ...profitAndLossHandlers,
+  ...financialAnalysisHandlers,
 ];
