@@ -63,8 +63,16 @@ vi.mock('../views/statement/FinancialAnalysisFilter', () => ({
 }));
 
 vi.mock('../views/statement/FinancialAnalysisIndicators', () => ({
-  FinancialAnalysisIndicators: ({ categories }: { categories: unknown[] }) => (
-    <div data-testid="financial-analysis-indicators">{categories.length}</div>
+  FinancialAnalysisIndicators: ({
+    categories,
+    hasComparative,
+  }: {
+    categories: unknown[];
+    hasComparative: boolean;
+  }) => (
+    <div data-testid="financial-analysis-indicators" data-has-comparative={String(hasComparative)}>
+      {categories.length}
+    </div>
   ),
 }));
 
@@ -168,5 +176,80 @@ describe('FinancialAnalysisPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('error-message')).toHaveTextContent('サーバーエラー');
     });
+  });
+
+  it('API エラー時の再試行ボタンで再検索される', async () => {
+    mockGetFinancialAnalysis
+      .mockRejectedValueOnce(new Error('サーバーエラー'))
+      .mockResolvedValueOnce(createMockResult({ categories: [] }));
+
+    render(<FinancialAnalysisPage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('search-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-message')).toHaveTextContent('サーバーエラー');
+    });
+
+    await user.click(screen.getByTestId('error-message'));
+
+    await waitFor(() => {
+      expect(mockGetFinancialAnalysis).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('フィルター未設定で検索すると空パラメータで API を呼ぶ', async () => {
+    render(<FinancialAnalysisPage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('search-btn'));
+
+    await waitFor(() => {
+      expect(mockGetFinancialAnalysis).toHaveBeenCalledWith({});
+    });
+  });
+
+  it('比較期間がない検索結果では hasComparative が false になる', async () => {
+    mockGetFinancialAnalysis.mockResolvedValue(
+      createMockResult({
+        dateFrom: '2024-01-01',
+        dateTo: '2024-12-31',
+        comparativeDateFrom: null,
+        comparativeDateTo: null,
+        categories: [
+          {
+            categoryName: 'PROFITABILITY',
+            categoryDisplayName: '収益性',
+            indicators: [],
+          },
+        ],
+      })
+    );
+
+    render(<FinancialAnalysisPage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('search-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('financial-analysis-indicators')).toHaveAttribute(
+        'data-has-comparative',
+        'false'
+      );
+    });
+  });
+
+  it('ページタイトル 財務分析 を表示する', () => {
+    render(<FinancialAnalysisPage />);
+
+    expect(screen.getByRole('heading', { level: 1, name: '財務分析' })).toBeInTheDocument();
+  });
+
+  it('検索実行前は指標とトレンドを表示しない', () => {
+    render(<FinancialAnalysisPage />);
+
+    expect(screen.queryByTestId('financial-analysis-indicators')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('financial-analysis-trend')).not.toBeInTheDocument();
   });
 });
