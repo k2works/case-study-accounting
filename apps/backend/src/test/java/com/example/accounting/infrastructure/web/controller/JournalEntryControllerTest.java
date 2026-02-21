@@ -5,6 +5,7 @@ import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.ConfirmJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
+import com.example.accounting.application.port.in.GenerateAutoJournalUseCase;
 import com.example.accounting.application.port.in.ApproveJournalEntryUseCase;
 import com.example.accounting.application.port.in.RejectJournalEntryUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
@@ -15,6 +16,7 @@ import com.example.accounting.application.port.in.command.ApproveJournalEntryCom
 import com.example.accounting.application.port.in.command.ConfirmJournalEntryCommand;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.SubmitForApprovalCommand;
+import com.example.accounting.application.port.in.command.GenerateAutoJournalCommand;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
 import com.example.accounting.application.port.in.command.RejectJournalEntryCommand;
@@ -27,6 +29,7 @@ import com.example.accounting.application.port.out.GetJournalEntriesResult;
 import com.example.accounting.application.port.out.JournalEntryDetailResult;
 import com.example.accounting.application.port.out.SubmitForApprovalResult;
 import com.example.accounting.application.port.out.UpdateJournalEntryResult;
+import com.example.accounting.application.port.out.GenerateAutoJournalResult;
 import com.example.accounting.application.port.out.UserRepository;
 import com.example.accounting.domain.model.user.Email;
 import com.example.accounting.domain.model.user.Password;
@@ -47,6 +50,8 @@ import com.example.accounting.infrastructure.web.dto.JournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.SubmitForApprovalResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.GenerateAutoJournalRequest;
+import com.example.accounting.infrastructure.web.dto.GenerateAutoJournalResponse;
 import com.example.accounting.infrastructure.web.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -112,6 +117,9 @@ class JournalEntryControllerTest {
     private ConfirmJournalEntryUseCase confirmJournalEntryUseCase;
 
     @Mock
+    private GenerateAutoJournalUseCase generateAutoJournalUseCase;
+
+    @Mock
     private UserRepository userRepository;
 
     private JournalEntryController journalEntryController;
@@ -129,6 +137,7 @@ class JournalEntryControllerTest {
                 approveJournalEntryUseCase,
                 rejectJournalEntryUseCase,
                 confirmJournalEntryUseCase,
+                generateAutoJournalUseCase,
                 userRepository
         );
     }
@@ -496,6 +505,94 @@ class JournalEntryControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("自動仕訳生成")
+    class GenerateAutoJournal {
+
+        @Test
+        @DisplayName("生成成功時は 200 を返す")
+        void shouldReturnOkWhenGenerateSucceeds() {
+            GenerateAutoJournalRequest request = new GenerateAutoJournalRequest(
+                    1L,
+                    java.util.Map.of("amount", new BigDecimal("1000")),
+                    LocalDate.of(2024, 3, 1),
+                    "自動仕訳"
+            );
+            when(userRepository.findByUsername("user1"))
+                    .thenReturn(Try.success(Optional.of(dummyUser("user-1", "user1"))));
+            when(generateAutoJournalUseCase.execute(any(GenerateAutoJournalCommand.class)))
+                    .thenReturn(GenerateAutoJournalResult.success(
+                            100,
+                            LocalDate.of(2024, 3, 1),
+                            "自動仕訳",
+                            "DRAFT"
+                    ));
+
+            ResponseEntity<GenerateAutoJournalResponse> response =
+                    journalEntryController.generate(request, principal("user1"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isTrue();
+            assertThat(response.getBody().journalEntryId()).isEqualTo(100);
+            assertThat(response.getBody().journalDate()).isEqualTo(LocalDate.of(2024, 3, 1));
+            assertThat(response.getBody().description()).isEqualTo("自動仕訳");
+            assertThat(response.getBody().status()).isEqualTo("DRAFT");
+            assertThat(response.getBody().errorMessage()).isNull();
+        }
+
+        @Test
+        @DisplayName("生成失敗時は 400 を返す")
+        void shouldReturnBadRequestWhenGenerateFails() {
+            GenerateAutoJournalRequest request = new GenerateAutoJournalRequest(
+                    1L,
+                    java.util.Map.of("amount", new BigDecimal("1000")),
+                    LocalDate.of(2024, 3, 1),
+                    "自動仕訳"
+            );
+            when(userRepository.findByUsername("user1"))
+                    .thenReturn(Try.success(Optional.of(dummyUser("user-1", "user1"))));
+            when(generateAutoJournalUseCase.execute(any(GenerateAutoJournalCommand.class)))
+                    .thenReturn(GenerateAutoJournalResult.failure("パターンが見つかりません"));
+
+            ResponseEntity<GenerateAutoJournalResponse> response =
+                    journalEntryController.generate(request, principal("user1"));
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().success()).isFalse();
+            assertThat(response.getBody().errorMessage()).isEqualTo("パターンが見つかりません");
+        }
+
+        @Test
+        @DisplayName("リクエストの内容が GenerateAutoJournalCommand に正しく変換される")
+        void shouldConvertGenerateRequestToCommand() {
+            GenerateAutoJournalRequest request = new GenerateAutoJournalRequest(
+                    10L,
+                    java.util.Map.of("baseAmount", new BigDecimal("2500")),
+                    LocalDate.of(2024, 3, 2),
+                    "振替"
+            );
+            when(userRepository.findByUsername("user1"))
+                    .thenReturn(Try.success(Optional.of(dummyUser("user-1", "user1"))));
+            when(generateAutoJournalUseCase.execute(any(GenerateAutoJournalCommand.class)))
+                    .thenReturn(GenerateAutoJournalResult.failure("error"));
+
+            journalEntryController.generate(request, principal("user1"));
+
+            ArgumentCaptor<GenerateAutoJournalCommand> captor =
+                    ArgumentCaptor.forClass(GenerateAutoJournalCommand.class);
+            verify(generateAutoJournalUseCase).execute(captor.capture());
+
+            GenerateAutoJournalCommand command = captor.getValue();
+            assertThat(command.patternId()).isEqualTo(10L);
+            assertThat(command.amounts()).containsEntry("baseAmount", new BigDecimal("2500"));
+            assertThat(command.journalDate()).isEqualTo(LocalDate.of(2024, 3, 2));
+            assertThat(command.description()).isEqualTo("振替");
+            assertThat(command.createdByUserId()).isEqualTo("user-1");
         }
     }
 

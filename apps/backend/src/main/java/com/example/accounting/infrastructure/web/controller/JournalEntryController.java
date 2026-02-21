@@ -5,6 +5,7 @@ import com.example.accounting.application.port.in.DeleteJournalEntryUseCase;
 import com.example.accounting.application.port.in.ConfirmJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntryUseCase;
 import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
+import com.example.accounting.application.port.in.GenerateAutoJournalUseCase;
 import com.example.accounting.application.port.in.ApproveJournalEntryUseCase;
 import com.example.accounting.application.port.in.RejectJournalEntryUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
@@ -16,6 +17,7 @@ import com.example.accounting.application.port.in.command.ApproveJournalEntryCom
 import com.example.accounting.application.port.in.command.ConfirmJournalEntryCommand;
 import com.example.accounting.application.port.in.command.DeleteJournalEntryCommand;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
+import com.example.accounting.application.port.in.command.GenerateAutoJournalCommand;
 import com.example.accounting.application.port.in.command.RejectJournalEntryCommand;
 import com.example.accounting.application.port.in.command.SubmitForApprovalCommand;
 import com.example.accounting.application.port.in.command.UpdateJournalEntryCommand;
@@ -25,6 +27,7 @@ import com.example.accounting.application.port.out.RejectJournalEntryResult;
 import com.example.accounting.application.port.out.CreateJournalEntryResult;
 import com.example.accounting.application.port.out.DeleteJournalEntryResult;
 import com.example.accounting.application.port.out.GetJournalEntriesResult;
+import com.example.accounting.application.port.out.GenerateAutoJournalResult;
 import com.example.accounting.application.port.out.SubmitForApprovalResult;
 import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
@@ -41,6 +44,8 @@ import com.example.accounting.infrastructure.web.dto.JournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.SubmitForApprovalResponse;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryRequest;
 import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryResponse;
+import com.example.accounting.infrastructure.web.dto.GenerateAutoJournalRequest;
+import com.example.accounting.infrastructure.web.dto.GenerateAutoJournalResponse;
 import com.example.accounting.infrastructure.web.exception.BusinessException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -86,6 +91,7 @@ public class JournalEntryController {
     private final ApproveJournalEntryUseCase approveJournalEntryUseCase;
     private final RejectJournalEntryUseCase rejectJournalEntryUseCase;
     private final ConfirmJournalEntryUseCase confirmJournalEntryUseCase;
+    private final GenerateAutoJournalUseCase generateAutoJournalUseCase;
     private final UserRepository userRepository;
 
     @SuppressWarnings("java:S107") // コントローラは複数のユースケースを統合するため引数が多い
@@ -99,6 +105,7 @@ public class JournalEntryController {
                                   ApproveJournalEntryUseCase approveJournalEntryUseCase,
                                   RejectJournalEntryUseCase rejectJournalEntryUseCase,
                                   ConfirmJournalEntryUseCase confirmJournalEntryUseCase,
+                                  GenerateAutoJournalUseCase generateAutoJournalUseCase,
                                   UserRepository userRepository) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
@@ -110,6 +117,7 @@ public class JournalEntryController {
         this.approveJournalEntryUseCase = approveJournalEntryUseCase;
         this.rejectJournalEntryUseCase = rejectJournalEntryUseCase;
         this.confirmJournalEntryUseCase = confirmJournalEntryUseCase;
+        this.generateAutoJournalUseCase = generateAutoJournalUseCase;
         this.userRepository = userRepository;
     }
 
@@ -560,5 +568,53 @@ public class JournalEntryController {
 
         return ResponseEntity.badRequest()
                 .body(DeleteJournalEntryResponse.failure(result.errorMessage()));
+    }
+
+    /**
+     * 自動仕訳生成
+     */
+    @Operation(
+            summary = "自動仕訳生成",
+            description = "パターンに基づいて仕訳を自動生成します"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "生成成功",
+            content = @Content(schema = @Schema(implementation = GenerateAutoJournalResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "生成失敗",
+            content = @Content(schema = @Schema(implementation = GenerateAutoJournalResponse.class))
+    )
+    @PostMapping("/generate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<GenerateAutoJournalResponse> generate(
+            @Valid @RequestBody GenerateAutoJournalRequest request,
+            Principal principal
+    ) {
+        User user = userRepository.findByUsername(principal.getName())
+                .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
+                .orElseThrow(() -> new BusinessException("ユーザーが存在しません"));
+
+        GenerateAutoJournalCommand command = new GenerateAutoJournalCommand(
+                request.patternId(),
+                request.amounts(),
+                request.journalDate(),
+                request.description(),
+                user.getId().value()
+        );
+
+        GenerateAutoJournalResult result = generateAutoJournalUseCase.execute(command);
+
+        if (result.success()) {
+            return ResponseEntity.ok(GenerateAutoJournalResponse.success(
+                    result.journalEntryId(),
+                    result.journalDate(),
+                    result.description(),
+                    result.status()
+            ));
+        }
+        return ResponseEntity.badRequest().body(GenerateAutoJournalResponse.failure(result.errorMessage()));
     }
 }
