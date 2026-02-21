@@ -850,12 +850,33 @@ export const journalEntryHandlers = [
     });
   }),
 
-  http.post('*/api/journal-entries/generate', () => {
+  http.post('*/api/journal-entries/generate', async ({ request }) => {
+    const body = (await request.json()) as {
+      patternId: number;
+      amounts: Record<string, number>;
+      journalDate: string;
+      description?: string;
+    };
+    const journalEntryId = nextJournalEntryId++;
+
+    const totalAmount = Object.values(body.amounts).reduce((sum, v) => sum + v, 0);
+
+    const newEntry: JournalEntrySummary = {
+      journalEntryId,
+      journalDate: body.journalDate,
+      description: body.description || '自動仕訳',
+      totalDebitAmount: totalAmount,
+      totalCreditAmount: totalAmount,
+      status: 'DRAFT',
+      version: 1,
+    };
+    mockJournalEntries.unshift(newEntry);
+
     return HttpResponse.json({
       success: true,
-      journalEntryId: 999,
-      journalDate: '2026-01-31',
-      description: '自動仕訳テスト',
+      journalEntryId,
+      journalDate: body.journalDate,
+      description: body.description || '自動仕訳',
       status: 'DRAFT',
     });
   }),
