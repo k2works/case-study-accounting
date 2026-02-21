@@ -36,35 +36,54 @@ describe('US-JNL-006: 自動仕訳生成', () => {
   const openAutoJournalDialog = () => {
     cy.get('[data-testid="auto-journal-button"]').click();
     cy.get('.auto-journal-dialog-overlay').should('be.visible');
-    // パターンの読み込みを待つ
     cy.get('#auto-journal-pattern').should('be.visible');
     cy.get('#auto-journal-pattern option').should('have.length.greaterThan', 1);
   };
 
-  describe('アクセス制御', () => {
-    it('一般ユーザーには自動仕訳ボタンが表示されない', () => {
-      // Given: 一般ユーザーでログイン
-      cy.login('user', 'Password123!');
-      cy.get('[data-testid="dashboard"]').should('be.visible');
+  /** ダイアログ内の生成ボタンをクリック */
+  const clickGenerateButton = () => {
+    cy.get('.auto-journal-dialog').within(() => {
+      cy.contains('button', '生成').click();
+    });
+  };
 
-      // When: 仕訳入力ページにアクセス
+  /** パターンを選択して金額・日付・摘要を入力し生成する */
+  const selectPatternAndGenerate = (
+    patternId: string,
+    amount: string,
+    date: string,
+    description?: string,
+  ) => {
+    cy.get('#auto-journal-pattern').select(patternId);
+    cy.get('#amount-amount').clear().type(amount);
+    cy.get('#auto-journal-date').clear().type(date);
+    if (description) {
+      cy.get('#auto-journal-description').clear().type(description);
+    }
+    clickGenerateButton();
+  };
+
+  /** 生成後のダイアログ閉じ + ダッシュボード遷移を確認 */
+  const assertDialogClosedAndDashboard = () => {
+    cy.get('.auto-journal-dialog-overlay').should('not.exist');
+    cy.get('[data-testid="dashboard"]').should('be.visible');
+  };
+
+  describe('アクセス制御', () => {
+    const loginAndVisitForm = (role: string) => {
+      cy.login(role, 'Password123!');
+      cy.get('[data-testid="dashboard"]').should('be.visible');
       cy.visit('/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
+    };
 
-      // Then: 自動仕訳ボタンが表示されない
+    it('一般ユーザーには自動仕訳ボタンが表示されない', () => {
+      loginAndVisitForm('user');
       cy.get('[data-testid="auto-journal-button"]').should('not.exist');
     });
 
     it('管理者には自動仕訳ボタンが表示される', () => {
-      // Given: 管理者でログイン
-      cy.login('admin', 'Password123!');
-      cy.get('[data-testid="dashboard"]').should('be.visible');
-
-      // When: 仕訳入力ページにアクセス
-      cy.visit('/journal/entries/new');
-      cy.get('[data-testid="journal-entry-form"]').should('be.visible');
-
-      // Then: 自動仕訳ボタンが表示される
+      loginAndVisitForm('admin');
       cy.get('[data-testid="auto-journal-button"]').should('be.visible');
     });
   });
@@ -98,15 +117,8 @@ describe('US-JNL-006: 自動仕訳生成', () => {
     });
 
     it('パターンが未選択の場合は生成できない', () => {
-      // Given: ダイアログを開く
       openAutoJournalDialog();
-
-      // When: パターンを選択せずに生成ボタンをクリック
-      cy.get('.auto-journal-dialog').within(() => {
-        cy.contains('button', '生成').click();
-      });
-
-      // Then: エラーメッセージが表示される
+      clickGenerateButton();
       cy.contains('自動仕訳パターンを選択してください').should('be.visible');
     });
   });
@@ -142,54 +154,23 @@ describe('US-JNL-006: 自動仕訳生成', () => {
     });
 
     it('パターンを選択して金額を入力し仕訳を生成できる', () => {
-      // Given: ダイアログを開く
       openAutoJournalDialog();
-
-      // When: パターンを選択して金額・日付を入力
-      cy.get('#auto-journal-pattern').select('1');
-      cy.get('#amount-amount').clear().type('50000');
-      cy.get('#auto-journal-date').clear().type('2026-01-15');
-      cy.get('#auto-journal-description').clear().type('テスト売上計上');
-
-      // Then: 生成ボタンをクリックすると仕訳が生成される
-      cy.get('.auto-journal-dialog').within(() => {
-        cy.contains('button', '生成').click();
-      });
-
-      // ダイアログが閉じてダッシュボードに遷移する
-      cy.get('.auto-journal-dialog-overlay').should('not.exist');
-      cy.get('[data-testid="dashboard"]').should('be.visible');
+      selectPatternAndGenerate('1', '50000', '2026-01-15', 'テスト売上計上');
+      assertDialogClosedAndDashboard();
     });
 
     it('別のパターン（仕入）を選択して仕訳を生成できる', () => {
-      // Given: ダイアログを開く
       openAutoJournalDialog();
-
-      // When: 仕入仕訳パターンを選択
       cy.get('#auto-journal-pattern').select('2');
 
-      // Then: 仕入パターンの明細行が表示される
+      // 仕入パターンの明細行が表示される
       cy.get('.auto-journal-dialog').within(() => {
-        cy.get('.journal-entry-form__table tbody tr').eq(0).within(() => {
-          cy.contains('5100').should('be.visible');
-          cy.contains('借方').should('be.visible');
-        });
-        cy.get('.journal-entry-form__table tbody tr').eq(1).within(() => {
-          cy.contains('2100').should('be.visible');
-          cy.contains('貸方').should('be.visible');
-        });
+        cy.get('.journal-entry-form__table tbody tr').eq(0).should('contain', '5100').and('contain', '借方');
+        cy.get('.journal-entry-form__table tbody tr').eq(1).should('contain', '2100').and('contain', '貸方');
       });
 
-      // 金額・日付を入力して生成
-      cy.get('#amount-amount').clear().type('30000');
-      cy.get('#auto-journal-date').clear().type('2026-01-20');
-      cy.get('.auto-journal-dialog').within(() => {
-        cy.contains('button', '生成').click();
-      });
-
-      // ダイアログが閉じてダッシュボードに遷移する
-      cy.get('.auto-journal-dialog-overlay').should('not.exist');
-      cy.get('[data-testid="dashboard"]').should('be.visible');
+      selectPatternAndGenerate('2', '30000', '2026-01-20');
+      assertDialogClosedAndDashboard();
     });
   });
 
@@ -227,17 +208,10 @@ describe('US-JNL-006: 自動仕訳生成', () => {
     });
 
     it('金額未入力の場合はエラーメッセージが表示される', () => {
-      // Given: ダイアログを開いてパターンを選択
       openAutoJournalDialog();
       cy.get('#auto-journal-pattern').select('1');
-
-      // When: 金額を入力せずに生成をクリック
       cy.get('#amount-amount').clear();
-      cy.get('.auto-journal-dialog').within(() => {
-        cy.contains('button', '生成').click();
-      });
-
-      // Then: エラーメッセージが表示される
+      clickGenerateButton();
       cy.contains('amount の金額を入力してください').should('be.visible');
     });
   });
@@ -248,19 +222,8 @@ describe('US-JNL-006: 自動仕訳生成', () => {
     });
 
     it('仕訳生成成功後にダッシュボードに遷移し成功が確認できる', () => {
-      // Given: ダイアログを開いてパターン・金額・日付を設定
       openAutoJournalDialog();
-      cy.get('#auto-journal-pattern').select('1');
-      cy.get('#amount-amount').clear().type('80000');
-      cy.get('#auto-journal-date').clear().type('2026-02-01');
-      cy.get('#auto-journal-description').clear().type('確認メッセージテスト');
-
-      // When: 生成ボタンをクリック
-      cy.get('.auto-journal-dialog').within(() => {
-        cy.contains('button', '生成').click();
-      });
-
-      // Then: ダイアログが閉じてダッシュボードに遷移する（生成成功の確認）
+      selectPatternAndGenerate('1', '80000', '2026-02-01', '確認メッセージテスト');
       cy.get('.auto-journal-dialog-overlay').should('not.exist');
       cy.url().should('match', /\/$/);
       cy.get('[data-testid="dashboard"]').should('be.visible');
@@ -269,20 +232,10 @@ describe('US-JNL-006: 自動仕訳生成', () => {
 
   describe('受入条件: 生成された仕訳は編集可能', () => {
     it('生成された仕訳が仕訳一覧に下書きステータスで表示される', () => {
-      // Given: 管理者でログインして仕訳を自動生成する
       loginAndVisitNewJournalEntry();
-
       openAutoJournalDialog();
-      cy.get('#auto-journal-pattern').select('1');
-      cy.get('#amount-amount').clear().type('120000');
-      cy.get('#auto-journal-date').clear().type('2026-02-10');
-      cy.get('#auto-journal-description').clear().type('編集可能テスト');
-      cy.get('.auto-journal-dialog').within(() => {
-        cy.contains('button', '生成').click();
-      });
-
-      // ダッシュボードに遷移
-      cy.get('[data-testid="dashboard"]').should('be.visible');
+      selectPatternAndGenerate('1', '120000', '2026-02-10', '編集可能テスト');
+      assertDialogClosedAndDashboard();
 
       // When: サイドバーから仕訳一覧に遷移（クライアントサイドナビゲーションで MSW 状態を保持）
       cy.contains('.sidebar__link-text', '仕訳').click();

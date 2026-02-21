@@ -31,6 +31,18 @@ const TEST_CONFIG = {
 
 const visitFinancialAnalysisPage = createVisitFunction(TEST_CONFIG);
 
+/** 表示ボタンをクリックして指標テーブルの表示を待つ */
+const clickDisplayAndWaitIndicators = () => {
+  cy.contains('button', '表示').click();
+  cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+};
+
+/** 表示ボタンをクリックしてトレンドチャートの表示を待つ */
+const clickDisplayAndWaitTrend = () => {
+  cy.contains('button', '表示').click();
+  cy.get(TEST_CONFIG.selectors.trend, { timeout: 15000 }).should('be.visible');
+};
+
 describe('US-FS-003: 財務分析表示', () => {
   beforeEach(() => {
     cy.clearAuth();
@@ -61,13 +73,11 @@ describe('US-FS-003: 財務分析表示', () => {
     });
 
     it('表示ボタンをクリックすると財務指標テーブルが表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
     });
 
     it('収益性指標（ROE、ROA、売上高利益率）が表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '収益性');
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', 'ROE');
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', 'ROA');
@@ -75,8 +85,7 @@ describe('US-FS-003: 財務分析表示', () => {
     });
 
     it('安全性指標（流動比率、自己資本比率、負債比率）が表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '安全性');
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '流動比率');
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '自己資本比率');
@@ -84,15 +93,13 @@ describe('US-FS-003: 財務分析表示', () => {
     });
 
     it('効率性指標（総資産回転率）が表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '効率性');
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '総資産回転率');
     });
 
     it('テーブルに指標名、当期、計算式、業界平均のヘッダーが表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
       ['指標名', '当期', '計算式', '業界平均'].forEach((header) => {
         cy.contains('th', header).should('be.visible');
       });
@@ -105,8 +112,7 @@ describe('US-FS-003: 財務分析表示', () => {
     });
 
     it('各指標に計算式が表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '当期純利益 ÷ 自己資本 × 100');
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '当期純利益 ÷ 総資産 × 100');
       cy.get(TEST_CONFIG.selectors.indicators).should('contain', '当期純利益 ÷ 売上高 × 100');
@@ -122,15 +128,13 @@ describe('US-FS-003: 財務分析表示', () => {
     });
 
     it('指標比較チャートが表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.trend, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitTrend();
       cy.get(TEST_CONFIG.selectors.trend).should('contain', '指標比較チャート');
       cy.get(TEST_CONFIG.selectors.trend).should('contain', '業界平均');
     });
 
     it('各カテゴリのチャートが表示される', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.trend, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitTrend();
       ['収益性', '安全性', '効率性'].forEach((category) => {
         cy.get(TEST_CONFIG.selectors.trend).should('contain', category);
       });
@@ -147,8 +151,7 @@ describe('US-FS-003: 財務分析表示', () => {
       cy.get(TEST_CONFIG.selectors.dateToInput).type('2026-01-31');
       cy.get(TEST_CONFIG.selectors.compFromInput).type('2025-01-01');
       cy.get(TEST_CONFIG.selectors.compToInput).type('2025-01-31');
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
       ['前期', '増減', '変化率'].forEach((header) => {
         cy.contains('th', header).should('be.visible');
       });
@@ -163,13 +166,11 @@ describe('US-FS-003: 財務分析表示', () => {
     it('期間を指定して表示できる', () => {
       cy.get(TEST_CONFIG.selectors.dateFromInput).type('2026-01-01');
       cy.get(TEST_CONFIG.selectors.dateToInput).type('2026-01-31');
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
     });
 
     it('期間なしで全期間の財務分析を表示できる', () => {
-      cy.contains('button', '表示').click();
-      cy.get(TEST_CONFIG.selectors.indicators, { timeout: 15000 }).should('be.visible');
+      clickDisplayAndWaitIndicators();
     });
   });
 
