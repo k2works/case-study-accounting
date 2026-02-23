@@ -23,7 +23,7 @@
 | ストーリーID | ストーリー名 | SP | 優先度 | 状態 |
 |-------------|-------------|-----|--------|------|
 | US-SYS-001 | 監査ログ照会 | 8 | 必須 | **完了** |
-| US-SYS-002 | データダウンロード | 5 | 重要 | 未着手 |
+| US-SYS-002 | データダウンロード | 5 | 重要 | **完了** |
 | **合計** | | **13** | | |
 
 **コミットメント**: 13SP（累積平均ベロシティ 14.2SP 以内。US-SYS-001 は新規テーブル・ドメインモデル要素を含み、US-SYS-002 は IT-7 の BS/PL エクスポートパターンの拡張。パターン新規度は「中」）
@@ -73,11 +73,11 @@
 
 **受入条件**:
 
-- [ ] 仕訳一覧を CSV/Excel でダウンロードできる
-- [ ] 元帳を CSV/Excel でダウンロードできる
-- [ ] 試算表を CSV/Excel/PDF でダウンロードできる
-- [ ] 財務諸表を CSV/Excel/PDF でダウンロードできる
-- [ ] ダウンロード時に期間や条件を指定できる
+- [x] 仕訳一覧を CSV/Excel でダウンロードできる
+- [x] 元帳を CSV/Excel でダウンロードできる
+- [x] 試算表を CSV/Excel/PDF でダウンロードできる
+- [x] 財務諸表を CSV/Excel/PDF でダウンロードできる
+- [x] ダウンロード時に期間や条件を指定できる
 
 ---
 
@@ -163,15 +163,15 @@ CREATE INDEX idx_audit_logs_entity_type ON audit_logs(entity_type);
 
 | タスクID | タスク名 | 理想時間 | 担当 | 状態 |
 |----------|---------|---------|------|------|
-| SYS-002-01 | CSV エクスポートユーティリティ実装 | 3h | Codex | [ ] |
-| SYS-002-02 | JournalEntryExportService 実装（CSV/Excel） | 4h | Codex | [ ] |
-| SYS-002-03 | GeneralLedgerExportService 実装（CSV/Excel） | 3h | Codex | [ ] |
-| SYS-002-04 | TrialBalanceExportService 実装（CSV/Excel/PDF） | 3h | Codex | [ ] |
-| SYS-002-05 | 既存 BS/PL ExportService に CSV 対応追加 | 2h | Codex | [ ] |
-| SYS-002-06 | エクスポート API エンドポイント追加（各コントローラー） | 3h | Codex | [ ] |
-| SYS-002-07 | バックエンド単体テスト | 3h | Codex | [ ] |
-| SYS-002-08 | フロントエンド ダウンロードボタン UI 実装 | 3h | Codex | [ ] |
-| SYS-002-09 | 統合テスト（E2E テスト） | 2h | Claude | [ ] |
+| SYS-002-01 | CSV エクスポートユーティリティ実装 | 3h | Codex | [x] |
+| SYS-002-02 | JournalEntryExportService 実装（CSV/Excel） | 4h | Codex | [x] |
+| SYS-002-03 | GeneralLedgerExportService 実装（CSV/Excel） | 3h | Codex | [x] |
+| SYS-002-04 | TrialBalanceExportService 実装（CSV/Excel/PDF） | 3h | Codex | [x] |
+| SYS-002-05 | 既存 BS/PL ExportService に CSV 対応追加 | 2h | Codex | [x] |
+| SYS-002-06 | エクスポート API エンドポイント追加（各コントローラー） | 3h | Codex | [x] |
+| SYS-002-07 | バックエンド単体テスト | 3h | Codex | [x] |
+| SYS-002-08 | フロントエンド ダウンロードボタン UI 実装 | 3h | Codex | [x] |
+| SYS-002-09 | 統合テスト（E2E テスト） | 2h | Claude | [x] |
 | | **小計** | **26h** | | |
 
 #### 実装詳細
@@ -349,7 +349,7 @@ gantt
 - [x] 自動仕訳生成（IT-10 完了）
 - [x] 財務分析表示（IT-10 完了）
 - [x] 監査ログ照会（IT-11 完了 2026-02-23）
-- [ ] データダウンロード（イテレーション 11）
+- [x] データダウンロード（IT-11 完了 2026-02-23）
 
 ### イテレーション 11 の位置づけ
 
@@ -402,6 +402,7 @@ gantt
 |------|---------|--------|
 | 2026-02-21 | 初版作成 | Claude Opus 4.6 |
 | 2026-02-23 | US-SYS-001 完了（監査ログ照会） | Claude Opus 4.6 |
+| 2026-02-23 | US-SYS-002 完了（データダウンロード）、イテレーション 11 全ストーリー完了 | Claude Opus 4.6 |
 
 ---
 
