@@ -2353,6 +2353,103 @@ export const financialAnalysisHandlers = [
   }),
 ];
 
+// --- 監査ログ ---
+interface MockAuditLog {
+  id: number;
+  userId: string;
+  actionType: string;
+  actionTypeDisplayName: string;
+  entityType: string | null;
+  entityTypeDisplayName: string | null;
+  entityId: string | null;
+  description: string;
+  ipAddress: string;
+  createdAt: string;
+}
+
+const mockAuditLogs: MockAuditLog[] = [
+  {
+    id: 1,
+    userId: 'admin',
+    actionType: 'LOGIN',
+    actionTypeDisplayName: 'ログイン',
+    entityType: null,
+    entityTypeDisplayName: null,
+    entityId: null,
+    description: 'ログイン成功',
+    ipAddress: '127.0.0.1',
+    createdAt: '2026-01-15T10:00:00',
+  },
+  {
+    id: 2,
+    userId: 'admin',
+    actionType: 'CREATE',
+    actionTypeDisplayName: '作成',
+    entityType: 'JOURNAL_ENTRY',
+    entityTypeDisplayName: '仕訳伝票',
+    entityId: '1',
+    description: '仕訳伝票作成',
+    ipAddress: '127.0.0.1',
+    createdAt: '2026-01-15T10:05:00',
+  },
+  {
+    id: 3,
+    userId: 'manager',
+    actionType: 'APPROVE',
+    actionTypeDisplayName: '承認',
+    entityType: 'JOURNAL_ENTRY',
+    entityTypeDisplayName: '仕訳伝票',
+    entityId: '1',
+    description: '仕訳伝票承認',
+    ipAddress: '192.168.1.10',
+    createdAt: '2026-01-15T10:10:00',
+  },
+  {
+    id: 4,
+    userId: 'admin',
+    actionType: 'LOGOUT',
+    actionTypeDisplayName: 'ログアウト',
+    entityType: null,
+    entityTypeDisplayName: null,
+    entityId: null,
+    description: 'ログアウト',
+    ipAddress: '127.0.0.1',
+    createdAt: '2026-01-15T18:00:00',
+  },
+  {
+    id: 5,
+    userId: 'user',
+    actionType: 'LOGIN',
+    actionTypeDisplayName: 'ログイン',
+    entityType: null,
+    entityTypeDisplayName: null,
+    entityId: null,
+    description: 'ログイン成功',
+    ipAddress: '10.0.0.5',
+    createdAt: '2026-01-16T09:00:00',
+  },
+];
+
+export const auditLogHandlers = [
+  http.get('*/audit-logs', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+    const userId = url.searchParams.get('userId');
+    const actionType = url.searchParams.get('actionType');
+
+    let filtered = [...mockAuditLogs];
+    if (userId) filtered = filtered.filter((entry) => entry.userId.includes(userId));
+    if (actionType) filtered = filtered.filter((entry) => entry.actionType === actionType);
+
+    const totalCount = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / size));
+    const auditLogs = filtered.slice(page * size, page * size + size);
+
+    return HttpResponse.json({ auditLogs, totalCount, totalPages, currentPage: page });
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
@@ -2371,4 +2468,5 @@ export const handlers = [
   ...balanceSheetHandlers,
   ...profitAndLossHandlers,
   ...financialAnalysisHandlers,
+  ...auditLogHandlers,
 ];

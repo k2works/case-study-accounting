@@ -11,6 +11,7 @@ import com.example.accounting.application.port.in.RejectJournalEntryUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SubmitForApprovalUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
+import com.example.accounting.application.port.in.RecordAuditLogUseCase;
 import com.example.accounting.application.port.in.command.CreateJournalEntryCommand;
 import com.example.accounting.application.port.in.command.ApproveJournalEntryCommand;
 import com.example.accounting.application.port.in.command.ConfirmJournalEntryCommand;
@@ -38,6 +39,8 @@ import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.model.user.UserId;
 import com.example.accounting.domain.model.user.Username;
 import com.example.accounting.domain.shared.OptimisticLockException;
+import com.example.accounting.domain.model.audit.AuditAction;
+import com.example.accounting.domain.model.audit.EntityType;
 import io.vavr.control.Try;
 import com.example.accounting.infrastructure.web.dto.ApproveJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.ConfirmJournalEntryResponse;
@@ -53,6 +56,7 @@ import com.example.accounting.infrastructure.web.dto.UpdateJournalEntryResponse;
 import com.example.accounting.infrastructure.web.dto.GenerateAutoJournalRequest;
 import com.example.accounting.infrastructure.web.dto.GenerateAutoJournalResponse;
 import com.example.accounting.infrastructure.web.exception.BusinessException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -75,7 +79,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 /**
@@ -85,6 +91,8 @@ import static org.mockito.Mockito.when;
 @DisplayName("仕訳登録コントローラ")
 @SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.ExcessiveImports"}) // テストクラスは多数のクラスを使用するため結合度が高くなる
 class JournalEntryControllerTest {
+
+    private static final String CLIENT_HOST = "client-host";
 
     @Mock
     private CreateJournalEntryUseCase createJournalEntryUseCase;
@@ -120,12 +128,19 @@ class JournalEntryControllerTest {
     private GenerateAutoJournalUseCase generateAutoJournalUseCase;
 
     @Mock
+    private RecordAuditLogUseCase recordAuditLogUseCase;
+
+    @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     private JournalEntryController journalEntryController;
 
     @BeforeEach
     void setUp() {
+        lenient().when(httpServletRequest.getRemoteAddr()).thenReturn(CLIENT_HOST);
         journalEntryController = new JournalEntryController(
                 createJournalEntryUseCase,
                 updateJournalEntryUseCase,
@@ -138,6 +153,7 @@ class JournalEntryControllerTest {
                 rejectJournalEntryUseCase,
                 confirmJournalEntryUseCase,
                 generateAutoJournalUseCase,
+                recordAuditLogUseCase,
                 userRepository
         );
     }
@@ -170,7 +186,7 @@ class JournalEntryControllerTest {
             when(createJournalEntryUseCase.execute(any(CreateJournalEntryCommand.class))).thenReturn(result);
 
             ResponseEntity<CreateJournalEntryResponse> response =
-                    journalEntryController.create(request, principal("user1"));
+                    journalEntryController.create(request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
@@ -180,6 +196,7 @@ class JournalEntryControllerTest {
             assertThat(response.getBody().description()).isEqualTo("売上計上");
             assertThat(response.getBody().status()).isEqualTo("DRAFT");
             assertThat(response.getBody().errorMessage()).isNull();
+            assertAuditLog("user1", AuditAction.CREATE, EntityType.JOURNAL_ENTRY, "10", "仕訳伝票作成");
         }
 
         @Test
@@ -200,7 +217,7 @@ class JournalEntryControllerTest {
             when(createJournalEntryUseCase.execute(any(CreateJournalEntryCommand.class)))
                     .thenReturn(CreateJournalEntryResult.failure("error"));
 
-            journalEntryController.create(request, principal("user1"));
+            journalEntryController.create(request, principal("user1"), httpServletRequest);
 
             ArgumentCaptor<CreateJournalEntryCommand> captor =
                     ArgumentCaptor.forClass(CreateJournalEntryCommand.class);
@@ -238,12 +255,13 @@ class JournalEntryControllerTest {
                     .thenReturn(CreateJournalEntryResult.failure("勘定科目が存在しません"));
 
             ResponseEntity<CreateJournalEntryResponse> response =
-                    journalEntryController.create(request, principal("user1"));
+                    journalEntryController.create(request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("勘定科目が存在しません");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
     }
 
@@ -276,7 +294,7 @@ class JournalEntryControllerTest {
                     .thenReturn(result);
 
             ResponseEntity<UpdateJournalEntryResponse> response =
-                    journalEntryController.update(10, request, principal("user1"));
+                    journalEntryController.update(10, request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
@@ -288,6 +306,7 @@ class JournalEntryControllerTest {
             assertThat(response.getBody().version()).isEqualTo(2);
             assertThat(response.getBody().message()).isEqualTo("仕訳を更新しました");
             assertThat(response.getBody().errorMessage()).isNull();
+            assertAuditLog("user1", AuditAction.UPDATE, EntityType.JOURNAL_ENTRY, "10", "仕訳伝票更新");
         }
 
         @Test
@@ -306,10 +325,11 @@ class JournalEntryControllerTest {
                     .thenReturn(UpdateJournalEntryResult.failure("仕訳が見つかりません"));
 
             ResponseEntity<UpdateJournalEntryResponse> response =
-                    journalEntryController.update(10, request, principal("user1"));
+                    journalEntryController.update(10, request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
             assertThat(response.getBody()).isNull();
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -325,12 +345,13 @@ class JournalEntryControllerTest {
                     .thenReturn(UpdateJournalEntryResult.failure("仕訳明細は 1 行以上必要です"));
 
             ResponseEntity<UpdateJournalEntryResponse> response =
-                    journalEntryController.update(10, request, principal("user1"));
+                    journalEntryController.update(10, request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("仕訳明細は 1 行以上必要です");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -349,12 +370,13 @@ class JournalEntryControllerTest {
                     .thenReturn(UpdateJournalEntryResult.failure("仕訳のバージョンが一致しません"));
 
             ResponseEntity<UpdateJournalEntryResponse> response =
-                    journalEntryController.update(10, request, principal("user1"));
+                    journalEntryController.update(10, request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("仕訳のバージョンが一致しません");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
     }
 
@@ -476,11 +498,12 @@ class JournalEntryControllerTest {
             when(deleteJournalEntryUseCase.execute(any(DeleteJournalEntryCommand.class)))
                     .thenReturn(DeleteJournalEntryResult.ofSuccess());
 
-            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(1);
+            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(1, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isTrue();
+            assertAuditLog("user1", AuditAction.DELETE, EntityType.JOURNAL_ENTRY, "1", "仕訳伝票削除");
         }
 
         @Test
@@ -489,9 +512,10 @@ class JournalEntryControllerTest {
             when(deleteJournalEntryUseCase.execute(any(DeleteJournalEntryCommand.class)))
                     .thenReturn(DeleteJournalEntryResult.ofFailure("仕訳が見つかりません"));
 
-            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(999);
+            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(999, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -500,11 +524,12 @@ class JournalEntryControllerTest {
             when(deleteJournalEntryUseCase.execute(any(DeleteJournalEntryCommand.class)))
                     .thenReturn(DeleteJournalEntryResult.ofFailure("下書き状態の仕訳のみ削除可能です"));
 
-            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(1);
+            ResponseEntity<DeleteJournalEntryResponse> response = journalEntryController.delete(1, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
     }
 
@@ -532,7 +557,7 @@ class JournalEntryControllerTest {
                     ));
 
             ResponseEntity<GenerateAutoJournalResponse> response =
-                    journalEntryController.generate(request, principal("user1"));
+                    journalEntryController.generate(request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
@@ -542,6 +567,7 @@ class JournalEntryControllerTest {
             assertThat(response.getBody().description()).isEqualTo("自動仕訳");
             assertThat(response.getBody().status()).isEqualTo("DRAFT");
             assertThat(response.getBody().errorMessage()).isNull();
+            assertAuditLog("user1", AuditAction.CREATE, EntityType.JOURNAL_ENTRY, null, "自動仕訳生成");
         }
 
         @Test
@@ -559,12 +585,13 @@ class JournalEntryControllerTest {
                     .thenReturn(GenerateAutoJournalResult.failure("パターンが見つかりません"));
 
             ResponseEntity<GenerateAutoJournalResponse> response =
-                    journalEntryController.generate(request, principal("user1"));
+                    journalEntryController.generate(request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("パターンが見つかりません");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -581,7 +608,7 @@ class JournalEntryControllerTest {
             when(generateAutoJournalUseCase.execute(any(GenerateAutoJournalCommand.class)))
                     .thenReturn(GenerateAutoJournalResult.failure("error"));
 
-            journalEntryController.generate(request, principal("user1"));
+            journalEntryController.generate(request, principal("user1"), httpServletRequest);
 
             ArgumentCaptor<GenerateAutoJournalCommand> captor =
                     ArgumentCaptor.forClass(GenerateAutoJournalCommand.class);
@@ -613,11 +640,12 @@ class JournalEntryControllerTest {
                     .thenThrow(new OptimisticLockException("他のユーザーが更新済み"));
 
             ResponseEntity<UpdateJournalEntryResponse> response =
-                    journalEntryController.update(10, request, principal("user1"));
+                    journalEntryController.update(10, request, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().errorMessage()).isEqualTo("他のユーザーが更新済み");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
     }
 
@@ -635,7 +663,7 @@ class JournalEntryControllerTest {
             );
             when(userRepository.findByUsername("unknown")).thenReturn(Try.success(Optional.empty()));
 
-            assertThatThrownBy(() -> journalEntryController.create(request, principal("unknown")))
+            assertThatThrownBy(() -> journalEntryController.create(request, principal("unknown"), httpServletRequest))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("ユーザーが存在しません");
         }
@@ -651,7 +679,7 @@ class JournalEntryControllerTest {
             SubmitForApprovalResult result = SubmitForApprovalResult.success(1, "PENDING");
             when(submitForApprovalUseCase.execute(any(SubmitForApprovalCommand.class))).thenReturn(result);
 
-            ResponseEntity<SubmitForApprovalResponse> response = journalEntryController.submitForApproval(1);
+            ResponseEntity<SubmitForApprovalResponse> response = journalEntryController.submitForApproval(1, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
@@ -659,6 +687,7 @@ class JournalEntryControllerTest {
             assertThat(response.getBody().journalEntryId()).isEqualTo(1);
             assertThat(response.getBody().status()).isEqualTo("PENDING");
             assertThat(response.getBody().message()).isEqualTo("仕訳を承認申請しました");
+            assertAuditLog("user1", AuditAction.UPDATE, EntityType.JOURNAL_ENTRY, "1", "仕訳伝票承認依頼");
         }
 
         @Test
@@ -667,9 +696,10 @@ class JournalEntryControllerTest {
             when(submitForApprovalUseCase.execute(any(SubmitForApprovalCommand.class)))
                     .thenReturn(SubmitForApprovalResult.failure("仕訳が見つかりません"));
 
-            ResponseEntity<SubmitForApprovalResponse> response = journalEntryController.submitForApproval(999);
+            ResponseEntity<SubmitForApprovalResponse> response = journalEntryController.submitForApproval(999, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -678,12 +708,13 @@ class JournalEntryControllerTest {
             when(submitForApprovalUseCase.execute(any(SubmitForApprovalCommand.class)))
                     .thenReturn(SubmitForApprovalResult.failure("下書き状態の仕訳のみ承認申請できます"));
 
-            ResponseEntity<SubmitForApprovalResponse> response = journalEntryController.submitForApproval(1);
+            ResponseEntity<SubmitForApprovalResponse> response = journalEntryController.submitForApproval(1, principal("user1"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("下書き状態の仕訳のみ承認申請できます");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
     }
 
@@ -699,7 +730,7 @@ class JournalEntryControllerTest {
             when(approveJournalEntryUseCase.execute(any(ApproveJournalEntryCommand.class))).thenReturn(result);
 
             ResponseEntity<ApproveJournalEntryResponse> response =
-                    journalEntryController.approveJournalEntry(1, userDetails("manager"));
+                    journalEntryController.approveJournalEntry(1, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
@@ -709,6 +740,7 @@ class JournalEntryControllerTest {
             assertThat(response.getBody().approvedBy()).isEqualTo("manager");
             assertThat(response.getBody().approvedAt()).isEqualTo(approvedAt);
             assertThat(response.getBody().message()).isEqualTo("仕訳を承認しました");
+            assertAuditLog("manager", AuditAction.APPROVE, EntityType.JOURNAL_ENTRY, "1", "仕訳伝票承認");
         }
 
         @Test
@@ -718,9 +750,10 @@ class JournalEntryControllerTest {
                     .thenReturn(ApproveJournalEntryResult.failure("仕訳が見つかりません"));
 
             ResponseEntity<ApproveJournalEntryResponse> response =
-                    journalEntryController.approveJournalEntry(999, userDetails("manager"));
+                    journalEntryController.approveJournalEntry(999, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -730,12 +763,13 @@ class JournalEntryControllerTest {
                     .thenReturn(ApproveJournalEntryResult.failure("承認待ち状態の仕訳のみ承認できます"));
 
             ResponseEntity<ApproveJournalEntryResponse> response =
-                    journalEntryController.approveJournalEntry(1, userDetails("manager"));
+                    journalEntryController.approveJournalEntry(1, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("承認待ち状態の仕訳のみ承認できます");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
     }
 
@@ -752,7 +786,7 @@ class JournalEntryControllerTest {
             when(confirmJournalEntryUseCase.execute(any(ConfirmJournalEntryCommand.class))).thenReturn(result);
 
             ResponseEntity<ConfirmJournalEntryResponse> response =
-                    journalEntryController.confirmJournalEntry(1, userDetails("manager"));
+                    journalEntryController.confirmJournalEntry(1, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
@@ -762,6 +796,7 @@ class JournalEntryControllerTest {
             assertThat(response.getBody().confirmedBy()).isEqualTo("manager");
             assertThat(response.getBody().confirmedAt()).isEqualTo(confirmedAt);
             assertThat(response.getBody().message()).isEqualTo("仕訳を確定しました");
+            assertAuditLog("manager", AuditAction.CONFIRM, EntityType.JOURNAL_ENTRY, "1", "仕訳伝票確定");
         }
 
         @Test
@@ -771,9 +806,10 @@ class JournalEntryControllerTest {
                     .thenReturn(ConfirmJournalEntryResult.failure("仕訳が見つかりません"));
 
             ResponseEntity<ConfirmJournalEntryResponse> response =
-                    journalEntryController.confirmJournalEntry(999, userDetails("manager"));
+                    journalEntryController.confirmJournalEntry(999, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -783,12 +819,13 @@ class JournalEntryControllerTest {
                     .thenReturn(ConfirmJournalEntryResult.failure("承認済み状態の仕訳のみ確定可能です"));
 
             ResponseEntity<ConfirmJournalEntryResponse> response =
-                    journalEntryController.confirmJournalEntry(1, userDetails("manager"));
+                    journalEntryController.confirmJournalEntry(1, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("承認済み状態の仕訳のみ確定可能です");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
     }
 
@@ -806,7 +843,7 @@ class JournalEntryControllerTest {
 
             RejectJournalEntryRequest request = new RejectJournalEntryRequest("金額に誤りがあります");
             ResponseEntity<RejectJournalEntryResponse> response =
-                    journalEntryController.rejectJournalEntry(1, request, userDetails("manager"));
+                    journalEntryController.rejectJournalEntry(1, request, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
@@ -817,6 +854,7 @@ class JournalEntryControllerTest {
             assertThat(response.getBody().rejectedAt()).isEqualTo(rejectedAt);
             assertThat(response.getBody().rejectionReason()).isEqualTo("金額に誤りがあります");
             assertThat(response.getBody().message()).isEqualTo("仕訳を差し戻しました");
+            assertAuditLog("manager", AuditAction.REJECT, EntityType.JOURNAL_ENTRY, "1", "仕訳伝票差し戻し");
         }
 
         @Test
@@ -827,9 +865,10 @@ class JournalEntryControllerTest {
 
             RejectJournalEntryRequest request = new RejectJournalEntryRequest("理由");
             ResponseEntity<RejectJournalEntryResponse> response =
-                    journalEntryController.rejectJournalEntry(999, request, userDetails("manager"));
+                    journalEntryController.rejectJournalEntry(999, request, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
 
         @Test
@@ -840,13 +879,31 @@ class JournalEntryControllerTest {
 
             RejectJournalEntryRequest request = new RejectJournalEntryRequest("理由");
             ResponseEntity<RejectJournalEntryResponse> response =
-                    journalEntryController.rejectJournalEntry(1, request, userDetails("manager"));
+                    journalEntryController.rejectJournalEntry(1, request, userDetails("manager"), httpServletRequest);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().success()).isFalse();
             assertThat(response.getBody().errorMessage()).isEqualTo("承認待ち状態の仕訳のみ差し戻し可能です");
+            verify(recordAuditLogUseCase, never()).execute(any());
         }
+    }
+
+    private void assertAuditLog(String userId,
+                                AuditAction actionType,
+                                EntityType entityType,
+                                String entityId,
+                                String description) {
+        ArgumentCaptor<RecordAuditLogUseCase.RecordAuditLogCommand> captor =
+                ArgumentCaptor.forClass(RecordAuditLogUseCase.RecordAuditLogCommand.class);
+        verify(recordAuditLogUseCase).execute(captor.capture());
+        RecordAuditLogUseCase.RecordAuditLogCommand command = captor.getValue();
+        assertThat(command.userId()).isEqualTo(userId);
+        assertThat(command.actionType()).isEqualTo(actionType);
+        assertThat(command.entityType()).isEqualTo(entityType);
+        assertThat(command.entityId()).isEqualTo(entityId);
+        assertThat(command.description()).isEqualTo(description);
+        assertThat(command.ipAddress()).isEqualTo(CLIENT_HOST);
     }
 
     private Principal principal(String name) {

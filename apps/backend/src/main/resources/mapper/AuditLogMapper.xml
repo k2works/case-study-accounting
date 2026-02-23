@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.accounting.infrastructure.persistence.mapper.AuditLogMapper">
+
+    <resultMap id="auditLogResultMap" type="com.example.accounting.infrastructure.persistence.entity.AuditLogEntity">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="actionType" column="action_type"/>
+        <result property="entityType" column="entity_type"/>
+        <result property="entityId" column="entity_id"/>
+        <result property="description" column="description"/>
+        <result property="ipAddress" column="ip_address"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.example.accounting.infrastructure.persistence.entity.AuditLogEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO audit_logs (user_id, action_type, entity_type, entity_id, description, ip_address, created_at)
+        VALUES (#{userId}, #{actionType}, #{entityType}, #{entityId}, #{description}, #{ipAddress}, #{createdAt})
+    </insert>
+
+    <sql id="searchConditions">
+        <where>
+            <if test="userId != null and userId != ''">
+                AND user_id = #{userId}
+            </if>
+            <if test="actionType != null and actionType != ''">
+                AND action_type = #{actionType}
+            </if>
+            <if test="dateFrom != null">
+                AND created_at >= #{dateFrom}::date
+            </if>
+            <if test="dateTo != null">
+                AND created_at &lt; (#{dateTo}::date + INTERVAL '1 day')
+            </if>
+        </where>
+    </sql>
+
+    <select id="search" resultMap="auditLogResultMap">
+        SELECT id, user_id, action_type, entity_type, entity_id, description, ip_address, created_at
+        FROM audit_logs
+        <include refid="searchConditions"/>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByConditions" resultType="long">
+        SELECT COUNT(*)
+        FROM audit_logs
+        <include refid="searchConditions"/>
+    </select>
+
+</mapper>
