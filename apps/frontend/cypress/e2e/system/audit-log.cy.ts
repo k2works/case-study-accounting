@@ -31,10 +31,12 @@ const TEST_CONFIG = {
 
 const visitAuditLogPage = createVisitFunction(TEST_CONFIG);
 
-/** 検索ボタンをクリックしてテーブルの表示を待つ */
-const clickSearchAndWaitTable = () => {
+/** アクション種別で検索してテーブルの表示を確認する */
+const searchByAction = (action: string, expectedText: string) => {
+  cy.get(TEST_CONFIG.selectors.actionTypeSelect).select(action);
   cy.contains('button', '検索').click();
   cy.get(TEST_CONFIG.selectors.table, { timeout: 15000 }).should('be.visible');
+  cy.get(TEST_CONFIG.selectors.table).should('contain', expectedText);
 };
 
 describe('US-SYS-001: 監査ログ照会', () => {
@@ -42,17 +44,15 @@ describe('US-SYS-001: 監査ログ照会', () => {
     cy.clearAuth();
   });
 
-  describe('画面表示', () => {
+  // 管理者認証が必要な全テストを共通 beforeEach でまとめる
+  describe('管理者機能', () => {
     beforeEach(() => {
       visitAuditLogPage('admin');
     });
 
-    it('監査ログページが表示される', () => {
+    it('監査ログページとフィルターが表示される', () => {
       cy.contains('h1', '監査ログ').should('be.visible');
       cy.get(TEST_CONFIG.selectors.filter).should('be.visible');
-    });
-
-    it('検索フィルターが表示される', () => {
       cy.get(TEST_CONFIG.selectors.userIdInput).should('be.visible');
       cy.get(TEST_CONFIG.selectors.actionTypeSelect).should('be.visible');
       cy.get(TEST_CONFIG.selectors.dateFromInput).should('be.visible');
@@ -61,106 +61,52 @@ describe('US-SYS-001: 監査ログ照会', () => {
     });
 
     it('アクション種別のドロップダウンに選択肢がある', () => {
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).find('option').should('have.length.greaterThan', 1);
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).contains('option', 'すべて').should('exist');
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).contains('option', 'ログイン').should('exist');
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).contains('option', 'ログアウト').should('exist');
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).contains('option', '作成').should('exist');
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).contains('option', '承認').should('exist');
-    });
-  });
-
-  describe('監査ログの一覧表示', () => {
-    beforeEach(() => {
-      visitAuditLogPage('admin');
+      const select = cy.get(TEST_CONFIG.selectors.actionTypeSelect);
+      select.find('option').should('have.length.greaterThan', 1);
+      ['すべて', 'ログイン', 'ログアウト', '作成', '承認'].forEach((label) => {
+        select.contains('option', label).should('exist');
+      });
     });
 
-    it('検索ボタンをクリックすると監査ログテーブルが表示される', () => {
-      clickSearchAndWaitTable();
-    });
-
-    it('テーブルに必要なヘッダーが表示される', () => {
-      clickSearchAndWaitTable();
+    it('検索すると監査ログテーブルとヘッダーが表示される', () => {
+      cy.contains('button', '検索').click();
+      cy.get(TEST_CONFIG.selectors.table, { timeout: 15000 }).should('be.visible');
       ['ID', 'ユーザーID', 'アクション', '対象種別', '対象ID', '説明', 'IPアドレス', '日時'].forEach(
         (header) => {
           cy.contains('th', header).should('be.visible');
         }
       );
-    });
-
-    it('件数とページ情報が表示される', () => {
-      clickSearchAndWaitTable();
       cy.contains('全').should('be.visible');
       cy.contains('件').should('be.visible');
       cy.contains('ページ').should('be.visible');
     });
-  });
 
-  describe('ユーザーID で検索できる', () => {
-    beforeEach(() => {
-      visitAuditLogPage('admin');
-    });
-
-    it('ユーザーID を入力して検索すると結果が絞り込まれる', () => {
+    it('ユーザーID で検索できる', () => {
       cy.get(TEST_CONFIG.selectors.userIdInput).type('admin');
-      clickSearchAndWaitTable();
+      cy.contains('button', '検索').click();
+      cy.get(TEST_CONFIG.selectors.table, { timeout: 15000 }).should('be.visible');
       cy.get(TEST_CONFIG.selectors.table).should('contain', 'admin');
-    });
-  });
-
-  describe('アクション種別で検索できる', () => {
-    beforeEach(() => {
-      visitAuditLogPage('admin');
     });
 
     it('ログインでフィルタすると結果が絞り込まれる', () => {
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).select('LOGIN');
-      clickSearchAndWaitTable();
-      cy.get(TEST_CONFIG.selectors.table).should('contain', 'ログイン');
+      searchByAction('LOGIN', 'ログイン');
+      cy.get(TEST_CONFIG.selectors.table).should('contain', 'ログイン成功');
     });
 
     it('承認でフィルタすると結果が絞り込まれる', () => {
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).select('APPROVE');
-      clickSearchAndWaitTable();
-      cy.get(TEST_CONFIG.selectors.table).should('contain', '承認');
-    });
-  });
-
-  describe('ログイン履歴が確認できる', () => {
-    beforeEach(() => {
-      visitAuditLogPage('admin');
-    });
-
-    it('ログインの監査ログが表示される', () => {
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).select('LOGIN');
-      clickSearchAndWaitTable();
-      cy.get(TEST_CONFIG.selectors.table).should('contain', 'ログイン');
-      cy.get(TEST_CONFIG.selectors.table).should('contain', 'ログイン成功');
-    });
-  });
-
-  describe('データ変更履歴が確認できる', () => {
-    beforeEach(() => {
-      visitAuditLogPage('admin');
+      searchByAction('APPROVE', '承認');
     });
 
     it('作成の監査ログが表示される', () => {
-      cy.get(TEST_CONFIG.selectors.actionTypeSelect).select('CREATE');
-      clickSearchAndWaitTable();
-      cy.get(TEST_CONFIG.selectors.table).should('contain', '作成');
+      searchByAction('CREATE', '作成');
       cy.get(TEST_CONFIG.selectors.table).should('contain', '仕訳伝票');
-    });
-  });
-
-  describe('日付範囲で検索できる', () => {
-    beforeEach(() => {
-      visitAuditLogPage('admin');
     });
 
     it('日付範囲を指定して検索できる', () => {
       cy.get(TEST_CONFIG.selectors.dateFromInput).type('2026-01-01');
       cy.get(TEST_CONFIG.selectors.dateToInput).type('2026-12-31');
-      clickSearchAndWaitTable();
+      cy.contains('button', '検索').click();
+      cy.get(TEST_CONFIG.selectors.table, { timeout: 15000 }).should('be.visible');
     });
   });
 
