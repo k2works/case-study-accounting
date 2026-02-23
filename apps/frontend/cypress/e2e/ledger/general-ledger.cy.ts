@@ -257,6 +257,29 @@ describe('US-LDG-001: 総勘定元帳照会', () => {
     });
   });
 
+  describe('データダウンロード', () => {
+    beforeEach(() => {
+      cy.login('admin', 'Password123!');
+      cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+      cy.visit('/general-ledger');
+      cy.get('[data-testid="general-ledger-page"]', { timeout: 15000 }).should('be.visible');
+    });
+
+    it('CSV/Excel でダウンロードできる', () => {
+      // Given: 勘定科目を選択してデータが表示されている
+      cy.get('#general-ledger-filter-account option', { timeout: 15000 }).should(
+        'have.length.greaterThan',
+        1
+      );
+      cy.get('#general-ledger-filter-account').select(1);
+      cy.get('[data-testid="general-ledger-summary"]', { timeout: 15000 }).should('be.visible');
+
+      // Then: エクスポートボタンが表示される
+      cy.contains('button', 'CSV').should('be.visible');
+      cy.contains('button', 'Excel').should('be.visible');
+    });
+  });
+
   describe('アクセス制御', () => {
     it('一般ユーザーも総勘定元帳ページにアクセスできる', () => {
       // Given: 一般ユーザーでログイン

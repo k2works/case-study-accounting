@@ -717,6 +717,16 @@ const applyAmountAndDescriptionFilters = (
  * 仕訳関連のハンドラー
  */
 export const journalEntryHandlers = [
+  // 仕訳エクスポート
+  http.get(/\/journal-entries\/export/, () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=journal-entries.xlsx',
+      },
+    });
+  }),
   // 仕訳検索 (US-JNL-005) - must be before the list handler
   http.get(/\/journal-entries\/search/, ({ request }) => {
     const url = new URL(request.url);
@@ -1154,6 +1164,15 @@ const buildDailyBalanceResult = (
  * 総勘定元帳関連のハンドラー
  */
 export const generalLedgerHandlers = [
+  http.get('*/general-ledger/export', () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=general-ledger.xlsx',
+      },
+    });
+  }),
   http.get('*/general-ledger', ({ request }) => {
     const url = new URL(request.url);
     const accountId = parseInt(url.searchParams.get('accountId') || '0', 10);
@@ -1437,6 +1456,15 @@ const buildCategorySubtotals = (entries: TrialBalanceEntry[]): CategorySubtotal[
  * 残高試算表関連のハンドラー
  */
 export const trialBalanceHandlers = [
+  http.get('*/trial-balance/export', () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=trial-balance.xlsx',
+      },
+    });
+  }),
   http.get('*/trial-balance', ({ request }) => {
     const url = new URL(request.url);
     const dateParam = url.searchParams.get('date');

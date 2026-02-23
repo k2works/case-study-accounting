@@ -62,14 +62,26 @@ export const getBalanceSheet = async (
   };
 };
 
-export const exportBalanceSheet = async (format: 'pdf' | 'excel', date?: string): Promise<void> => {
+export type BalanceSheetExportFormat = 'csv' | 'excel' | 'pdf';
+
+export const exportBalanceSheet = async (
+  format: BalanceSheetExportFormat,
+  date?: string
+): Promise<void> => {
   const params = new URLSearchParams();
   params.append('format', format);
   if (date) {
     params.append('date', date);
   }
-  const filename = format === 'pdf' ? 'balance-sheet.pdf' : 'balance-sheet.xlsx';
-  await downloadExport(`/api/balance-sheet/export?${params.toString()}`, filename);
+  const extMap: Record<BalanceSheetExportFormat, string> = {
+    csv: 'csv',
+    excel: 'xlsx',
+    pdf: 'pdf',
+  };
+  await downloadExport(
+    `/api/balance-sheet/export?${params.toString()}`,
+    `balance-sheet.${extMap[format]}`
+  );
 };
 
 export const getBalanceSheetErrorMessage = (error: unknown): string =>

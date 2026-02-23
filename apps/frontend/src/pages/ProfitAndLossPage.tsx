@@ -116,7 +116,11 @@ const useProfitAndLossFetch = () => {
   };
 };
 
-const handleExport = (format: 'pdf' | 'excel', dateFrom: string | null, dateTo: string | null) => {
+const handleExport = (
+  format: 'csv' | 'pdf' | 'excel',
+  dateFrom: string | null,
+  dateTo: string | null
+) => {
   void exportProfitAndLoss(format, dateFrom ?? undefined, dateTo ?? undefined);
 };
 
@@ -132,6 +136,9 @@ const ExportButtons: React.FC<{ dateFrom: string | null; dateTo: string | null }
   dateTo,
 }) => (
   <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+    <Button variant="secondary" onClick={() => handleExport('csv', dateFrom, dateTo)}>
+      CSV
+    </Button>
     <Button variant="secondary" onClick={() => handleExport('excel', dateFrom, dateTo)}>
       Excel
     </Button>

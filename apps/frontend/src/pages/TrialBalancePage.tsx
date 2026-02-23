@@ -1,13 +1,18 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useRequireAuth } from '../hooks/useRequireAuth';
-import { getTrialBalance, getTrialBalanceErrorMessage } from '../api/getTrialBalance';
+import {
+  getTrialBalance,
+  getTrialBalanceErrorMessage,
+  exportTrialBalance,
+} from '../api/getTrialBalance';
 import type {
   TrialBalanceEntry,
   TrialBalanceSearchParams,
   GetTrialBalanceResult,
   CategorySubtotal,
+  TrialBalanceExportFormat,
 } from '../api/getTrialBalance';
-import { MainLayout, Loading, ErrorMessage } from '../views/common';
+import { MainLayout, Loading, ErrorMessage, Button } from '../views/common';
 import { TrialBalanceFilter } from '../views/ledger/TrialBalanceFilter';
 import type { TrialBalanceFilterValues } from '../views/ledger/TrialBalanceFilter';
 import { TrialBalanceSummary } from '../views/ledger/TrialBalanceSummary';
@@ -99,6 +104,7 @@ interface TrialBalancePageContentProps {
   filterValues: TrialBalanceFilterValues;
   onFilterChange: (values: TrialBalanceFilterValues) => void;
   onSearch: () => void;
+  onExport: (format: TrialBalanceExportFormat) => void;
 }
 
 const TrialBalancePageContent: React.FC<TrialBalancePageContentProps> = ({
@@ -106,6 +112,7 @@ const TrialBalancePageContent: React.FC<TrialBalancePageContentProps> = ({
   filterValues,
   onFilterChange,
   onSearch,
+  onExport,
 }) => {
   return (
     <div data-testid="trial-balance-page">
@@ -125,6 +132,17 @@ const TrialBalancePageContent: React.FC<TrialBalancePageContentProps> = ({
               difference={state.difference}
               categorySubtotals={state.categorySubtotals}
             />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <Button variant="secondary" onClick={() => onExport('csv')}>
+                CSV
+              </Button>
+              <Button variant="secondary" onClick={() => onExport('excel')}>
+                Excel
+              </Button>
+              <Button variant="secondary" onClick={() => onExport('pdf')}>
+                PDF
+              </Button>
+            </div>
             <TrialBalanceTable entries={state.entries} />
           </>
         )
@@ -136,6 +154,13 @@ const TrialBalancePageContent: React.FC<TrialBalancePageContentProps> = ({
 const TrialBalancePage: React.FC = () => {
   const authGuard = useRequireAuth(['ADMIN', 'MANAGER', 'USER']);
   const { state, filterValues, setFilterValues, handleSearch } = useTrialBalanceFetch();
+
+  const handleExport = useCallback(
+    (format: TrialBalanceExportFormat) => {
+      void exportTrialBalance(format, filterValues.date || undefined);
+    },
+    [filterValues]
+  );
 
   const breadcrumbs = useMemo(
     () => [{ label: 'ホーム' }, { label: '元帳・残高' }, { label: '残高試算表' }],
@@ -151,6 +176,7 @@ const TrialBalancePage: React.FC = () => {
         filterValues={filterValues}
         onFilterChange={setFilterValues}
         onSearch={handleSearch}
+        onExport={handleExport}
       />
     </MainLayout>
   );

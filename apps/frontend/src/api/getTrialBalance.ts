@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import { axiosInstance } from './axios-instance';
+import { downloadExport } from './statementShared';
 
 export interface TrialBalanceEntry {
   accountCode: string;
@@ -52,6 +53,28 @@ export const getTrialBalance = async (
     entries: data.entries ?? [],
     categorySubtotals: data.categorySubtotals ?? [],
   };
+};
+
+export type TrialBalanceExportFormat = 'csv' | 'excel' | 'pdf';
+
+export const exportTrialBalance = async (
+  format: TrialBalanceExportFormat,
+  date?: string
+): Promise<void> => {
+  const params = new URLSearchParams();
+  params.append('format', format);
+  if (date) {
+    params.append('date', date);
+  }
+  const extMap: Record<TrialBalanceExportFormat, string> = {
+    csv: 'csv',
+    excel: 'xlsx',
+    pdf: 'pdf',
+  };
+  await downloadExport(
+    `/api/trial-balance/export?${params.toString()}`,
+    `trial-balance.${extMap[format]}`
+  );
 };
 
 export const getTrialBalanceErrorMessage = (error: unknown): string => {

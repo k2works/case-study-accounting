@@ -281,6 +281,22 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     });
   });
 
+  describe('データダウンロード', () => {
+    beforeEach(() => {
+      cy.login('admin', 'Password123!');
+      cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+      cy.visitJournalEntryList();
+    });
+
+    it('CSV/Excel でダウンロードできる', () => {
+      // Given: 仕訳一覧ページが表示されている
+
+      // Then: エクスポートボタンが表示される
+      cy.contains('button', 'CSV').should('be.visible');
+      cy.contains('button', 'Excel').should('be.visible');
+    });
+  });
+
   describe('アクセス制御', () => {
     it('一般ユーザーも仕訳一覧ページにアクセスできる', () => {
       // Given: 一般ユーザーでログイン
