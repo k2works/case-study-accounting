@@ -89,7 +89,7 @@ import static org.mockito.Mockito.when;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("仕訳登録コントローラ")
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.ExcessiveImports"}) // テストクラスは多数のクラスを使用するため結合度が高くなる
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.ExcessiveImports", "PMD.TooManyFields"}) // テストクラスは多数のクラスを使用するため結合度が高くなる
 class JournalEntryControllerTest {
 
     private static final String CLIENT_HOST = "client-host";
@@ -134,6 +134,9 @@ class JournalEntryControllerTest {
     private UserRepository userRepository;
 
     @Mock
+    private com.example.accounting.application.service.JournalEntryExportService journalEntryExportService;
+
+    @Mock
     private HttpServletRequest httpServletRequest;
 
     private JournalEntryController journalEntryController;
@@ -154,7 +157,8 @@ class JournalEntryControllerTest {
                 confirmJournalEntryUseCase,
                 generateAutoJournalUseCase,
                 recordAuditLogUseCase,
-                userRepository
+                userRepository,
+                journalEntryExportService
         );
     }
 

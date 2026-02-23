@@ -64,6 +64,15 @@ public class BalanceSheetController {
                     .getOrElseGet(error -> ResponseEntity.internalServerError().build());
         }
 
+        if ("csv".equalsIgnoreCase(format)) {
+            return exportService.exportToCsv(result)
+                    .map(bytes -> ResponseEntity.ok()
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=balance-sheet.csv")
+                            .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                            .body(bytes))
+                    .getOrElseGet(error -> ResponseEntity.internalServerError().build());
+        }
+
         return exportService.exportToExcel(result)
                 .map(bytes -> ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=balance-sheet.xlsx")

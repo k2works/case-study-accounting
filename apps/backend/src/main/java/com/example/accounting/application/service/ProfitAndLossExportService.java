@@ -19,11 +19,29 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.List;
 
 @Service
 @SuppressWarnings("PMD.AvoidMutableCollectionInstantiation") // OpenPDF の Paragraph/Phrase は new 必須
 public class ProfitAndLossExportService extends AbstractStatementExportService {
+    private static final String[] CSV_HEADERS = {"区分", "科目コード", "科目名", "金額"};
+
+    public Try<byte[]> exportToCsv(GetProfitAndLossResult result) {
+        List<String[]> rows = new ArrayList<>();
+        for (ProfitAndLossSection section : result.sections()) {
+            rows.add(new String[]{section.sectionDisplayName(), "", "", ""});
+            section.entries().forEach(entry -> rows.add(new String[]{
+                    section.sectionDisplayName(),
+                    entry.accountCode(),
+                    entry.accountName(),
+                    entry.amount() == null ? "0" : entry.amount().toPlainString()
+            }));
+        }
+
+        return CsvExportHelper.writeCsv(CSV_HEADERS, rows);
+    }
 
     public Try<byte[]> exportToExcel(GetProfitAndLossResult result) {
         return Try.of(() -> {

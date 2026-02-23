@@ -12,6 +12,7 @@ import com.example.accounting.application.port.in.RecordAuditLogUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SubmitForApprovalUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
+import com.example.accounting.application.service.JournalEntryExportService;
 import com.example.accounting.application.port.in.RecordAuditLogUseCase.RecordAuditLogCommand;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
@@ -63,6 +64,8 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import org.slf4j.Logger;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -103,6 +106,7 @@ public class JournalEntryController {
     private final GenerateAutoJournalUseCase generateAutoJournalUseCase;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
     private final UserRepository userRepository;
+    private final JournalEntryExportService journalEntryExportService;
 
     @SuppressWarnings("java:S107") // コントローラは複数のユースケースを統合するため引数が多い
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
@@ -117,7 +121,8 @@ public class JournalEntryController {
                                   ConfirmJournalEntryUseCase confirmJournalEntryUseCase,
                                   GenerateAutoJournalUseCase generateAutoJournalUseCase,
                                   RecordAuditLogUseCase recordAuditLogUseCase,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  JournalEntryExportService journalEntryExportService) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
         this.getJournalEntryUseCase = getJournalEntryUseCase;
@@ -131,6 +136,7 @@ public class JournalEntryController {
         this.generateAutoJournalUseCase = generateAutoJournalUseCase;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
         this.userRepository = userRepository;
+        this.journalEntryExportService = journalEntryExportService;
     }
 
     /**
@@ -232,6 +238,41 @@ public class JournalEntryController {
         );
         GetJournalEntriesResult result = getJournalEntriesUseCase.execute(query);
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 仕訳一覧エクスポート
+     */
+    @Operation(summary = "仕訳一覧エクスポート", description = "仕訳一覧を CSV または Excel 形式でエクスポートします")
+    @ApiResponse(responseCode = "200", description = "エクスポート成功")
+    @GetMapping("/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    public ResponseEntity<byte[]> exportJournalEntries(
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) LocalDate dateFrom,
+            @RequestParam(required = false) LocalDate dateTo,
+            @RequestParam(defaultValue = "excel") String format
+    ) {
+        GetJournalEntriesQuery query = new GetJournalEntriesQuery(
+                0, 10000, status != null ? status : List.of(), dateFrom, dateTo);
+        GetJournalEntriesResult result = getJournalEntriesUseCase.execute(query);
+
+        if ("csv".equalsIgnoreCase(format)) {
+            return journalEntryExportService.exportToCsv(result)
+                    .map(bytes -> ResponseEntity.ok()
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=journal-entries.csv")
+                            .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                            .body(bytes))
+                    .getOrElseGet(error -> ResponseEntity.internalServerError().build());
+        }
+
+        return journalEntryExportService.exportToExcel(result)
+                .map(bytes -> ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=journal-entries.xlsx")
+                        .contentType(MediaType.parseMediaType(
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                        .body(bytes))
+                .getOrElseGet(error -> ResponseEntity.internalServerError().build());
     }
 
     /**

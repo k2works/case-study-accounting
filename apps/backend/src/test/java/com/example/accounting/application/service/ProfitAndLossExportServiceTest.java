@@ -89,6 +89,22 @@ class ProfitAndLossExportServiceTest {
     }
 
     @Nested
+    @DisplayName("CSV エクスポート")
+    class ExportToCsv {
+
+        @Test
+        @DisplayName("全セクションを含む結果を CSV 形式でエクスポートできる")
+        void shouldExportFullResultToCsv() {
+            GetProfitAndLossResult result = createTestResult(
+                    LocalDate.of(2026, 4, 1), LocalDate.of(2027, 3, 31));
+
+            byte[] bytes = service.exportToCsv(result).get();
+
+            assertThat(bytes).isNotEmpty();
+        }
+    }
+
+    @Nested
     @DisplayName("PDF エクスポート")
     class ExportToPdf {
 
