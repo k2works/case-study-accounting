@@ -116,16 +116,12 @@ describe('US-SYS-001: 監査ログ照会', () => {
       cy.get(TEST_CONFIG.selectors.filter).should('be.visible');
     });
 
-    it('経理責任者は監査ログページにアクセスできない', () => {
-      cy.visitLedgerPage('manager', 'Password123!', '/', 'dashboard');
-      cy.visit(TEST_CONFIG.page.path);
-      cy.url().should('not.include', '/system/audit');
-    });
-
-    it('一般ユーザーは監査ログページにアクセスできない', () => {
-      cy.visitLedgerPage('user', 'Password123!', '/', 'dashboard');
-      cy.visit(TEST_CONFIG.page.path);
-      cy.url().should('not.include', '/system/audit');
+    ([['manager', '経理責任者'], ['user', '一般ユーザー']] as const).forEach(([role, label]) => {
+      it(`${label}は監査ログページにアクセスできない`, () => {
+        cy.visitLedgerPage(role, 'Password123!', '/', 'dashboard');
+        cy.visit(TEST_CONFIG.page.path);
+        cy.url().should('not.include', '/system/audit');
+      });
     });
 
     it('未認証ユーザーは監査ログページにアクセスできない', () => {
