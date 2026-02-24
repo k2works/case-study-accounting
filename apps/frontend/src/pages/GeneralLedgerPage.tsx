@@ -130,6 +130,7 @@ const useGeneralLedgerFetch = () => {
 
   const handleItemsPerPageChange = useCallback(
     (newSize: number) => {
+      setState((prev) => ({ ...prev, size: newSize, page: 0 }));
       const params = buildSearchParams(0, newSize);
       if (params) {
         void fetchGeneralLedger(params);
