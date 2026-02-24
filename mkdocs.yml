@@ -91,6 +91,8 @@ nav:
           - v1.0 MVP: development/release_notes-v1.0.md
           - v2.0 機能拡張版: development/release_notes-v2.0.md
           - v3.0 完成版: development/release_notes-v3.0.md
+      - リリース報告書:
+          - Release 3.0 報告書: development/release_3_report.md
       - イテレーション計画:
           - イテレーション1: development/iteration_plan-1.md
           - イテレーション2: development/iteration_plan-2.md
