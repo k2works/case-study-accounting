@@ -32,7 +32,7 @@
 | IT12-002 | SonarQube Quality Gate 最終確認 | 2 | 必須 | [ ] |
 | IT12-003 | E2E テスト安定性パターン標準化 | 1 | 重要 | [ ] |
 | IT12-004 | リリースノート v3.0 作成 | 1 | 必須 | [ ] |
-| IT12-005 | GitHub Milestone・Project 最終同期 | 1 | 必須 | [ ] |
+| IT12-005 | GitHub Milestone・Project 最終同期 | 1 | 必須 | [x] |
 | IT12-006 | リリース完了チェックリスト運用 | 1 | 重要 | [ ] |
 | IT12-007 | ドキュメント最終整備 | 1 | 重要 | [ ] |
 | **合計** | | **10** | | |
@@ -56,8 +56,8 @@
 - [ ] SonarQube Quality Gate パス（明示的確認）
 - [ ] テストカバレッジ 80% 以上
 - [ ] リリースノート v3.0 作成完了
-- [ ] GitHub Milestone「リリース 3.0 完成版」クローズ
-- [ ] GitHub Project Board 全アイテム Done
+- [x] GitHub Milestone「リリース 3.0 完成版」クローズ
+- [x] GitHub Project Board 全アイテム Done（35/35）
 - [ ] リリース完了チェックリスト全項目クリア
 
 ---
@@ -143,9 +143,9 @@
 
 | タスクID | タスク名 | 理想時間 | 担当 | 状態 |
 |----------|---------|---------|------|------|
-| IT12-005-01 | Milestone「リリース 3.0 完成版」クローズ | 0.5h | Claude | [ ] |
-| IT12-005-02 | Project Board 全アイテムの Status を Done に更新 | 1h | Claude | [ ] |
-| IT12-005-03 | 未クローズ Issue の確認・整理 | 0.5h | Claude | [ ] |
+| IT12-005-01 | Milestone「リリース 3.0 完成版」クローズ | 0.5h | Claude | [x] |
+| IT12-005-02 | Project Board 全アイテムの Status を Done に更新 | 1h | Claude | [x] |
+| IT12-005-03 | 未クローズ Issue の確認・整理 | 0.5h | Claude | [x] |
 | | **小計** | **2h** | | |
 
 ---
@@ -283,8 +283,8 @@ gantt
 ### リリース準備（IT-12 で実施）
 
 - [ ] リリースノート v3.0 作成
-- [ ] GitHub Milestone「リリース 3.0 完成版」クローズ
-- [ ] GitHub Project Board 最終同期
+- [x] GitHub Milestone「リリース 3.0 完成版」クローズ
+- [x] GitHub Project Board 最終同期（35/35 Done）
 - [ ] 全ドキュメント最終整備
 
 ### イテレーション 12 の位置づけ
@@ -297,15 +297,15 @@ gantt
 
 ### プロジェクト完了時の確認項目
 
-- [ ] 全 34 ストーリー（155SP）の受入条件を満たしている
-- [ ] 全テスト（バックエンド + フロントエンド + E2E）がパス
+- [x] 全 34 ストーリー（155SP）の受入条件を満たしている
+- [x] 全テスト（バックエンド + フロントエンド + E2E）がパス
 - [ ] SonarQube Quality Gate パス（明示的確認済み）
-- [ ] テストカバレッジ 80% 以上
+- [x] テストカバレッジ 80% 以上（LINE 95.4%, BRANCH 84.4%）
 - [ ] コードがコミット・プッシュ済み
 - [ ] 全ドキュメント（12 計画 + 12 ふりかえり + リリース計画）が最新
-- [ ] 全 GitHub Issue（35 件）がクローズ済み
-- [ ] GitHub Project Board 全アイテム Done
-- [ ] 全 GitHub Milestone がクローズ済み
+- [x] 全 GitHub Issue（34 件）がクローズ済み
+- [x] GitHub Project Board 全アイテム Done（35/35）
+- [x] 全 GitHub Milestone がクローズ済み（1.0, 2.0, 3.0）
 - [ ] release_plan.md のベロシティ・バーンダウンが最終更新済み
 - [ ] docs/index.md と mkdocs.yml が最新
 - [ ] リリースノート v1.0, v2.0, v3.0 作成済み
@@ -338,6 +338,7 @@ gantt
 |------|---------|--------|
 | 2026-02-24 | 初版作成 | Claude Opus 4.6 |
 | 2026-02-24 | IT12-001 完了（全テストパス、E2E 安定性修正 1 件） | Claude Opus 4.6 |
+| 2026-02-24 | IT12-005 完了（GitHub Milestone クローズ、Project Board 全 Done 確認） | Claude Opus 4.6 |
 
 ---
 
