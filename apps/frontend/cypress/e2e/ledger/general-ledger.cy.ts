@@ -31,6 +31,13 @@ const TEST_CONFIG = {
 
 const visitGeneralLedgerPage = createVisitFunction(TEST_CONFIG);
 
+/** 照会ボタンをクリックしてテーブル表示を待つ */
+const clickSearchAndWaitForTable = () => {
+  cy.contains('button', '照会').click();
+  cy.wait(1000);
+  cy.get('[data-testid="general-ledger-table"]', { timeout: 15000 }).should('be.visible');
+};
+
 /** 勘定科目を選択してデータが表示されるのを待つ */
 const selectAccountAndWait = () => {
   cy.get('#general-ledger-filter-account option', { timeout: 15000 }).should(
@@ -104,25 +111,19 @@ describe('US-LDG-001: 総勘定元帳照会', () => {
       selectAccountAndWait();
       cy.get('#general-ledger-filter-date-from').clear().type('2024-04-01');
       cy.get('#general-ledger-filter-date-to').clear().type('2024-04-30');
-      cy.contains('button', '照会').click();
-      cy.wait(1000);
-      cy.get('[data-testid="general-ledger-table"]', { timeout: 15000 }).should('be.visible');
+      clickSearchAndWaitForTable();
     });
 
     it('開始日のみ指定してフィルタリングできる', () => {
       selectAccountAndWait();
       cy.get('#general-ledger-filter-date-from').clear().type('2024-01-01');
-      cy.contains('button', '照会').click();
-      cy.wait(1000);
-      cy.get('[data-testid="general-ledger-table"]', { timeout: 15000 }).should('be.visible');
+      clickSearchAndWaitForTable();
     });
 
     it('終了日のみ指定してフィルタリングできる', () => {
       selectAccountAndWait();
       cy.get('#general-ledger-filter-date-to').clear().type('2024-12-31');
-      cy.contains('button', '照会').click();
-      cy.wait(1000);
-      cy.get('[data-testid="general-ledger-table"]', { timeout: 15000 }).should('be.visible');
+      clickSearchAndWaitForTable();
     });
   });
 
