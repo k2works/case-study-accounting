@@ -1,13 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getGeneralLedger, getGeneralLedgerErrorMessage } from '../api/getGeneralLedger';
+import {
+  getGeneralLedger,
+  getGeneralLedgerErrorMessage,
+  exportGeneralLedger,
+} from '../api/getGeneralLedger';
 import type {
   GeneralLedgerEntry,
   GeneralLedgerSearchParams,
   GetGeneralLedgerResult,
+  GeneralLedgerExportFormat,
 } from '../api/getGeneralLedger';
-import { MainLayout, Loading, ErrorMessage, Pagination } from '../views/common';
+import { MainLayout, Loading, ErrorMessage, Pagination, Button } from '../views/common';
 import { GeneralLedgerFilter } from '../views/ledger/GeneralLedgerFilter';
 import type { GeneralLedgerFilterValues } from '../views/ledger/GeneralLedgerFilter';
 import { GeneralLedgerTable } from '../views/ledger/GeneralLedgerTable';
@@ -125,6 +130,7 @@ const useGeneralLedgerFetch = () => {
 
   const handleItemsPerPageChange = useCallback(
     (newSize: number) => {
+      setState((prev) => ({ ...prev, size: newSize, page: 0 }));
       const params = buildSearchParams(0, newSize);
       if (params) {
         void fetchGeneralLedger(params);
@@ -177,6 +183,7 @@ interface GeneralLedgerPageContentProps {
   onSearch: () => void;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (size: number) => void;
+  onExport: (format: GeneralLedgerExportFormat) => void;
 }
 
 const GeneralLedgerPageContent: React.FC<GeneralLedgerPageContentProps> = ({
@@ -186,6 +193,7 @@ const GeneralLedgerPageContent: React.FC<GeneralLedgerPageContentProps> = ({
   onSearch,
   onPageChange,
   onItemsPerPageChange,
+  onExport,
 }) => {
   const hasAccount = Boolean(filterValues.accountId);
   const shouldShowLedger = hasAccount && (state.entries.length > 0 || !state.isLoading);
@@ -208,6 +216,14 @@ const GeneralLedgerPageContent: React.FC<GeneralLedgerPageContentProps> = ({
               creditTotal={state.creditTotal}
               closingBalance={state.closingBalance}
             />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <Button variant="secondary" onClick={() => onExport('csv')}>
+                CSV
+              </Button>
+              <Button variant="secondary" onClick={() => onExport('excel')}>
+                Excel
+              </Button>
+            </div>
             <GeneralLedgerTable entries={state.entries} />
             <Pagination
               currentPage={state.page + 1}
@@ -235,6 +251,19 @@ const GeneralLedgerPage: React.FC = () => {
     handleItemsPerPageChange,
   } = useGeneralLedgerFetch();
 
+  const handleExport = useCallback(
+    (format: GeneralLedgerExportFormat) => {
+      if (!filterValues.accountId) return;
+      void exportGeneralLedger(
+        format,
+        Number(filterValues.accountId),
+        filterValues.dateFrom || undefined,
+        filterValues.dateTo || undefined
+      );
+    },
+    [filterValues]
+  );
+
   const breadcrumbs = useMemo(
     () => [{ label: 'ホーム' }, { label: '元帳・残高' }, { label: '総勘定元帳' }],
     []
@@ -261,6 +290,7 @@ const GeneralLedgerPage: React.FC = () => {
         onSearch={handleSearch}
         onPageChange={handlePageChange}
         onItemsPerPageChange={handleItemsPerPageChange}
+        onExport={handleExport}
       />
     </MainLayout>
   );

@@ -150,7 +150,7 @@ describe('US-FS-001: 貸借対照表表示', () => {
     });
   });
 
-  describe('PDF/Excel でダウンロードできる', () => {
+  describe('CSV/Excel/PDF でダウンロードできる', () => {
     beforeEach(() => {
       visitBalanceSheetPage();
     });
@@ -158,6 +158,7 @@ describe('US-FS-001: 貸借対照表表示', () => {
     it('表示後にエクスポートボタンが表示される', () => {
       cy.contains('button', '表示').click();
       cy.get(TEST_CONFIG.selectors.summary, { timeout: 15000 }).should('be.visible');
+      cy.contains('button', 'CSV').should('be.visible');
       cy.contains('button', 'Excel').should('be.visible');
       cy.contains('button', 'PDF').should('be.visible');
     });

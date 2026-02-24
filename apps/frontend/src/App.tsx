@@ -24,6 +24,7 @@ import TrialBalancePage from './pages/TrialBalancePage';
 import BalanceSheetPage from './pages/BalanceSheetPage';
 import ProfitAndLossPage from './pages/ProfitAndLossPage';
 import FinancialAnalysisPage from './pages/FinancialAnalysisPage';
+import AuditLogPage from './pages/AuditLogPage';
 import UserEditPage from './pages/UserEditPage';
 import { Loading } from './views/common';
 
@@ -280,6 +281,14 @@ export const App = () => {
           <ManagerRoute>
             <FinancialAnalysisPage />
           </ManagerRoute>
+        }
+      />
+      <Route
+        path="/system/audit"
+        element={
+          <AdminRoute>
+            <AuditLogPage />
+          </AdminRoute>
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />

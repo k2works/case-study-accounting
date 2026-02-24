@@ -4,8 +4,12 @@ import { useAuth } from '../hooks/useAuth';
 import {
   searchJournalEntries,
   searchJournalEntriesErrorMessage,
+  exportJournalEntries,
 } from '../api/searchJournalEntries';
-import type { SearchJournalEntriesParams } from '../api/searchJournalEntries';
+import type {
+  SearchJournalEntriesParams,
+  JournalEntryExportFormat,
+} from '../api/searchJournalEntries';
 import type { JournalEntrySummary, GetJournalEntriesResult } from '../api/getJournalEntries';
 import { MainLayout, Loading, SuccessNotification, ErrorMessage, Button } from '../views/common';
 import { JournalEntryList } from '../views/journal/JournalEntryList';
@@ -189,7 +193,21 @@ interface JournalEntryListContentProps {
   onDismissSuccess: () => void;
   onCreateNew: () => void;
   canCreate: boolean;
+  onExport: (format: JournalEntryExportFormat) => void;
 }
+
+const ExportButtons: React.FC<{ onExport: (format: JournalEntryExportFormat) => void }> = ({
+  onExport,
+}) => (
+  <div style={{ display: 'flex', gap: '8px' }}>
+    <Button variant="secondary" onClick={() => onExport('csv')}>
+      CSV
+    </Button>
+    <Button variant="secondary" onClick={() => onExport('excel')}>
+      Excel
+    </Button>
+  </div>
+);
 
 const JournalEntryListContent: React.FC<JournalEntryListContentProps> = ({
   state,
@@ -204,6 +222,7 @@ const JournalEntryListContent: React.FC<JournalEntryListContentProps> = ({
   onDismissSuccess,
   onCreateNew,
   canCreate,
+  onExport,
 }) => {
   const shouldShowList = !state.isLoading || state.entries.length > 0;
   const showInitialLoading = state.isLoading && state.entries.length === 0;
@@ -220,11 +239,14 @@ const JournalEntryListContent: React.FC<JournalEntryListContentProps> = ({
         }}
       >
         <h1>仕訳一覧</h1>
-        {canCreate && (
-          <Button variant="primary" onClick={onCreateNew}>
-            新規作成
-          </Button>
-        )}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <ExportButtons onExport={onExport} />
+          {canCreate && (
+            <Button variant="primary" onClick={onCreateNew}>
+              新規作成
+            </Button>
+          )}
+        </div>
       </div>
       {hasSuccess && (
         <div style={{ marginBottom: '16px' }}>
@@ -269,6 +291,16 @@ const JournalEntryListPage: React.FC = () => {
     return state?.successMessage ?? null;
   });
 
+  const handleExport = useCallback(
+    (format: JournalEntryExportFormat) => {
+      const status = filterValues.status ? [filterValues.status] : undefined;
+      const dateFrom = filterValues.dateFrom || undefined;
+      const dateTo = filterValues.dateTo || undefined;
+      void exportJournalEntries(format, status, dateFrom, dateTo);
+    },
+    [filterValues]
+  );
+
   const breadcrumbs = useMemo(
     () => [{ label: 'ホーム' }, { label: '仕訳管理' }, { label: '仕訳一覧' }],
     []
@@ -302,6 +334,7 @@ const JournalEntryListPage: React.FC = () => {
         onDismissSuccess={() => setSuccessMessage(null)}
         onCreateNew={() => navigate('/journal/entries/new')}
         canCreate={hasRole('USER')}
+        onExport={handleExport}
       />
     </MainLayout>
   );

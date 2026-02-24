@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import { axiosInstance } from './axios-instance';
+import { downloadExport } from './statementShared';
 import type { GetJournalEntriesResult } from './getJournalEntries';
 
 export interface SearchJournalEntriesParams {
@@ -65,6 +66,32 @@ export const searchJournalEntries = async (
     ...data,
     content: data.content ?? [],
   };
+};
+
+export type JournalEntryExportFormat = 'csv' | 'excel';
+
+export const exportJournalEntries = async (
+  format: JournalEntryExportFormat,
+  status?: string[],
+  dateFrom?: string,
+  dateTo?: string
+): Promise<void> => {
+  const params = new URLSearchParams();
+  params.append('format', format);
+  if (status && status.length > 0) {
+    status.forEach((s) => params.append('status', s));
+  }
+  if (dateFrom) {
+    params.append('dateFrom', dateFrom);
+  }
+  if (dateTo) {
+    params.append('dateTo', dateTo);
+  }
+  const ext = format === 'csv' ? 'csv' : 'xlsx';
+  await downloadExport(
+    `/api/journal-entries/export?${params.toString()}`,
+    `journal-entries.${ext}`
+  );
 };
 
 export const searchJournalEntriesErrorMessage = (error: unknown): string => {
