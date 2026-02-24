@@ -118,6 +118,7 @@ nav:
           - イテレーション9: development/retrospective-9.md
           - イテレーション10: development/retrospective-10.md
           - イテレーション11: development/retrospective-11.md
+          - イテレーション12: development/retrospective-12.md
   - 運用:
       - 開発環境解説: operation/dev_env.md
       - 開発コンテナ構築手順書: operation/dev_container.md
