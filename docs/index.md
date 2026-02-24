@@ -53,6 +53,7 @@
 
 - [リリースノート v1.0 MVP](./development/release_notes-v1.0.md) - リリース 1.0 MVP の変更内容
 - [リリースノート v2.0 機能拡張版](./development/release_notes-v2.0.md) - リリース 2.0 機能拡張版の変更内容
+- [リリースノート v3.0 完成版](./development/release_notes-v3.0.md) - リリース 3.0 完成版の変更内容
 
 ### イテレーション
 
