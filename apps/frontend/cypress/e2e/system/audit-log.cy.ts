@@ -61,10 +61,11 @@ describe('US-SYS-001: 監査ログ照会', () => {
     });
 
     it('アクション種別のドロップダウンに選択肢がある', () => {
-      const select = cy.get(TEST_CONFIG.selectors.actionTypeSelect);
-      select.find('option').should('have.length.greaterThan', 1);
+      cy.get(TEST_CONFIG.selectors.actionTypeSelect)
+        .find('option')
+        .should('have.length.greaterThan', 1);
       ['すべて', 'ログイン', 'ログアウト', '作成', '承認'].forEach((label) => {
-        select.contains('option', label).should('exist');
+        cy.get(TEST_CONFIG.selectors.actionTypeSelect).contains('option', label).should('exist');
       });
     });
 
