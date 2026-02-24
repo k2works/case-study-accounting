@@ -157,8 +157,9 @@ describe('US-LDG-001: 総勘定元帳照会', () => {
     it('表示件数を変更できる', () => {
       selectAccountAndWait();
       cy.get('.pagination', { timeout: 15000 }).should('be.visible');
-      cy.get('.pagination__select').should('be.visible').select('10');
-      cy.wait(1000);
+      // select 要素が安定するのを待ってから操作する（React 再レンダリング対策）
+      cy.get('.pagination__select', { timeout: 10000 }).should('be.visible');
+      cy.get('.pagination__select').select('10');
       cy.get('.pagination__select', { timeout: 10000 }).should('have.value', '10');
     });
   });
