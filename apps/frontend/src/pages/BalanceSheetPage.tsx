@@ -111,7 +111,7 @@ const useBalanceSheetFetch = () => {
   };
 };
 
-const handleExport = (format: 'pdf' | 'excel', date: string | null) => {
+const handleExport = (format: 'csv' | 'excel' | 'pdf', date: string | null) => {
   void exportBalanceSheet(format, date ?? undefined);
 };
 
@@ -124,6 +124,9 @@ interface BalanceSheetPageContentProps {
 
 const ExportButtons: React.FC<{ date: string | null }> = ({ date }) => (
   <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+    <Button variant="secondary" onClick={() => handleExport('csv', date)}>
+      CSV
+    </Button>
     <Button variant="secondary" onClick={() => handleExport('excel', date)}>
       Excel
     </Button>

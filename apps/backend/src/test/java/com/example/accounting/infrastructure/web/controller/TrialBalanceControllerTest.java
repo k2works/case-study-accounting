@@ -30,11 +30,14 @@ class TrialBalanceControllerTest {
     @Mock
     private GetTrialBalanceUseCase getTrialBalanceUseCase;
 
+    @Mock
+    private com.example.accounting.application.service.TrialBalanceExportService exportService;
+
     private TrialBalanceController controller;
 
     @BeforeEach
     void setUp() {
-        controller = new TrialBalanceController(getTrialBalanceUseCase);
+        controller = new TrialBalanceController(getTrialBalanceUseCase, exportService);
     }
 
     @Test

@@ -30,11 +30,14 @@ class GeneralLedgerControllerTest {
     @Mock
     private GetGeneralLedgerUseCase getGeneralLedgerUseCase;
 
+    @Mock
+    private com.example.accounting.application.service.GeneralLedgerExportService exportService;
+
     private GeneralLedgerController controller;
 
     @BeforeEach
     void setUp() {
-        controller = new GeneralLedgerController(getGeneralLedgerUseCase);
+        controller = new GeneralLedgerController(getGeneralLedgerUseCase, exportService);
     }
 
     @Test

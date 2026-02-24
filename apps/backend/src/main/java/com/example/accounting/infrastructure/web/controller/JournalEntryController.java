@@ -8,9 +8,12 @@ import com.example.accounting.application.port.in.GetJournalEntriesUseCase;
 import com.example.accounting.application.port.in.GenerateAutoJournalUseCase;
 import com.example.accounting.application.port.in.ApproveJournalEntryUseCase;
 import com.example.accounting.application.port.in.RejectJournalEntryUseCase;
+import com.example.accounting.application.port.in.RecordAuditLogUseCase;
 import com.example.accounting.application.port.in.SearchJournalEntriesUseCase;
 import com.example.accounting.application.port.in.SubmitForApprovalUseCase;
 import com.example.accounting.application.port.in.UpdateJournalEntryUseCase;
+import com.example.accounting.application.service.JournalEntryExportService;
+import com.example.accounting.application.port.in.RecordAuditLogUseCase.RecordAuditLogCommand;
 import com.example.accounting.application.port.in.query.GetJournalEntriesQuery;
 import com.example.accounting.application.port.in.query.SearchJournalEntriesQuery;
 import com.example.accounting.application.port.in.command.ApproveJournalEntryCommand;
@@ -31,6 +34,8 @@ import com.example.accounting.application.port.out.GenerateAutoJournalResult;
 import com.example.accounting.application.port.out.SubmitForApprovalResult;
 import com.example.accounting.application.port.out.UpdateJournalEntryResult;
 import com.example.accounting.application.port.out.UserRepository;
+import com.example.accounting.domain.model.audit.AuditAction;
+import com.example.accounting.domain.model.audit.EntityType;
 import com.example.accounting.domain.model.user.User;
 import com.example.accounting.domain.shared.OptimisticLockException;
 import com.example.accounting.infrastructure.web.dto.ApproveJournalEntryResponse;
@@ -52,11 +57,16 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
+import org.slf4j.Logger;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -81,6 +91,8 @@ import org.springframework.web.bind.annotation.RestController;
 @SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.ExcessiveImports"}) // コントローラは複数のユースケースを統合するため結合度が高くなる
 public class JournalEntryController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JournalEntryController.class);
+
     private final CreateJournalEntryUseCase createJournalEntryUseCase;
     private final UpdateJournalEntryUseCase updateJournalEntryUseCase;
     private final GetJournalEntryUseCase getJournalEntryUseCase;
@@ -92,7 +104,9 @@ public class JournalEntryController {
     private final RejectJournalEntryUseCase rejectJournalEntryUseCase;
     private final ConfirmJournalEntryUseCase confirmJournalEntryUseCase;
     private final GenerateAutoJournalUseCase generateAutoJournalUseCase;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
     private final UserRepository userRepository;
+    private final JournalEntryExportService journalEntryExportService;
 
     @SuppressWarnings("java:S107") // コントローラは複数のユースケースを統合するため引数が多い
     public JournalEntryController(CreateJournalEntryUseCase createJournalEntryUseCase,
@@ -106,7 +120,9 @@ public class JournalEntryController {
                                   RejectJournalEntryUseCase rejectJournalEntryUseCase,
                                   ConfirmJournalEntryUseCase confirmJournalEntryUseCase,
                                   GenerateAutoJournalUseCase generateAutoJournalUseCase,
-                                  UserRepository userRepository) {
+                                  RecordAuditLogUseCase recordAuditLogUseCase,
+                                  UserRepository userRepository,
+                                  JournalEntryExportService journalEntryExportService) {
         this.createJournalEntryUseCase = createJournalEntryUseCase;
         this.updateJournalEntryUseCase = updateJournalEntryUseCase;
         this.getJournalEntryUseCase = getJournalEntryUseCase;
@@ -118,7 +134,9 @@ public class JournalEntryController {
         this.rejectJournalEntryUseCase = rejectJournalEntryUseCase;
         this.confirmJournalEntryUseCase = confirmJournalEntryUseCase;
         this.generateAutoJournalUseCase = generateAutoJournalUseCase;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
         this.userRepository = userRepository;
+        this.journalEntryExportService = journalEntryExportService;
     }
 
     /**
@@ -147,7 +165,8 @@ public class JournalEntryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
     public ResponseEntity<CreateJournalEntryResponse> create(
             @Valid @RequestBody CreateJournalEntryRequest request,
-            Principal principal
+            Principal principal,
+            HttpServletRequest httpServletRequest
     ) {
         User user = userRepository.findByUsername(principal.getName())
                 .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
@@ -172,6 +191,14 @@ public class JournalEntryController {
         CreateJournalEntryResult result = createJournalEntryUseCase.execute(command);
 
         if (result.success()) {
+            recordAuditLogSafely(
+                    resolveUserId(principal, null),
+                    AuditAction.CREATE,
+                    EntityType.JOURNAL_ENTRY,
+                    String.valueOf(result.journalEntryId()),
+                    "仕訳伝票作成",
+                    httpServletRequest
+            );
             return ResponseEntity.ok(CreateJournalEntryResponse.success(
                     result.journalEntryId(),
                     result.journalDate(),
@@ -211,6 +238,41 @@ public class JournalEntryController {
         );
         GetJournalEntriesResult result = getJournalEntriesUseCase.execute(query);
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 仕訳一覧エクスポート
+     */
+    @Operation(summary = "仕訳一覧エクスポート", description = "仕訳一覧を CSV または Excel 形式でエクスポートします")
+    @ApiResponse(responseCode = "200", description = "エクスポート成功")
+    @GetMapping("/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    public ResponseEntity<byte[]> exportJournalEntries(
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) LocalDate dateFrom,
+            @RequestParam(required = false) LocalDate dateTo,
+            @RequestParam(defaultValue = "excel") String format
+    ) {
+        GetJournalEntriesQuery query = new GetJournalEntriesQuery(
+                0, 10000, status != null ? status : List.of(), dateFrom, dateTo);
+        GetJournalEntriesResult result = getJournalEntriesUseCase.execute(query);
+
+        if ("csv".equalsIgnoreCase(format)) {
+            return journalEntryExportService.exportToCsv(result)
+                    .map(bytes -> ResponseEntity.ok()
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=journal-entries.csv")
+                            .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                            .body(bytes))
+                    .getOrElseGet(error -> ResponseEntity.internalServerError().build());
+        }
+
+        return journalEntryExportService.exportToExcel(result)
+                .map(bytes -> ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=journal-entries.xlsx")
+                        .contentType(MediaType.parseMediaType(
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                        .body(bytes))
+                .getOrElseGet(error -> ResponseEntity.internalServerError().build());
     }
 
     /**
@@ -303,7 +365,8 @@ public class JournalEntryController {
     public ResponseEntity<UpdateJournalEntryResponse> update(
             @PathVariable Integer id,
             @Valid @RequestBody UpdateJournalEntryRequest request,
-            Principal principal
+            Principal principal,
+            HttpServletRequest httpServletRequest
     ) {
         List<UpdateJournalEntryCommand.JournalEntryLineInput> lines = request.lines().stream()
                 .map(line -> new UpdateJournalEntryCommand.JournalEntryLineInput(
@@ -326,6 +389,14 @@ public class JournalEntryController {
             UpdateJournalEntryResult result = updateJournalEntryUseCase.execute(command);
 
             if (result.success()) {
+                recordAuditLogSafely(
+                        resolveUserId(principal, null),
+                        AuditAction.UPDATE,
+                        EntityType.JOURNAL_ENTRY,
+                        String.valueOf(id),
+                        "仕訳伝票更新",
+                        httpServletRequest
+                );
                 return ResponseEntity.ok(UpdateJournalEntryResponse.success(
                         result.journalEntryId(),
                         result.journalDate(),
@@ -372,11 +443,21 @@ public class JournalEntryController {
     )
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<SubmitForApprovalResponse> submitForApproval(@PathVariable Integer id) {
+    public ResponseEntity<SubmitForApprovalResponse> submitForApproval(@PathVariable Integer id,
+                                                                       Principal principal,
+                                                                       HttpServletRequest httpServletRequest) {
         SubmitForApprovalCommand command = new SubmitForApprovalCommand(id);
         SubmitForApprovalResult result = submitForApprovalUseCase.execute(command);
 
         if (result.success()) {
+            recordAuditLogSafely(
+                    resolveUserId(principal, null),
+                    AuditAction.UPDATE,
+                    EntityType.JOURNAL_ENTRY,
+                    String.valueOf(id),
+                    "仕訳伝票承認依頼",
+                    httpServletRequest
+            );
             return ResponseEntity.ok(SubmitForApprovalResponse.success(
                     result.journalEntryId(),
                     result.status(),
@@ -415,11 +496,20 @@ public class JournalEntryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApproveJournalEntryResponse> approveJournalEntry(
             @PathVariable Integer id,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest httpServletRequest) {
         ApproveJournalEntryCommand command = new ApproveJournalEntryCommand(id, userDetails.getUsername());
         ApproveJournalEntryResult result = approveJournalEntryUseCase.execute(command);
 
         if (result.success()) {
+            recordAuditLogSafely(
+                    resolveUserId(null, userDetails),
+                    AuditAction.APPROVE,
+                    EntityType.JOURNAL_ENTRY,
+                    String.valueOf(id),
+                    "仕訳伝票承認",
+                    httpServletRequest
+            );
             return ResponseEntity.ok(ApproveJournalEntryResponse.success(
                     result.journalEntryId(),
                     result.status(),
@@ -460,11 +550,20 @@ public class JournalEntryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ConfirmJournalEntryResponse> confirmJournalEntry(
             @PathVariable Integer id,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest httpServletRequest) {
         ConfirmJournalEntryCommand command = new ConfirmJournalEntryCommand(id, userDetails.getUsername());
         ConfirmJournalEntryResult result = confirmJournalEntryUseCase.execute(command);
 
         if (result.success()) {
+            recordAuditLogSafely(
+                    resolveUserId(null, userDetails),
+                    AuditAction.CONFIRM,
+                    EntityType.JOURNAL_ENTRY,
+                    String.valueOf(id),
+                    "仕訳伝票確定",
+                    httpServletRequest
+            );
             return ResponseEntity.ok(ConfirmJournalEntryResponse.success(
                     result.journalEntryId(),
                     result.status(),
@@ -506,12 +605,21 @@ public class JournalEntryController {
     public ResponseEntity<RejectJournalEntryResponse> rejectJournalEntry(
             @PathVariable Integer id,
             @Valid @RequestBody RejectJournalEntryRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest httpServletRequest) {
         RejectJournalEntryCommand command = new RejectJournalEntryCommand(
                 id, userDetails.getUsername(), request.rejectionReason());
         RejectJournalEntryResult result = rejectJournalEntryUseCase.execute(command);
 
         if (result.success()) {
+            recordAuditLogSafely(
+                    resolveUserId(null, userDetails),
+                    AuditAction.REJECT,
+                    EntityType.JOURNAL_ENTRY,
+                    String.valueOf(id),
+                    "仕訳伝票差し戻し",
+                    httpServletRequest
+            );
             return ResponseEntity.ok(RejectJournalEntryResponse.success(
                     result.journalEntryId(),
                     result.status(),
@@ -554,11 +662,21 @@ public class JournalEntryController {
     )
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<DeleteJournalEntryResponse> delete(@PathVariable Integer id) {
+    public ResponseEntity<DeleteJournalEntryResponse> delete(@PathVariable Integer id,
+                                                             Principal principal,
+                                                             HttpServletRequest httpServletRequest) {
         DeleteJournalEntryCommand command = new DeleteJournalEntryCommand(id);
         DeleteJournalEntryResult result = deleteJournalEntryUseCase.execute(command);
 
         if (result.success()) {
+            recordAuditLogSafely(
+                    resolveUserId(principal, null),
+                    AuditAction.DELETE,
+                    EntityType.JOURNAL_ENTRY,
+                    String.valueOf(id),
+                    "仕訳伝票削除",
+                    httpServletRequest
+            );
             return ResponseEntity.ok(DeleteJournalEntryResponse.success("仕訳を削除しました"));
         }
 
@@ -591,7 +709,8 @@ public class JournalEntryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<GenerateAutoJournalResponse> generate(
             @Valid @RequestBody GenerateAutoJournalRequest request,
-            Principal principal
+            Principal principal,
+            HttpServletRequest httpServletRequest
     ) {
         User user = userRepository.findByUsername(principal.getName())
                 .getOrElseThrow(ex -> new RuntimeException("Data access error", ex))
@@ -608,6 +727,14 @@ public class JournalEntryController {
         GenerateAutoJournalResult result = generateAutoJournalUseCase.execute(command);
 
         if (result.success()) {
+            recordAuditLogSafely(
+                    resolveUserId(principal, null),
+                    AuditAction.CREATE,
+                    EntityType.JOURNAL_ENTRY,
+                    null,
+                    "自動仕訳生成",
+                    httpServletRequest
+            );
             return ResponseEntity.ok(GenerateAutoJournalResponse.success(
                     result.journalEntryId(),
                     result.journalDate(),
@@ -616,5 +743,37 @@ public class JournalEntryController {
             ));
         }
         return ResponseEntity.badRequest().body(GenerateAutoJournalResponse.failure(result.errorMessage()));
+    }
+
+    private String resolveUserId(Principal principal, UserDetails userDetails) {
+        if (principal != null) {
+            return principal.getName();
+        }
+        if (userDetails != null) {
+            return userDetails.getUsername();
+        }
+        return "system";
+    }
+
+    private void recordAuditLogSafely(String userId,
+                                      AuditAction actionType,
+                                      EntityType entityType,
+                                      String entityId,
+                                      String description,
+                                      HttpServletRequest httpServletRequest) {
+        try {
+            recordAuditLogUseCase.execute(
+                    new RecordAuditLogCommand(
+                            userId,
+                            actionType,
+                            entityType,
+                            entityId,
+                            description,
+                            httpServletRequest.getRemoteAddr()
+                    )
+            );
+        } catch (RuntimeException ex) {
+            LOGGER.warn("監査ログ記録に失敗しました。 userId={}, actionType={}", userId, actionType, ex);
+        }
     }
 }

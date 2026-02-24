@@ -717,6 +717,16 @@ const applyAmountAndDescriptionFilters = (
  * 仕訳関連のハンドラー
  */
 export const journalEntryHandlers = [
+  // 仕訳エクスポート
+  http.get(/\/journal-entries\/export/, () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=journal-entries.xlsx',
+      },
+    });
+  }),
   // 仕訳検索 (US-JNL-005) - must be before the list handler
   http.get(/\/journal-entries\/search/, ({ request }) => {
     const url = new URL(request.url);
@@ -1154,6 +1164,15 @@ const buildDailyBalanceResult = (
  * 総勘定元帳関連のハンドラー
  */
 export const generalLedgerHandlers = [
+  http.get('*/general-ledger/export', () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=general-ledger.xlsx',
+      },
+    });
+  }),
   http.get('*/general-ledger', ({ request }) => {
     const url = new URL(request.url);
     const accountId = parseInt(url.searchParams.get('accountId') || '0', 10);
@@ -1437,6 +1456,15 @@ const buildCategorySubtotals = (entries: TrialBalanceEntry[]): CategorySubtotal[
  * 残高試算表関連のハンドラー
  */
 export const trialBalanceHandlers = [
+  http.get('*/trial-balance/export', () => {
+    const blob = new Blob(['mock-export-data'], { type: 'application/octet-stream' });
+    return new HttpResponse(blob, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename=trial-balance.xlsx',
+      },
+    });
+  }),
   http.get('*/trial-balance', ({ request }) => {
     const url = new URL(request.url);
     const dateParam = url.searchParams.get('date');
@@ -2353,6 +2381,103 @@ export const financialAnalysisHandlers = [
   }),
 ];
 
+// --- 監査ログ ---
+interface MockAuditLog {
+  id: number;
+  userId: string;
+  actionType: string;
+  actionTypeDisplayName: string;
+  entityType: string | null;
+  entityTypeDisplayName: string | null;
+  entityId: string | null;
+  description: string;
+  ipAddress: string;
+  createdAt: string;
+}
+
+const mockAuditLogs: MockAuditLog[] = [
+  {
+    id: 1,
+    userId: 'admin',
+    actionType: 'LOGIN',
+    actionTypeDisplayName: 'ログイン',
+    entityType: null,
+    entityTypeDisplayName: null,
+    entityId: null,
+    description: 'ログイン成功',
+    ipAddress: '127.0.0.1',
+    createdAt: '2026-01-15T10:00:00',
+  },
+  {
+    id: 2,
+    userId: 'admin',
+    actionType: 'CREATE',
+    actionTypeDisplayName: '作成',
+    entityType: 'JOURNAL_ENTRY',
+    entityTypeDisplayName: '仕訳伝票',
+    entityId: '1',
+    description: '仕訳伝票作成',
+    ipAddress: '127.0.0.1',
+    createdAt: '2026-01-15T10:05:00',
+  },
+  {
+    id: 3,
+    userId: 'manager',
+    actionType: 'APPROVE',
+    actionTypeDisplayName: '承認',
+    entityType: 'JOURNAL_ENTRY',
+    entityTypeDisplayName: '仕訳伝票',
+    entityId: '1',
+    description: '仕訳伝票承認',
+    ipAddress: '192.168.1.10',
+    createdAt: '2026-01-15T10:10:00',
+  },
+  {
+    id: 4,
+    userId: 'admin',
+    actionType: 'LOGOUT',
+    actionTypeDisplayName: 'ログアウト',
+    entityType: null,
+    entityTypeDisplayName: null,
+    entityId: null,
+    description: 'ログアウト',
+    ipAddress: '127.0.0.1',
+    createdAt: '2026-01-15T18:00:00',
+  },
+  {
+    id: 5,
+    userId: 'user',
+    actionType: 'LOGIN',
+    actionTypeDisplayName: 'ログイン',
+    entityType: null,
+    entityTypeDisplayName: null,
+    entityId: null,
+    description: 'ログイン成功',
+    ipAddress: '10.0.0.5',
+    createdAt: '2026-01-16T09:00:00',
+  },
+];
+
+export const auditLogHandlers = [
+  http.get('*/audit-logs', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
+    const userId = url.searchParams.get('userId');
+    const actionType = url.searchParams.get('actionType');
+
+    let filtered = [...mockAuditLogs];
+    if (userId) filtered = filtered.filter((entry) => entry.userId.includes(userId));
+    if (actionType) filtered = filtered.filter((entry) => entry.actionType === actionType);
+
+    const totalCount = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / size));
+    const auditLogs = filtered.slice(page * size, page * size + size);
+
+    return HttpResponse.json({ auditLogs, totalCount, totalPages, currentPage: page });
+  }),
+];
+
 /**
  * すべてのハンドラー
  */
@@ -2371,4 +2496,5 @@ export const handlers = [
   ...balanceSheetHandlers,
   ...profitAndLossHandlers,
   ...financialAnalysisHandlers,
+  ...auditLogHandlers,
 ];

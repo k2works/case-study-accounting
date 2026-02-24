@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MainLayout } from '../views/common';
+import { getDashboardStats, DashboardStats } from '../api/getDashboardStats';
+import { getJournalEntries, JournalEntrySummary } from '../api/getJournalEntries';
 import './DashboardPage.css';
 
 /**
@@ -15,48 +17,167 @@ interface Notice {
   date: string;
 }
 
-const DashboardPage: React.FC = () => {
-  // ダミーデータ（将来的に API から取得）
-  const notices: Notice[] = [
-    {
-      id: 'N-001',
-      type: 'important',
-      title: '決算期末のお知らせ',
-      content: '3月31日は決算期末です。すべての仕訳を確定してください。',
-      date: '2024/03/01',
-    },
-    {
-      id: 'N-002',
-      type: 'warning',
-      title: 'システムメンテナンス',
-      content: '3月15日 22:00〜24:00 にシステムメンテナンスを実施します。',
-      date: '2024/03/05',
-    },
-    {
-      id: 'N-003',
-      type: 'info',
-      title: '新機能リリース',
-      content: '仕訳一括インポート機能が追加されました。',
-      date: '2024/03/10',
-    },
-  ];
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: '下書き',
+  PENDING: '承認待ち',
+  APPROVED: '承認済み',
+  CONFIRMED: '確定',
+};
 
-  const stats = {
-    todayJournalCount: 25,
-    pendingApprovalCount: 5,
+const NOTICE_TYPE_LABELS: Record<string, string> = {
+  important: '重要',
+  warning: '注意',
+  info: 'お知らせ',
+};
+
+const getStatusLabel = (status: string): string => STATUS_LABELS[status] ?? status;
+
+const getStatusClass = (status: string): string => {
+  const classMap: Record<string, string> = {
+    PENDING: 'pending',
+    DRAFT: 'draft',
+    CONFIRMED: 'confirmed',
+    APPROVED: 'approved',
   };
+  return classMap[status] ?? 'default';
+};
 
-  const recentJournals = [
-    {
-      id: 'J-0001',
-      date: '2024/01/15',
-      description: '売上計上',
-      amount: 100000,
-      status: '承認待ち',
-    },
-    { id: 'J-0002', date: '2024/01/15', description: '仕入計上', amount: 50000, status: '下書き' },
-    { id: 'J-0003', date: '2024/01/14', description: '給与支払', amount: 300000, status: '確定' },
-  ];
+const notices: Notice[] = [
+  {
+    id: 'N-001',
+    type: 'important',
+    title: '決算期末のお知らせ',
+    content: '3月31日は決算期末です。すべての仕訳を確定してください。',
+    date: '2024/03/01',
+  },
+  {
+    id: 'N-002',
+    type: 'warning',
+    title: 'システムメンテナンス',
+    content: '3月15日 22:00〜24:00 にシステムメンテナンスを実施します。',
+    date: '2024/03/05',
+  },
+  {
+    id: 'N-003',
+    type: 'info',
+    title: '新機能リリース',
+    content: '仕訳一括インポート機能が追加されました。',
+    date: '2024/03/10',
+  },
+];
+
+const NoticeSection: React.FC = () => (
+  <div className="dashboard__notices">
+    <h2 className="dashboard__section-title">お知らせ</h2>
+    <div className="dashboard__notice-list">
+      {notices.map((notice) => (
+        <div key={notice.id} className={`dashboard__notice dashboard__notice--${notice.type}`}>
+          <div className="dashboard__notice-header">
+            <span className={`dashboard__notice-badge dashboard__notice-badge--${notice.type}`}>
+              {NOTICE_TYPE_LABELS[notice.type]}
+            </span>
+            <span className="dashboard__notice-date">{notice.date}</span>
+          </div>
+          <h3 className="dashboard__notice-title">{notice.title}</h3>
+          <p className="dashboard__notice-content">{notice.content}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const formatStatValue = (loading: boolean, value: number | undefined): string =>
+  loading ? '...' : `${value ?? 0} 件`;
+
+const StatsSection: React.FC<{ loading: boolean; stats: DashboardStats | null }> = ({
+  loading,
+  stats,
+}) => (
+  <div className="dashboard__stats">
+    <div className="dashboard__stat-card">
+      <h3 className="dashboard__stat-label">本日の仕訳件数</h3>
+      <p className="dashboard__stat-value">{formatStatValue(loading, stats?.todayJournalCount)}</p>
+    </div>
+    <div className="dashboard__stat-card">
+      <h3 className="dashboard__stat-label">承認待ち件数</h3>
+      <p className="dashboard__stat-value dashboard__stat-value--alert">
+        {formatStatValue(loading, stats?.pendingApprovalCount)}
+      </p>
+    </div>
+  </div>
+);
+
+const RecentJournalsTable: React.FC<{ journals: JournalEntrySummary[] }> = ({ journals }) => (
+  <table className="dashboard__table">
+    <thead>
+      <tr>
+        <th>日付</th>
+        <th>摘要</th>
+        <th className="dashboard__table-cell--right">金額</th>
+        <th>ステータス</th>
+      </tr>
+    </thead>
+    <tbody>
+      {journals.map((journal) => (
+        <tr key={journal.journalEntryId}>
+          <td>{journal.journalDate}</td>
+          <td>{journal.description}</td>
+          <td className="dashboard__table-cell--right">
+            ¥{journal.totalDebitAmount.toLocaleString()}
+          </td>
+          <td>
+            <span
+              className={`dashboard__status dashboard__status--${getStatusClass(journal.status)}`}
+            >
+              {getStatusLabel(journal.status)}
+            </span>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+const RecentJournalsContent: React.FC<{
+  loading: boolean;
+  journals: JournalEntrySummary[];
+}> = ({ loading, journals }) => {
+  if (loading) {
+    return (
+      <p className="dashboard__loading" data-testid="dashboard-loading">
+        読み込み中...
+      </p>
+    );
+  }
+  if (journals.length === 0) {
+    return <p className="dashboard__empty">仕訳データがありません</p>;
+  }
+  return <RecentJournalsTable journals={journals} />;
+};
+
+const DashboardPage: React.FC = () => {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentJournals, setRecentJournals] = useState<JournalEntrySummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [dashboardStats, journalsResult] = await Promise.all([
+          getDashboardStats(),
+          getJournalEntries({ size: 5 }),
+        ]);
+        setStats(dashboardStats);
+        setRecentJournals(journalsResult.content);
+      } catch {
+        setError('データの取得に失敗しました');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const breadcrumbs = [{ label: 'ダッシュボード' }];
 
@@ -64,97 +185,22 @@ const DashboardPage: React.FC = () => {
     <MainLayout breadcrumbs={breadcrumbs}>
       <div className="dashboard" data-testid="dashboard">
         <h1 className="dashboard__title">ダッシュボード</h1>
-
-        {/* お知らせエリア */}
-        {notices.length > 0 && (
-          <div className="dashboard__notices">
-            <h2 className="dashboard__section-title">お知らせ</h2>
-            <div className="dashboard__notice-list">
-              {notices.map((notice) => (
-                <div
-                  key={notice.id}
-                  className={`dashboard__notice dashboard__notice--${notice.type}`}
-                >
-                  <div className="dashboard__notice-header">
-                    <span
-                      className={`dashboard__notice-badge dashboard__notice-badge--${notice.type}`}
-                    >
-                      {notice.type === 'important' && '重要'}
-                      {notice.type === 'warning' && '注意'}
-                      {notice.type === 'info' && 'お知らせ'}
-                    </span>
-                    <span className="dashboard__notice-date">{notice.date}</span>
-                  </div>
-                  <h3 className="dashboard__notice-title">{notice.title}</h3>
-                  <p className="dashboard__notice-content">{notice.content}</p>
-                </div>
-              ))}
-            </div>
+        <NoticeSection />
+        {error && (
+          <div className="dashboard__error" data-testid="dashboard-error">
+            {error}
           </div>
         )}
-
-        <div className="dashboard__stats">
-          <div className="dashboard__stat-card">
-            <h3 className="dashboard__stat-label">本日の仕訳件数</h3>
-            <p className="dashboard__stat-value">{stats.todayJournalCount} 件</p>
-          </div>
-          <div className="dashboard__stat-card">
-            <h3 className="dashboard__stat-label">承認待ち件数</h3>
-            <p className="dashboard__stat-value dashboard__stat-value--alert">
-              {stats.pendingApprovalCount} 件
-            </p>
-          </div>
-        </div>
-
+        <StatsSection loading={loading} stats={stats} />
         <div className="dashboard__section">
           <h2 className="dashboard__section-title">最近の仕訳</h2>
           <div className="dashboard__table-container">
-            <table className="dashboard__table">
-              <thead>
-                <tr>
-                  <th>日付</th>
-                  <th>摘要</th>
-                  <th className="dashboard__table-cell--right">金額</th>
-                  <th>ステータス</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentJournals.map((journal) => (
-                  <tr key={journal.id}>
-                    <td>{journal.date}</td>
-                    <td>{journal.description}</td>
-                    <td className="dashboard__table-cell--right">
-                      ¥{journal.amount.toLocaleString()}
-                    </td>
-                    <td>
-                      <span
-                        className={`dashboard__status dashboard__status--${getStatusClass(journal.status)}`}
-                      >
-                        {journal.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <RecentJournalsContent loading={loading} journals={recentJournals} />
           </div>
         </div>
       </div>
     </MainLayout>
   );
-};
-
-const getStatusClass = (status: string): string => {
-  switch (status) {
-    case '承認待ち':
-      return 'pending';
-    case '下書き':
-      return 'draft';
-    case '確定':
-      return 'confirmed';
-    default:
-      return 'default';
-  }
 };
 
 export default DashboardPage;

@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import { axiosInstance } from './axios-instance';
+import { downloadExport } from './statementShared';
 
 export interface GeneralLedgerEntry {
   journalEntryId: number;
@@ -65,6 +66,27 @@ export const getGeneralLedger = async (
     ...data,
     content: data.content ?? [],
   };
+};
+
+export type GeneralLedgerExportFormat = 'csv' | 'excel';
+
+export const exportGeneralLedger = async (
+  format: GeneralLedgerExportFormat,
+  accountId: number,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<void> => {
+  const params = new URLSearchParams();
+  params.append('format', format);
+  params.append('accountId', accountId.toString());
+  if (dateFrom) {
+    params.append('dateFrom', dateFrom);
+  }
+  if (dateTo) {
+    params.append('dateTo', dateTo);
+  }
+  const ext = format === 'csv' ? 'csv' : 'xlsx';
+  await downloadExport(`/api/general-ledger/export?${params.toString()}`, `general-ledger.${ext}`);
 };
 
 export const getGeneralLedgerErrorMessage = (error: unknown): string => {

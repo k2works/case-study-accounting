@@ -233,7 +233,9 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     });
 
     it('表示件数を変更できる', () => {
-      // Given: 仕訳一覧ページが表示されている
+      // Given: 仕訳一覧ページが表示され、データがロードされている
+      cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
+      cy.get('.pagination__select', { timeout: 10000 }).should('be.visible');
 
       // When: 表示件数を変更（10件に変更）
       cy.get('.pagination__select').select('10');
@@ -278,6 +280,22 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
       // Then: 仕訳登録画面に遷移する
       cy.url().should('include', '/journal/entries/new');
       cy.get('[data-testid="journal-entry-form"]').should('be.visible');
+    });
+  });
+
+  describe('データダウンロード', () => {
+    beforeEach(() => {
+      cy.login('admin', 'Password123!');
+      cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('be.visible');
+      cy.visitJournalEntryList();
+    });
+
+    it('CSV/Excel でダウンロードできる', () => {
+      // Given: 仕訳一覧ページが表示されている
+
+      // Then: エクスポートボタンが表示される
+      cy.contains('button', 'CSV').should('be.visible');
+      cy.contains('button', 'Excel').should('be.visible');
     });
   });
 

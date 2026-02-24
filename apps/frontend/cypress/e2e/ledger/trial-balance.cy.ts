@@ -137,5 +137,22 @@ describe('US-LDG-005: 残高試算表表示', () => {
     });
   });
 
+  describe('データダウンロード', () => {
+    beforeEach(() => {
+      visitTrialBalancePage();
+    });
+
+    it('CSV/Excel/PDF でダウンロードできる', () => {
+      // Given: 試算表を表示する
+      cy.contains('button', '表示').click();
+      cy.get(TEST_CONFIG.selectors.summary, { timeout: 15000 }).should('be.visible');
+
+      // Then: エクスポートボタンが表示される
+      cy.contains('button', 'CSV').should('be.visible');
+      cy.contains('button', 'Excel').should('be.visible');
+      cy.contains('button', 'PDF').should('be.visible');
+    });
+  });
+
   describeAccessControl(TEST_CONFIG, visitTrialBalancePage, '残高試算表ページ');
 });

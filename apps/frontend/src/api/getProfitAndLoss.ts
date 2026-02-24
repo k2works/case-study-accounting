@@ -69,8 +69,10 @@ export const getProfitAndLoss = async (
   };
 };
 
+export type ProfitAndLossExportFormat = 'csv' | 'excel' | 'pdf';
+
 export const exportProfitAndLoss = async (
-  format: 'pdf' | 'excel',
+  format: ProfitAndLossExportFormat,
   dateFrom?: string,
   dateTo?: string
 ): Promise<void> => {
@@ -82,8 +84,15 @@ export const exportProfitAndLoss = async (
   if (dateTo) {
     params.append('dateTo', dateTo);
   }
-  const filename = format === 'pdf' ? 'profit-and-loss.pdf' : 'profit-and-loss.xlsx';
-  await downloadExport(`/api/profit-and-loss/export?${params.toString()}`, filename);
+  const extMap: Record<ProfitAndLossExportFormat, string> = {
+    csv: 'csv',
+    excel: 'xlsx',
+    pdf: 'pdf',
+  };
+  await downloadExport(
+    `/api/profit-and-loss/export?${params.toString()}`,
+    `profit-and-loss.${extMap[format]}`
+  );
 };
 
 export const getProfitAndLossErrorMessage = (error: unknown): string =>
