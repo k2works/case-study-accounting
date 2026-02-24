@@ -157,11 +157,19 @@ describe('US-LDG-001: 総勘定元帳照会', () => {
     it('表示件数を変更できる', () => {
       selectAccountAndWait();
       cy.get('.pagination', { timeout: 15000 }).should('be.visible');
-      // select 要素が初期値で安定した直後に操作（チェーンを保持して DOM detach を回避）
       cy.get('.pagination__select', { timeout: 10000 })
-        .should('be.visible')
-        .and('have.value', '20')
-        .select('10');
+        .should('have.value', '20')
+        .then(($el) => {
+          // React 再レンダリング中の DOM detach を回避するため、
+          // ネイティブ API で値を設定しイベントを発火する
+          const select = $el[0] as HTMLSelectElement;
+          const nativeSetter = Object.getOwnPropertyDescriptor(
+            HTMLSelectElement.prototype,
+            'value'
+          )?.set;
+          nativeSetter?.call(select, '10');
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
       cy.get('.pagination__select', { timeout: 10000 }).should('have.value', '10');
     });
   });
