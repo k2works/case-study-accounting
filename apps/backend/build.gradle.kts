@@ -204,5 +204,6 @@ sonar {
         property("sonar.projectKey", "accounting-backend")
         property("sonar.projectName", "Accounting Backend")
         property("sonar.host.url", "http://localhost:9000")
+        property("sonar.exclusions", "**/db/demo-data.sql")
     }
 }

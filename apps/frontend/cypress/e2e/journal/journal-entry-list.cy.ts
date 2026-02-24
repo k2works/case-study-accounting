@@ -233,7 +233,9 @@ describe('US-JNL-004: 仕訳一覧表示', () => {
     });
 
     it('表示件数を変更できる', () => {
-      // Given: 仕訳一覧ページが表示されている
+      // Given: 仕訳一覧ページが表示され、データがロードされている
+      cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
+      cy.get('.pagination__select', { timeout: 10000 }).should('be.visible');
 
       // When: 表示件数を変更（10件に変更）
       cy.get('.pagination__select').select('10');

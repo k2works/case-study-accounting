@@ -14,6 +14,11 @@
 
 会計システムの設計・開発に関するケーススタディプロジェクトです。
 
+- [フロントエンドデモ](https://case-study-accounting-frontend-2cb4e7e16f2f.herokuapp.com/login)
+- [バックエンドデモ](https://case-study-accounting-backend-8d23bb5e8bbe.herokuapp.com/swagger-ui/index.html)
+- ユーザー名:admin
+- パスワード:Password123!
+
 ### 目的
 
 - 会計システムの要件定義から実装までの開発プロセスを学ぶ

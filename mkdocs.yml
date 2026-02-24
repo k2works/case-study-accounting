@@ -63,7 +63,7 @@ exclude_docs: |
 
 nav:
   - Home: index.md
-  - 要件定義:
+  - 要件:
       - 要件定義書: requirements/requirements_definition.md
       - ビジネスユースケース: requirements/business_usecase.md
       - システムユースケース: requirements/system_usecase.md
@@ -90,6 +90,9 @@ nav:
       - リリースノート:
           - v1.0 MVP: development/release_notes-v1.0.md
           - v2.0 機能拡張版: development/release_notes-v2.0.md
+          - v3.0 完成版: development/release_notes-v3.0.md
+      - リリース報告書:
+          - Release 3.0 報告書: development/release_3_report.md
       - イテレーション計画:
           - イテレーション1: development/iteration_plan-1.md
           - イテレーション2: development/iteration_plan-2.md
@@ -102,6 +105,7 @@ nav:
           - イテレーション9: development/iteration_plan-9.md
           - イテレーション10: development/iteration_plan-10.md
           - イテレーション11: development/iteration_plan-11.md
+          - イテレーション12: development/iteration_plan-12.md
       - ふりかえり:
           - イテレーション1: development/retrospective-1.md
           - イテレーション2: development/retrospective-2.md

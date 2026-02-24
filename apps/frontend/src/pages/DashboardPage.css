@@ -202,9 +202,38 @@
   color: #2e7d32;
 }
 
+.dashboard__status--approved {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
 .dashboard__status--default {
   background-color: #f5f5f5;
   color: #666;
+}
+
+.dashboard__error {
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background-color: #ffebee;
+  border: 1px solid #ef9a9a;
+  border-radius: 8px;
+  color: #c62828;
+  font-size: 0.875rem;
+}
+
+.dashboard__loading {
+  padding: 24px 16px;
+  text-align: center;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.dashboard__empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #999;
+  font-size: 0.875rem;
 }
 
 @media (max-width: 767px) {

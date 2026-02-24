@@ -53,6 +53,11 @@
 
 - [リリースノート v1.0 MVP](./development/release_notes-v1.0.md) - リリース 1.0 MVP の変更内容
 - [リリースノート v2.0 機能拡張版](./development/release_notes-v2.0.md) - リリース 2.0 機能拡張版の変更内容
+- [リリースノート v3.0 完成版](./development/release_notes-v3.0.md) - リリース 3.0 完成版の変更内容
+
+### リリース報告書
+
+- [Release 3.0 リリース報告書](./development/release_3_report.md) - プロジェクト完了報告（計画 vs 実績分析、品質メトリクス、工期短縮分析）
 
 ### イテレーション
 
@@ -67,6 +72,7 @@
 - [イテレーション計画 9](./development/iteration_plan-9.md) - イテレーション9の詳細計画
 - [イテレーション計画 10](./development/iteration_plan-10.md) - イテレーション10の詳細計画
 - [イテレーション計画 11](./development/iteration_plan-11.md) - イテレーション11の詳細計画
+- [イテレーション計画 12](./development/iteration_plan-12.md) - イテレーション12の詳細計画（統合テスト・リリース準備）
 
 ### ふりかえり
 
