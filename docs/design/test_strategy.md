@@ -847,3 +847,192 @@ title テスト品質改善プロセス
 | E2E | - | Cypress |
 | カバレッジ | Jacoco | V8 Coverage |
 | コンテナ | Testcontainers | - |
+
+---
+
+## 12. E2E テスト安定性ガイドライン
+
+本プロジェクトの E2E テスト（Cypress + MSW）で発見・確立した安定性パターンをまとめる。React の制御コンポーネントと Cypress の DOM 操作の相互作用により、タイミング問題が発生しやすい。以下のパターンを標準として適用する。
+
+### 12.1 基本原則
+
+1. **データロード完了を待ってから操作する** — テーブル行やフォーム要素の存在を確認してから操作
+2. **要素は毎回 `cy.get()` で取得する** — 変数に格納しない（stale element 回避）
+3. **明示的なタイムアウトを設定する** — デフォルト 10 秒、ページロード系は 15 秒
+4. **CI 環境のリトライを活用する** — `retries: { runMode: 2 }` で CI のみリトライ
+
+### 12.2 タイムアウト階層
+
+| 用途 | タイムアウト | 例 |
+|------|------------|-----|
+| 標準要素取得 | 10,000ms | `cy.get('.btn', { timeout: 10000 })` |
+| ページ・テーブルロード | 15,000ms | `cy.get('table tbody tr', { timeout: 15000 })` |
+| フィルタ結果即時確認 | 5,000ms | `cy.get('tr', { timeout: 5000 }).first()` |
+| React レンダリング待機 | 300-1,000ms | `cy.wait(300)` — 最後の手段として使用 |
+
+### 12.3 パターン 1: データロード待機パターン
+
+テーブルや一覧データが API から読み込まれた後に操作する。
+
+```typescript
+// ❌ NG: データロード前に操作
+cy.get('.pagination__select').select('10');
+
+// ✅ OK: テーブル行の存在を確認してから操作
+cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
+cy.get('.pagination__select', { timeout: 10000 }).should('be.visible');
+cy.get('.pagination__select').select('10');
+```
+
+**適用場面**: ページネーション操作、フィルタ操作、テーブル行クリック
+
+### 12.4 パターン 2: ネイティブ DOM API パターン
+
+React の制御コンポーネント（`<select value={state}>`）では、Cypress の `cy.select()` が React の再レンダリングと競合して DOM detach エラーを起こすことがある。ネイティブ DOM API で直接操作すると安定する。
+
+```typescript
+// ❌ NG: React 再レンダリング中に cy.select() で DOM detach
+cy.get('.pagination__select').select('10');
+
+// ✅ OK: ネイティブセッター + dispatchEvent で React を通す
+cy.get('.pagination__select', { timeout: 10000 })
+  .should('have.value', '20')
+  .then(($el) => {
+    const select = $el[0] as HTMLSelectElement;
+    const nativeSetter = Object.getOwnPropertyDescriptor(
+      HTMLSelectElement.prototype,
+      'value'
+    )?.set;
+    nativeSetter?.call(select, '10');
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+cy.get('.pagination__select', { timeout: 10000 }).should('have.value', '10');
+```
+
+**適用場面**: ページサイズ変更、動的オプションの `<select>`
+
+### 12.5 パターン 3: 要素再取得パターン
+
+Cypress では DOM 要素を変数に保持すると、React の再レンダリングで要素が detach される。毎回 `cy.get()` で最新の DOM 要素を取得する。
+
+```typescript
+// ❌ NG: 変数に格納（stale element になるリスク）
+const $select = cy.get('.pagination__select');
+$select.select('10');
+$select.should('have.value', '10');
+
+// ✅ OK: 毎回 cy.get() で再取得
+cy.get('.pagination__select').select('10');
+cy.get('.pagination__select').should('have.value', '10');
+```
+
+**適用場面**: 全ての DOM 操作・アサーション
+
+### 12.6 パターン 4: カスタムコマンドでの待機集約
+
+共通の操作フローはカスタムコマンドに集約し、待機ロジックを一元管理する。
+
+```typescript
+// cypress/support/e2e.ts
+Cypress.Commands.add('visitJournalEntryList', () => {
+  cy.visit('/journal/entries');
+  cy.get('[data-testid="journal-entry-list"]', { timeout: 15000 }).should('be.visible');
+  cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
+});
+
+Cypress.Commands.add('selectAccountOption', (selectId: string, index: number = 1) => {
+  cy.get(`#${selectId} option`, { timeout: 15000 }).should('have.length.greaterThan', 1);
+  cy.get(`#${selectId}`).select(index);
+});
+```
+
+**適用場面**: ログイン、ページ遷移、勘定科目選択など頻出操作
+
+### 12.7 パターン 5: リトライ・リカバリパターン
+
+React の stale closure によりフィルタ操作が反映されないことがある。操作後に結果を確認し、期待と異なれば再実行する。
+
+```typescript
+const executeFilter = () => {
+  cy.get('#filter-status').select(status);
+  cy.wait(300); // React re-render 待機
+  cy.contains('button', '検索').click();
+};
+
+executeFilter();
+
+// 結果が正しくない場合は再実行
+cy.get('table tbody tr', { timeout: 5000 }).first().then(($row) => {
+  if (!$row.text().includes(expectedText)) {
+    executeFilter();
+  }
+});
+```
+
+**適用場面**: フィルタ・検索操作で結果が不安定な場合
+
+### 12.8 パターン 6: テスト設定ファクトリパターン
+
+帳票系テスト（元帳・残高・財務諸表）では、共通の設定・ヘルパーをファクトリ関数で提供する。
+
+```typescript
+// cypress/support/ledgerTestConfig.ts
+export const createLedgerTestConfig = (options: LedgerTestOptions) => ({
+  visitPage: () => { cy.visit(options.path); waitForPageLoad(options); },
+  clickSearch: () => { cy.contains('button', '照会').click(); cy.wait(1000); },
+  verifyTable: () => {
+    cy.get(options.tableSelector, { timeout: 15000 }).should('be.visible');
+  },
+});
+```
+
+**適用場面**: 類似構造のテスト（帳票系、マスタ一覧系）
+
+### 12.9 MSW 環境での注意事項
+
+本プロジェクトでは E2E テストに MSW（Mock Service Worker）を使用しているため、`cy.intercept()` による API モックは使用できない。代わりに以下のアプローチを採用する。
+
+| 項目 | `cy.intercept()` | MSW |
+|------|------------------|-----|
+| API 待機 | `cy.wait('@alias')` | DOM アサーションで待機 |
+| レスポンス制御 | `cy.intercept().as()` | `handlers.ts` で定義 |
+| エラーシミュレーション | `cy.intercept(500)` | MSW ハンドラで制御 |
+
+```typescript
+// ❌ NG: MSW 環境では cy.intercept は使えない
+cy.intercept('GET', '/api/accounts').as('getAccounts');
+cy.wait('@getAccounts');
+
+// ✅ OK: DOM アサーションで API 完了を待機
+cy.get('table tbody tr', { timeout: 15000 }).should('have.length.at.least', 1);
+```
+
+### 12.10 Cypress 設定（cypress.config.ts）
+
+```typescript
+export default defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:3000',
+    viewportWidth: 1280,
+    viewportHeight: 720,
+    defaultCommandTimeout: 10000,
+    retries: {
+      runMode: 2,  // CI 環境で最大 2 回リトライ
+      openMode: 0, // ローカルではリトライなし
+    },
+    screenshotOnRunFailure: true,
+  },
+});
+```
+
+### 12.11 チェックリスト
+
+新しい E2E テストを作成する際に確認する項目：
+
+- [ ] ページ遷移後、`data-testid` または主要要素の表示を待機しているか
+- [ ] テーブル操作前にデータロード完了（`have.length.at.least`）を確認しているか
+- [ ] `<select>` 操作で DOM detach が発生する場合、ネイティブ DOM API を使用しているか
+- [ ] DOM 要素を変数に格納せず、毎回 `cy.get()` で取得しているか
+- [ ] タイムアウト値はタイムアウト階層に従っているか
+- [ ] 共通操作はカスタムコマンドを使用しているか
+- [ ] `cy.wait()` は最後の手段として使用し、可能な限り DOM アサーションで待機しているか
