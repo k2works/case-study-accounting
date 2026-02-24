@@ -100,7 +100,9 @@ describe('US-MST-003: 勘定科目削除', () => {
     });
 
     it('確認ダイアログでキャンセルすると削除されない', () => {
-      // Given: 勘定科目一覧が表示されている
+      // Given: 勘定科目一覧が表示されている - データ読み込み完了を待機
+      cy.get('table tbody tr').should('have.length.at.least', 2);
+
       // 削除前の勘定科目数を取得
       cy.get('table tbody tr').its('length').then((initialCount) => {
         // When: 削除ボタンをクリックしてキャンセル
